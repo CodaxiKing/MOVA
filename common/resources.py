@@ -10,6 +10,8 @@ import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from common.errors import InsufficientResourcesError
+
 GB = 1e9
 
 # UMT5-XXL encoder: 11.36 GB of bf16 safetensors (HF API) + tokenizer/activations/Python overhead.
@@ -22,8 +24,8 @@ DOWNLOAD_MARGIN_GB = 2.0
 OUTPUT_DISK_GB = 1.0
 
 
-class InsufficientResources(RuntimeError):
-    pass
+# Kept under its historical name; it is the structured error shared with the runtime/CLI/API.
+InsufficientResources = InsufficientResourcesError
 
 
 @dataclass
@@ -60,17 +62,20 @@ def ram_available_gb() -> float | None:
     return psutil.virtual_memory().available / GB
 
 
-def vram_free_gb() -> float | None:
-    import torch
+def vram_free_gb(device=None) -> float | None:
+    """Free memory of `device` (runtime.device.DeviceInfo; default: the device `auto` selects), None on CPU."""
+    from runtime.device import default_device_manager
 
-    if not torch.cuda.is_available():
+    dm = default_device_manager()
+    dev = device or dm.resolve("auto")
+    if not dev.is_accelerator:
         return None
-    free, _ = torch.cuda.mem_get_info(0)
+    free, _ = dm.memory_bytes(dev)
     return free / GB
 
 
 def baseline_checks(*, missing_download_bytes: int, hf_cache_dir: str | Path, output_dir: str | Path,
-                    need_text_encoder: bool, offload: str, cuda: bool,
+                    need_text_encoder: bool, offload: str, cuda: bool, device=None,
                     ram_gb: float | None = None, vram_gb: float | None = None,
                     cache_disk_gb: float | None = None, output_disk_gb: float | None = None) -> list[ResourceCheck]:
     """Measured values can be injected (tests); otherwise they are read from the machine."""
@@ -91,7 +96,7 @@ def baseline_checks(*, missing_download_bytes: int, hf_cache_dir: str | Path, ou
                                 "transformer + VAE kept in CPU memory between GPU uses"))
     if cuda:
         checks.append(ResourceCheck(f"VRAM free (offload={offload})", PIPELINE_VRAM_GB[offload],
-                                    vram_gb if vram_gb is not None else vram_free_gb(),
+                                    vram_gb if vram_gb is not None else vram_free_gb(device),
                                     "minimum to start; peak is measured during the run"))
     return checks
 

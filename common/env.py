@@ -64,31 +64,39 @@ def _system_ram() -> tuple[float | None, float | None]:
         return None, None
 
 
-def detect_hardware() -> HardwareInfo:
+def detect_hardware(devices=None, device=None) -> HardwareInfo:
+    """Summary of the machine for logs/run records. Device facts come from runtime.device.DeviceManager
+    (the single place that queries the GPU); reports `device` (a DeviceInfo) or the one `auto` selects."""
+    from runtime.device import default_device_manager
+
+    dm = devices or default_device_manager()
     ram_total, ram_avail = _system_ram()
+    dev = device or dm.resolve("auto")
     info = HardwareInfo(
         python=sys.version.split()[0],
         platform=platform.platform(),
         torch_version=torch.__version__,
         torch_cuda_build=torch.version.cuda,
-        cuda_available=torch.cuda.is_available(),
-        device="cuda" if torch.cuda.is_available() else "cpu",
+        cuda_available=dev.is_accelerator,
+        device=dev.type,
         ram_total_gb=ram_total,
         ram_available_gb=ram_avail,
     )
-    if info.cuda_available:
-        props = torch.cuda.get_device_properties(0)
-        free, total = torch.cuda.mem_get_info(0)
-        info.gpu_name = props.name
-        info.vram_total_gb = round(total / GIB, 2)
-        info.vram_free_gb = round(free / GIB, 2)
-        info.compute_capability = f"{props.major}.{props.minor}"
-        info.bf16_supported = bool(torch.cuda.is_bf16_supported())
+    if dev.is_accelerator:
+        mem = dm.memory_info(dev)
+        info.gpu_name = dev.name
+        info.vram_total_gb = mem["total_gb"]
+        info.vram_free_gb = mem["free_gb"]
+        info.compute_capability = dev.compute_capability
+        info.bf16_supported = dev.bf16
     return info
 
 
 def select_profile(hw: HardwareInfo) -> RuntimeProfile:
-    """Pick resolution/frames/offload for the Wan2.1 1.3B family given the hardware.
+    """Pick resolution/frames (model defaults for the Wan2.1 1.3B family) given the hardware.
+
+    Device, precision and offload are decided by the runtime (runtime/); the values here are the
+    same defaults, kept for run records and the benchmark.
 
     Thresholds are conservative starting points; measured numbers go to docs/experiments.
     """
@@ -105,17 +113,20 @@ def select_profile(hw: HardwareInfo) -> RuntimeProfile:
             notes=["No CUDA GPU: diffusion inference is impractical. Use only for preprocessing and tests."],
         )
 
+    from runtime.memory import recommend_offload
+
     dtype = "bfloat16" if hw.bf16_supported else "float16"
     vram = hw.vram_total_gb or 0.0
+    offload = recommend_offload(vram)  # single source for the offload thresholds
     if vram < 6.5:
-        return RuntimeProfile("cuda-lt6gb", "cuda", dtype, 256, 256, 9, "sequential", True,
+        return RuntimeProfile("cuda-lt6gb", "cuda", dtype, 256, 256, 9, offload, True,
                               ["Very low VRAM: sequential offload, expect slow inference."])
     if vram < 10:
-        return RuntimeProfile("cuda-8gb", "cuda", dtype, 256, 256, 17, "model", True,
+        return RuntimeProfile("cuda-8gb", "cuda", dtype, 256, 256, 17, offload, True,
                               ["8 GB class (e.g. RTX 3060 8GB): model offload + VAE tiling."])
     if vram < 20:
-        return RuntimeProfile("cuda-12-16gb", "cuda", dtype, 480, 480, 33, "model", True)
-    return RuntimeProfile("cuda-24gb+", "cuda", dtype, 480, 832, 81, "none", False)
+        return RuntimeProfile("cuda-12-16gb", "cuda", dtype, 480, 480, 33, offload, True)
+    return RuntimeProfile("cuda-24gb+", "cuda", dtype, 480, 832, 81, offload, False)
 
 
 def summarize(hw: HardwareInfo, profile: RuntimeProfile) -> str:
