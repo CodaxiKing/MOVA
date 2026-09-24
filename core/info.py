@@ -8,6 +8,7 @@ from typing import Any
 
 from models.registry import get_spec, list_specs
 from runtime import default_device_manager, describe_runtimes
+from runtime.manager import framework_versions
 
 from .capabilities import compatibility_matrix, missing_requirements
 
@@ -19,8 +20,6 @@ def mova_version() -> str:
 
 
 def system_info() -> dict[str, Any]:
-    import torch
-
     dm = default_device_manager()
     devices = []
     for d in dm.list_devices():
@@ -31,9 +30,7 @@ def system_info() -> dict[str, Any]:
         "mova": mova_version(),
         "python": sys.version.split()[0],
         "os": platform.platform(),
-        "pytorch": torch.__version__,
-        "cuda_build": torch.version.cuda,
-        "rocm_build": getattr(torch.version, "hip", None),
+        **framework_versions(),
         "devices": devices,
         "runtimes": describe_runtimes(),
         "models": [{"name": s.name, "aliases": list(s.aliases), "task": s.task,

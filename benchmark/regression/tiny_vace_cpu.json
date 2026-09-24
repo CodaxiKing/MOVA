@@ -1,0 +1,216 @@
+{
+  "kind": "tiny-vace-cpu-regression",
+  "code_path": "models.registry -> WanVACETinyRandomModel -> PyTorchRuntime",
+  "baseline_sha256": "a3cbab52523b48c2db5069eb3b837530c564a451d3113e49dd3fa45f77945478",
+  "fp32_bit_exact": true,
+  "all_finite": true,
+  "warm_total_s": {
+    "baseline_median": 0.1219,
+    "new_median": 0.2582
+  },
+  "fp32_runs": [
+    {
+      "precision": "fp32",
+      "load_s": 7.746,
+      "total_s": 8.0522,
+      "generation_time_s": 0.1,
+      "memory": {
+        "device": "cpu",
+        "before": {
+          "process_rss_gb": 0.378,
+          "system_available_gb": 1.87,
+          "system_total_gb": 15.688
+        },
+        "after": {
+          "process_rss_gb": 0.389,
+          "system_available_gb": 1.861,
+          "system_total_gb": 15.688
+        },
+        "peak_allocated_gb": null,
+        "peak_reserved_gb": null,
+        "wall_time_s": 0.103
+      },
+      "output": {
+        "shape": [
+          5,
+          32,
+          32,
+          3
+        ],
+        "sha256": "a3cbab52523b48c2db5069eb3b837530c564a451d3113e49dd3fa45f77945478",
+        "finite": true,
+        "min": 0.2810301184654236,
+        "max": 0.7084367275238037,
+        "mean": 0.4662061631679535
+      }
+    },
+    {
+      "precision": "fp32",
+      "load_s": 0.0213,
+      "total_s": 0.2566,
+      "generation_time_s": 0.1,
+      "memory": {
+        "device": "cpu",
+        "before": {
+          "process_rss_gb": 0.387,
+          "system_available_gb": 1.859,
+          "system_total_gb": 15.688
+        },
+        "after": {
+          "process_rss_gb": 0.389,
+          "system_available_gb": 1.831,
+          "system_total_gb": 15.688
+        },
+        "peak_allocated_gb": null,
+        "peak_reserved_gb": null,
+        "wall_time_s": 0.085
+      },
+      "output": {
+        "shape": [
+          5,
+          32,
+          32,
+          3
+        ],
+        "sha256": "a3cbab52523b48c2db5069eb3b837530c564a451d3113e49dd3fa45f77945478",
+        "finite": true,
+        "min": 0.2810301184654236,
+        "max": 0.7084367275238037,
+        "mean": 0.4662061631679535
+      }
+    },
+    {
+      "precision": "fp32",
+      "load_s": 0.0294,
+      "total_s": 0.2582,
+      "generation_time_s": 0.1,
+      "memory": {
+        "device": "cpu",
+        "before": {
+          "process_rss_gb": 0.387,
+          "system_available_gb": 1.839,
+          "system_total_gb": 15.688
+        },
+        "after": {
+          "process_rss_gb": 0.389,
+          "system_available_gb": 1.855,
+          "system_total_gb": 15.688
+        },
+        "peak_allocated_gb": null,
+        "peak_reserved_gb": null,
+        "wall_time_s": 0.087
+      },
+      "output": {
+        "shape": [
+          5,
+          32,
+          32,
+          3
+        ],
+        "sha256": "a3cbab52523b48c2db5069eb3b837530c564a451d3113e49dd3fa45f77945478",
+        "finite": true,
+        "min": 0.2810301184654236,
+        "max": 0.7084367275238037,
+        "mean": 0.4662061631679535
+      }
+    }
+  ],
+  "other_precisions": [
+    {
+      "precision": "bf16",
+      "load_s": 0.0328,
+      "total_s": 0.3789,
+      "generation_time_s": 0.2,
+      "memory": {
+        "device": "cpu",
+        "before": {
+          "process_rss_gb": 0.388,
+          "system_available_gb": 1.85,
+          "system_total_gb": 15.688
+        },
+        "after": {
+          "process_rss_gb": 0.394,
+          "system_available_gb": 1.843,
+          "system_total_gb": 15.688
+        },
+        "peak_allocated_gb": null,
+        "peak_reserved_gb": null,
+        "wall_time_s": 0.163
+      },
+      "output": {
+        "shape": [
+          5,
+          32,
+          32,
+          3
+        ],
+        "sha256": "f949eaf8a669368fdc7be970e0b7d4417f6b6cc8ebe9a4f6a1b74dd55e3a38d2",
+        "finite": true,
+        "min": 0.2616412043571472,
+        "max": 0.6748232841491699,
+        "mean": 0.466154545545578
+      }
+    },
+    {
+      "precision": "fp16",
+      "load_s": 0.0366,
+      "total_s": 0.2851,
+      "generation_time_s": 0.1,
+      "memory": {
+        "device": "cpu",
+        "before": {
+          "process_rss_gb": 0.392,
+          "system_available_gb": 1.845,
+          "system_total_gb": 15.688
+        },
+        "after": {
+          "process_rss_gb": 0.395,
+          "system_available_gb": 1.845,
+          "system_total_gb": 15.688
+        },
+        "peak_allocated_gb": null,
+        "peak_reserved_gb": null,
+        "wall_time_s": 0.096
+      },
+      "output": {
+        "shape": [
+          5,
+          32,
+          32,
+          3
+        ],
+        "sha256": "773e117f56b8ef478469aada031cd79def85a46a912c0c9f753a207d3eb22411",
+        "finite": true,
+        "min": 0.2810322046279907,
+        "max": 0.7084343433380127,
+        "mean": 0.4662054479122162
+      }
+    }
+  ],
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "diffusers": "0.40.0",
+      "transformers": "5.17.0",
+      "accelerate": "1.15.0",
+      "huggingface_hub": "1.33.0",
+      "safetensors": "0.8.0",
+      "sentencepiece": "0.2.2",
+      "mediapipe": "1.0.1",
+      "numpy": "2.5.3",
+      "opencv-python": "5.0.0.93",
+      "pillow": "12.3.0",
+      "imageio": "2.37.4",
+      "imageio-ffmpeg": "0.6.0",
+      "pyyaml": "6.0.3"
+    },
+    "lock_file": "requirements.lock.txt",
+    "lock_mismatches": {},
+    "git": {
+      "commit": "059cfb577f3525ed8a6a824118c99aa127662b5b",
+      "dirty": false
+    }
+  }
+}

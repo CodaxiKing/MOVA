@@ -55,3 +55,13 @@ def describe_runtimes() -> list[dict[str, Any]]:
                      "version": a.version, "reason": a.reason})
     rows += [{"name": n, "status": "not implemented", "version": None, "reason": r} for n, r in NOT_IMPLEMENTED.items()]
     return rows
+
+
+def framework_versions() -> dict[str, Any]:
+    """Versions of the ML frameworks behind the runtimes (for diagnostics); None when not installed."""
+    try:
+        import torch
+    except ImportError:
+        return {"pytorch": None, "cuda_build": None, "rocm_build": None}
+    return {"pytorch": torch.__version__, "cuda_build": torch.version.cuda,
+            "rocm_build": getattr(torch.version, "hip", None)}

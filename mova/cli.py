@@ -60,11 +60,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--config", default="configs/extraction.yaml")
     p.add_argument("--set", action="append", default=[], metavar="KEY=VALUE")
 
-    for name, hlp in (("benchmark", "benchmark workflow (scripts/benchmark.py)"),
-                      ("evaluate", "evaluate benchmark outputs (= benchmark evaluate)"),
-                      ("test", "run the test suite (pytest)")):
-        p = sub.add_parser(name, help=hlp, add_help=False)
-        p.add_argument("args", nargs=argparse.REMAINDER)
+    # Listed for --help only; main() forwards them before parsing (arguments go to the underlying tool).
+    sub.add_parser("benchmark", help="benchmark workflow (scripts/benchmark.py ...)")
+    sub.add_parser("evaluate", help="evaluate benchmark outputs (= scripts/benchmark.py evaluate ...)")
+    sub.add_parser("test", help="run the test suite (pytest ...)")
     sub.add_parser("train", help="training (not implemented yet)")
     return ap
 
@@ -73,7 +72,17 @@ def _forward(cmd: list[str]) -> int:
     return subprocess.run(cmd, cwd=ROOT).returncode
 
 
+PASSTHROUGH = {
+    "benchmark": lambda rest: [sys.executable, str(ROOT / "scripts/benchmark.py"), *rest],
+    "evaluate": lambda rest: [sys.executable, str(ROOT / "scripts/benchmark.py"), "evaluate", *rest],
+    "test": lambda rest: [sys.executable, "-m", "pytest", *rest],
+}
+
+
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in PASSTHROUGH:  # argparse.REMAINDER drops leading flags such as `mova test -q`
+        return _forward(PASSTHROUGH[argv[0]](argv[1:]))
     args = build_parser().parse_args(argv)
     try:
         if args.command == "info":
@@ -107,12 +116,6 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Run record: {record}")
             return 0
 
-        if args.command == "benchmark":
-            return _forward([sys.executable, str(ROOT / "scripts/benchmark.py"), *args.args])
-        if args.command == "evaluate":
-            return _forward([sys.executable, str(ROOT / "scripts/benchmark.py"), "evaluate", *args.args])
-        if args.command == "test":
-            return _forward([sys.executable, "-m", "pytest", *args.args])
         if args.command == "train":
             print("mova train: training is not implemented yet (Phase 5, see TODO.md).", file=sys.stderr)
             return 2

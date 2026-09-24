@@ -346,6 +346,17 @@ def test_cli_infer_end_to_end_json(media, tmp_path, capsys):
     assert data["stats"]["output_validation"]["status"] == "PASS" and out.is_file()
 
 
+def test_cli_forwards_leading_flags(monkeypatch):
+    import mova.cli as mcli
+
+    seen = []
+    monkeypatch.setattr(mcli, "_forward", lambda cmd: seen.append(cmd) or 0)
+    assert cli(["test", "-q", "--co", "tests/x.py"]) == 0
+    assert cli(["evaluate", "--help"]) == 0
+    assert seen[0][-4:] == ["pytest", "-q", "--co", "tests/x.py"]
+    assert seen[1][-2:] == ["evaluate", "--help"] and seen[1][-3].endswith("benchmark.py")
+
+
 def test_cli_train_is_honest(capsys):
     assert cli(["train"]) == 2
     assert "not implemented" in capsys.readouterr().err
