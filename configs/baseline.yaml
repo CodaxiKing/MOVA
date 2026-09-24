@@ -1,0 +1,32 @@
+# Phase 1 baseline: Wan2.1-VACE-1.3B (Diffusers). See docs/inference.md.
+# "auto" values are filled from the detected hardware profile (common/env.py).
+inputs:
+  reference: assets/reference/maya.png
+  motion: assets/motion/dance.mp4      # raw video (pose is extracted) or an existing pose_openpose.mp4
+  motion_is_control: false             # true if `motion` is already an OpenPose-style control video
+  motion_fps: 16                       # resample driving video to the model fps before sampling frames
+  frame_stride: 1
+
+model:
+  model_id: Wan-AI/Wan2.1-VACE-1.3B-diffusers
+  dtype: auto                          # auto -> bfloat16 if supported, else float16
+  offload: auto                        # auto | none | model | sequential
+  vae_tiling: auto
+
+generation:
+  prompt: "A person dancing, full body shot, clean studio background, high quality, detailed face and hands"
+  negative_prompt: null                # null -> default negative prompt
+  height: auto                         # auto -> profile (256 on 8 GB)
+  width: auto
+  keep_reference_aspect: true          # choose WxH from the reference aspect ratio within height*width area
+  num_frames: auto                     # auto -> profile (17 on 8 GB); always rounded to 4k+1
+  num_inference_steps: 30
+  guidance_scale: 5.0
+  flow_shift: 3.0                      # 3.0 for <=480P, 5.0 for 720P
+  conditioning_scale: 1.0
+  seed: 42
+  fps: 16
+
+output:
+  dir: outputs/baseline
+  save_side_by_side: true
