@@ -3,6 +3,28 @@
 ## [Unreleased]
 
 ### Added
+- Camada de runtime (ADR-009): `runtime/` com `Runtime`, `PyTorchRuntime`, `DeviceManager` (CPU/CUDA/ROCm*, seleção
+  `cuda:N`), `PrecisionManager` (fp32/fp16/bf16), `MemoryManager` (offload, stats, cleanup), `RuntimeManager`.
+- Interface de modelo e registry: `models/base.py`, `models/registry.py`, `models/backbones/wan_vace.py`
+  (`wan2.1-vace-1.3b`, alias `wan`; `wan2.1-vace-tiny-random`, alias `tiny`, smoke test sem downloads).
+- `core/`: precedência de config com `configs/runtime.yaml`, validação de capabilities, serviço de inferência,
+  info e preprocess compartilhados.
+- CLI `mova` (`pip install -e .`): `info`, `infer` (`--model/--runtime/--device/--precision/--offload/--output`),
+  `preprocess`, `benchmark`, `evaluate`, `test`, `train` (não implementado).
+- Erros estruturados com código estável (`common/errors.py`).
+- Auditoria (`docs/architecture-audit.md`), baseline e regressão CPU (`benchmark/baseline`, `benchmark/regression`),
+  ADR-009 e ADR-010. 65 testes novos (129 no total).
+
+### Changed
+- `scripts/inference_baseline.py` e `scripts/extract_motion.py` são wrappers da CLI; mesmas flags + novas.
+- `inference/baseline_vace.py`: `load_pipeline`/`run_baseline` → `build_pipeline` (sem placement) + `generate`
+  puro; placement/offload/VRAM pelo runtime. Saída fp32 bit-idêntica.
+- `common/env.py` e `common/resources.py` usam o `DeviceManager` (antes `torch.cuda` no índice 0).
+- `configs/baseline.yaml`: `model.name` adicionado; `model.dtype`/`model.offload` saíram para
+  `configs/runtime.yaml` (valores antigos ainda aceitos, com aviso).
+- `scripts/benchmark.py`: hash de código de geração inclui `runtime/ models/ core/ mova/ configs/runtime.yaml`
+  (retomar um benchmark iniciado antes desta mudança é recusado, como previsto no ADR-008).
+
 - Revisão fixa do modelo (`model.revision`), manifesto versionado de arquivos com hashes e verificação completa do cache; download explícito apenas dos arquivos necessários.
 - `requirements.lock.txt` com versões exatas verificadas; proveniência (pacotes, git commit/dirty, diferenças do lock) em todo run.json.
 - Pré-checagem de disco/RAM/VRAM (`common/resources.py`) com recusa antes de iniciar.

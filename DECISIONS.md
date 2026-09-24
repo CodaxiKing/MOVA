@@ -179,3 +179,67 @@ relatórios motion-v1 não são comparáveis com motion-v2 (a assinatura do aval
 
 ### Date
 2026-09-24
+
+---
+
+## ADR-009 — Camadas Core / Model / Runtime e CLI única
+
+### Decision
+O sistema é dividido em camadas com dependência em um só sentido:
+`common ← runtime ← models ← core ← {mova CLI, scripts, API futura}`.
+1. `runtime/`: interface `Runtime` + `PyTorchRuntime` (único backend implementado), `DeviceManager`
+   (único lugar que consulta a GPU), `PrecisionManager` (fp32/fp16/bf16), `MemoryManager` (offload, estatísticas,
+   limpeza), `RuntimeManager` (lookup por nome). ONNX/TensorRT são listados como **não implementados** e pedir
+   por eles gera `RuntimeNotAvailableError` — não existem classes vazias.
+2. `models/`: interface `MotionModel` (configure → weights_status/fetch_weights → resource_checks → load →
+   generate → unload), `ModelSpec` (metadados únicos: runtimes, devices, precisões, capabilities, requisitos,
+   pesos, status de verificação) e registry com aliases. `inference/baseline_vace.py` mantém só a numérica.
+3. `core/`: precedência de config (`configs/runtime.yaml` < `runtime:` do run config < flags), validação de
+   capabilities antes de qualquer trabalho pesado, serviço de inferência único, info e preprocess.
+4. `mova` (console script): `info`, `infer`, `preprocess`, `benchmark`, `evaluate`, `test`, `train` (honesto:
+   não implementado). `scripts/inference_baseline.py` e `extract_motion.py` viram wrappers da CLI.
+5. Erros estruturados em `common/errors.py` com `code` estável (para CLI e API).
+6. Layout plano mantido (sem mover pacotes para `mova/…`): mover quebraria imports, scripts e o hash de código
+   do benchmark sem ganho funcional. `common/env.py` continua como fachada compatível sobre o `DeviceManager`.
+
+### Alternatives Considered
+Reescrever em `mova/{core,runtime,...}`; criar classes ONNX/TensorRT/ROCm como placeholders; criar interfaces
+para encoders de identidade/movimento que ainda não existem. Rejeitados: custo de migração sem uso real, ou
+funcionalidade fictícia.
+
+### Why
+Tirar `pipe.to("cuda")` e `torch.cuda.*` do código de modelo; permitir escolher GPU N, CPU ou ROCm por config;
+mesma lógica para CLI/scripts/API; incompatibilidades explicadas antes de carregar 19 GB.
+
+### Evidence
+Saída fp32 **bit-idêntica** ao baseline da Fase 0 (`benchmark/baseline` vs `benchmark/regression`, SHA-256
+`a3cbab52…`); 129 testes passando em CPU. Caminho CUDA/offload não executado (sem GPU) — UNVERIFIED.
+
+### Consequences
+Um backbone novo = um módulo em `models/backbones/` que chama `register_model`; core/CLI não mudam (testado com
+um modelo temporário). `model.dtype`/`model.offload` nos run configs estão obsoletos (migrados com aviso).
+Retomar um benchmark iniciado antes desta mudança é recusado (o hash do código de geração mudou) — esperado.
+
+### Date
+2026-09-24
+
+---
+
+## ADR-010 — Linguagens e backends
+
+### Decision
+- **Python** é a linguagem da IA (modelos, runtime, core, CLI, API).
+- **CUDA** via PyTorch; kernels próprios (C++/CUDA em `native/`) só com gargalo comprovado por profiling, com
+  API Python, fallback, testes, benchmark e documentação. Hoje: nenhum; `native/` não foi criado.
+- **Rust** não faz parte do core de IA (possível apenas num app desktop futuro, ex.: Tauri).
+- **TypeScript/React** apenas para interface (sem lógica de IA). Hoje não existe frontend.
+- **ONNX Runtime / TensorRT**: backends opcionais de deployment, só depois de exportação validada numericamente
+  contra o PyTorch e benchmark real. Hoje: UNSUPPORTED.
+- Suporte a hardware é declarado por ambiente testado (NVIDIA, CPU, AMD), nunca "suporta tudo".
+
+### Why
+Ecossistema (PyTorch, Diffusers), velocidade de pesquisa e manutenção; o gargalo real ainda não foi medido
+(EXP-001 bloqueado), então não há base para código nativo.
+
+### Date
+2026-09-24

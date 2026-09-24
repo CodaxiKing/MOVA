@@ -12,6 +12,7 @@ Sistema próprio, open-source, de **Motion Control de personagens**: `reference 
 - Fase 0 (pesquisa): **concluída** → `docs/research/`.
 - Fase 1 (baseline): **código pronto e testado com pipeline minúsculo aleatório; NÃO executado com pesos reais** (sem GPU na máquina atual + download de 19 GB aguardando autorização).
 - Fase 2 (extração de movimento): **implementada e testada em CPU** (MediaPipe).
+- Arquitetura em camadas Core/Model/Runtime + CLI `mova` (ADR-009): implementada e testada em CPU (129 testes, saída bit-idêntica ao baseline); caminho GPU UNVERIFIED. Matriz de fases em `STATUS.md`.
 - Adapter, identidade e treino: não iniciados. Avaliação CPU e infraestrutura de benchmark implementadas (ADR-007); benchmark real pendente.
 
 ## Hardware
@@ -40,6 +41,10 @@ motion.mp4 ─► preprocessing/pipeline.py ─┬─ body_motion.pt  (MediaPipe
 reference.png + pose_openpose.mp4 ─► inference/baseline_vace.py (Wan2.1-VACE-1.3B, Diffusers) ─► output.mp4
 ```
 
+Camadas (ADR-009): `mova CLI / scripts ─► core/ ─► models/ (interface + registry + backbones) ─► runtime/
+(PyTorchRuntime + DeviceManager + PrecisionManager + MemoryManager)`. Dependência em um só sentido:
+`common ← runtime ← models ← core ← interfaces`. Detalhes em `docs/architecture.md`.
+
 ## Arquitetura planejada
 
 Motion Encoders (body/face/hands) → Projection → Temporal Attention → Motion Adapter (zero-init, residual por bloco) → Wan2.1 DiT 1.3B congelado; Identity Encoder → identity tokens. Ver `docs/architecture.md` e `docs/research/architecture.md`.
@@ -47,15 +52,19 @@ Motion Encoders (body/face/hands) → Projection → Temporal Attention → Moti
 ## Estrutura
 
 ```text
-common/         env (GPU/VRAM/perfil), config YAML, experiment registry, video I/O, HF helpers
+mova/           CLI `mova` (info, infer, preprocess, benchmark, evaluate, test, train*)  — fina, chama core/
+core/           config (runtime.yaml < run config < flags), capabilities, inference service, info, preprocess
+runtime/        Runtime, PyTorchRuntime, DeviceManager, PrecisionManager, MemoryManager, manager
+common/         env (fachada de hardware/perfil), config YAML, errors, experiment registry, video I/O, HF helpers
 preprocessing/  pose/ face/ hands/ extratores; features.py (representações); render.py; pipeline.py
-inference/      conditioning.py (resolução, 4k+1, letterbox); baseline_vace.py
-models/         identity/ motion/{body,face,hands}/ fusion/ adapters/   (vazios — Fase 3+)
+inference/      conditioning.py (resolução, 4k+1, letterbox); baseline_vace.py (só numérica)
+models/         base.py, registry.py, backbones/wan_vace.py; identity/ motion/ fusion/ adapters/ (vazios — Fase 3+)
 training/       treino pendente
 evaluation/     integridade, métricas de movimento, protocolo e comparação de benchmark
 scripts/        check_env, check_model_size, extract_motion, inference_baseline, benchmark
-configs/        baseline.yaml, extraction.yaml
-tests/          pytest (51 testes)
+configs/        runtime.yaml, baseline.yaml, smoke_tiny_vace.yaml, extraction.yaml, model_manifests/
+tests/          pytest (129 testes)
+benchmark/      protocolo; baseline/ e regression/ da refatoração (bit-exato)
 docs/           research/, experiments/, guias
 experiments/runs/<run_id>/run.json   registro automático (git-ignored)
 assets/ checkpoints/ outputs/        dados locais (git-ignored)
@@ -70,8 +79,14 @@ py -3.12 -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt
 .venv/Scripts/python scripts/check_env.py --cuda-test
 
+# CLI (uma vez: .venv/Scripts/python -m pip install -e . --no-deps; ou python -m mova)
+mova info [--model wan]
+mova infer --model tiny --reference ref.png --motion dance.mp4 --output smoke.mp4     # smoke test, sem pesos
+mova infer --model wan --device cuda:0 --precision bf16 --reference … --motion … --output …
+
 # testes
-.venv/Scripts/python -m pytest -q
+.venv/Scripts/python -m pytest -q          # ou: mova test -q
+.venv/Scripts/python benchmark/regression/tiny_vace_regression.py   # regressão bit-exata
 
 # extração (CPU ok)
 .venv/Scripts/python scripts/extract_motion.py --video assets/motion/dance.mp4 --out outputs/motion/dance
@@ -104,7 +119,11 @@ py -3.12 -m venv .venv
 - `preprocessing/pipeline.py` — formato dos `.pt` (FORMAT_VERSION=1). Mudou o formato? Incrementar a versão e documentar em `docs/pipeline.md`.
 - `preprocessing/render.py::body_xyv` — linhas do corpo são `[x, y, z, vis]`; desenho usa `[x, y, vis]` (bug já corrigido uma vez).
 - `inference/baseline_vace.py` — contrato com `WanVACEPipeline` (validado por `tests/test_pipelines_smoke.py`).
-- `common/env.py::select_profile` — thresholds de VRAM.
+- `common/env.py::select_profile` — resolução/frames por VRAM; limiares de offload vivem em `runtime/memory.py`.
+- `runtime/` é o **único** lugar com `torch.cuda` (fora `scripts/check_env.py`). Não escrever `"cuda"`/`.to("cuda")`
+  em core/models/inference. Não criar runtimes/backends vazios (ONNX/TensorRT/ROCm) — ADR-009/010.
+- `models/backbones/wan_vace.py::ModelSpec` — fonte única de metadados; `verification` só muda com evidência.
+- `benchmark/baseline/tiny_vace_cpu.json` — referência bit-exata; se `tiny_vace_regression.py` falhar, a numérica mudou.
 
 ## Problemas conhecidos
 

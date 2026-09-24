@@ -105,18 +105,20 @@ The live, verified state is in [STATUS.md](STATUS.md).
 py -3.12 -m venv .venv
 .venv/Scripts/python -m pip install torch --index-url https://download.pytorch.org/whl/cu128   # GPU (CPU: /whl/cpu)
 .venv/Scripts/python -m pip install -r requirements.txt
+.venv/Scripts/python -m pip install -e . --no-deps          # installs the `mova` command
 
-# 2. Check hardware (picks a VRAM profile automatically)
-.venv/Scripts/python scripts/check_env.py --cuda-test
+# 2. Check hardware, runtimes and models
+mova info
+mova info --model wan
 
 # 3. Run tests
-.venv/Scripts/python -m pytest -q
+mova test -q
 ```
 
 **Extract motion** (runs on CPU):
 
 ```bash
-.venv/Scripts/python scripts/extract_motion.py --video assets/motion/dance.mp4 --out outputs/motion/dance
+mova preprocess --video assets/motion/dance.mp4 --out outputs/motion/dance
 ```
 
 This writes `body_motion.pt`, `face_motion.pt`, `hand_motion.pt`, preview videos and an OpenPose-style control video.
@@ -125,8 +127,12 @@ This writes `body_motion.pt`, `face_motion.pt`, `hand_motion.pt`, preview videos
 
 ```bash
 .venv/Scripts/python scripts/check_model_size.py Wan-AI/Wan2.1-VACE-1.3B-diffusers
-.venv/Scripts/python scripts/inference_baseline.py --allow-download
+mova infer --model wan --runtime pytorch --device auto --precision auto            --reference assets/reference/maya.png --motion assets/motion/dance.mp4 --output outputs/maya_dance.mp4 --allow-download
 ```
+
+`mova infer --model tiny ...` runs the whole stack with a tiny random network (no downloads, output is noise): a
+smoke test for any machine. Runtime, device and precision come from `configs/runtime.yaml` or the flags; see
+[docs/architecture.md](docs/architecture.md) for the Core / Model / Runtime layers.
 
 ### 🧠 Low-VRAM strategy
 
@@ -134,20 +140,23 @@ This writes `body_motion.pt`, `face_motion.pt`, `hand_motion.pt`, preview videos
 |---|---|
 | Frozen 1.3B DiT backbone, only small adapters trained | architecture |
 | UMT5 text encoder runs **once on CPU**, embeddings cached | `inference/baseline_vace.py` |
-| Automatic profile: resolution, frames, dtype, offload | `common/env.py` |
+| Automatic profile: resolution and frames (`common/env.py`); device, precision and offload | `runtime/` |
 | Model / sequential CPU offload + VAE tiling | baseline |
 | 256 px · 17 frames · batch 1 · bf16 on 8 GB | default profile |
 
 ### 📁 Project layout
 
 ```text
-common/          hardware detection, VRAM profiles, YAML config, experiment tracking, video I/O
+mova/            `mova` command line (thin; calls core/)
+core/            inference service, config precedence, capability validation, info
+models/          model interface, registry, backbones/ (Wan2.1-VACE)   · identity/motion/adapters (planned)
+runtime/         Runtime interface, PyTorch runtime, device / precision / memory managers
+common/          hardware summary, YAML config, experiment tracking, video I/O, errors
 preprocessing/   body / face / hands extractors, motion features, rendering
 inference/       baseline pipeline and conditioning helpers
-models/          identity · motion (body/face/hands) · fusion · adapters   (planned)
 training/        training loop and losses                                  (planned)
-evaluation/      metrics                                                   (planned)
-scripts/         check_env · check_model_size · extract_motion · inference_baseline
+evaluation/      integrity, motion metrics, benchmark comparison
+scripts/         check_env · check_model_size · benchmark · (extract_motion, inference_baseline: CLI wrappers)
 configs/         YAML configs
 docs/            research, architecture, pipeline, inference, training, datasets, experiments
 ```
@@ -231,18 +240,20 @@ O estado real e verificado fica em [STATUS.md](STATUS.md).
 py -3.12 -m venv .venv
 .venv/Scripts/python -m pip install torch --index-url https://download.pytorch.org/whl/cu128   # GPU (CPU: /whl/cpu)
 .venv/Scripts/python -m pip install -r requirements.txt
+.venv/Scripts/python -m pip install -e . --no-deps          # instala o comando `mova`
 
-# 2. Verificar o hardware (escolhe um perfil de VRAM automaticamente)
-.venv/Scripts/python scripts/check_env.py --cuda-test
+# 2. Verificar hardware, runtimes e modelos
+mova info
+mova info --model wan
 
 # 3. Rodar os testes
-.venv/Scripts/python -m pytest -q
+mova test -q
 ```
 
 **Extrair o movimento** (roda em CPU):
 
 ```bash
-.venv/Scripts/python scripts/extract_motion.py --video assets/motion/dance.mp4 --out outputs/motion/dance
+mova preprocess --video assets/motion/dance.mp4 --out outputs/motion/dance
 ```
 
 Isso gera `body_motion.pt`, `face_motion.pt`, `hand_motion.pt`, vídeos de prévia e um vídeo de controle no estilo OpenPose.
@@ -251,8 +262,12 @@ Isso gera `body_motion.pt`, `face_motion.pt`, `hand_motion.pt`, vídeos de prév
 
 ```bash
 .venv/Scripts/python scripts/check_model_size.py Wan-AI/Wan2.1-VACE-1.3B-diffusers
-.venv/Scripts/python scripts/inference_baseline.py --allow-download
+mova infer --model wan --runtime pytorch --device auto --precision auto            --reference assets/reference/maya.png --motion assets/motion/dance.mp4 --output outputs/maya_dance.mp4 --allow-download
 ```
+
+`mova infer --model tiny ...` roda a pilha inteira com uma rede minúscula aleatória (sem downloads, saída é ruído):
+smoke test para qualquer máquina. Runtime, device e precisão vêm de `configs/runtime.yaml` ou das flags; camadas
+Core / Model / Runtime em [docs/architecture.md](docs/architecture.md).
 
 ### Benchmark e melhoria mensurável
 
@@ -275,20 +290,23 @@ visual continuam necessárias. Comparações não promovem checkpoints automatic
 |---|---|
 | Backbone DiT de 1.3B congelado; só adapters pequenos são treinados | arquitetura |
 | Encoder de texto UMT5 roda **uma vez em CPU**, com embeddings em cache | `inference/baseline_vace.py` |
-| Perfil automático: resolução, frames, dtype, offload | `common/env.py` |
+| Perfil automático: resolução e frames (`common/env.py`); device, precisão e offload | `runtime/` |
 | Offload para CPU (model / sequential) + VAE tiling | baseline |
 | 256 px · 17 frames · batch 1 · bf16 em 8 GB | perfil padrão |
 
 ### 📁 Estrutura
 
 ```text
-common/          detecção de hardware, perfis de VRAM, config YAML, registro de experimentos, I/O de vídeo
+mova/            linha de comando `mova` (fina; chama core/)
+core/            serviço de inferência, precedência de config, validação de capabilities, info
+models/          interface de modelo, registry, backbones/ (Wan2.1-VACE)   · identidade/movimento/adapters (planejado)
+runtime/         interface Runtime, runtime PyTorch, gerenciadores de device / precisão / memória
+common/          resumo de hardware, config YAML, registro de experimentos, I/O de vídeo, erros
 preprocessing/   extratores de corpo / rosto / mãos, features de movimento, renderização
 inference/       pipeline do baseline e utilitários de condicionamento
-models/          identity · motion (body/face/hands) · fusion · adapters   (planejado)
 training/        loop de treino e losses                                    (planejado)
 evaluation/      integridade, métricas de movimento e comparação de benchmark
-scripts/         check_env · check_model_size · extract_motion · inference_baseline
+scripts/         check_env · check_model_size · benchmark · (extract_motion, inference_baseline: wrappers da CLI)
 configs/         configs YAML
 docs/            pesquisa, arquitetura, pipeline, inferência, treino, datasets, experimentos
 ```

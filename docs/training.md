@@ -1,5 +1,8 @@
 # Training (planejado — nada implementado)
 
+`mova train` existe na CLI mas responde "não implementado" (exit 2). Quando o treino existir, deve obter
+device/precisão/memória do `runtime/` (ADR-009) e ser registrado como serviço em `core/`, sem `torch.cuda` direto.
+
 Treino só começa depois de: baseline executado (EXP-001), extração validada em vídeo real (EXP-002), representação escolhida (EXP-003).
 
 ## Estrutura prevista

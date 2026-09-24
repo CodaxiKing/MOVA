@@ -32,6 +32,21 @@ compatibilidade com RTX 3060 8 GB permanece não medida.
 - Loader baseline ainda não fixa revisão dos pesos HF; não afirmar reprodução
   exata entre caches diferentes. Ver ADR-007.
 
+## Arquitetura em camadas (ADR-009) — descobertas verificadas 2026-09-24
+
+- O caminho de geração é determinístico em CPU: o VACE minúsculo com semente dá o mesmo SHA-256 em repetições;
+  isso permite provar refatorações bit a bit (`benchmark/regression`). Qualquer mudança que altere esse hash
+  mudou a numérica — investigar antes de seguir.
+- `torch.no_grad` (runtime) e o `no_grad` interno do pipeline não alteram a saída; o gerador precisa continuar
+  sendo de CPU para manter o ruído inicial igual entre devices.
+- Na CPU com torch 2.14, fp16 e bf16 rodam o VACE minúsculo com saída finita, apesar do aviso do Diffusers de
+  que fp16 em CPU "vai falhar". Isso vale para o modelo minúsculo; o 1.3B em CPU não foi testado.
+- `gc.collect()` no unload custa ~0.14 s num processo com torch/diffusers carregados: é o único overhead
+  medido da nova arquitetura.
+- `argparse.REMAINDER` em subcomando descarta flags iniciais (`mova test -q`); comandos de repasse são tratados
+  antes do argparse.
+- No Windows, `Path.write_text` grava CRLF; o repositório é LF (`.gitattributes`). Usar `write_bytes` ou `newline`.
+
 ## Leitura para continuidade
 
 Ler STATUS.md e HANDOFF.md para comandos, evidências e próximos experimentos.

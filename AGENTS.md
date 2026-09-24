@@ -14,6 +14,7 @@ Nunca assuma o estado do projeto sem verificar documentação **e** código. Em 
 
 ```bash
 .venv/Scripts/python scripts/check_env.py --cuda-test
+.venv/Scripts/python -m mova info          # devices, runtimes, modelos (ou `mova info` após pip install -e .)
 .venv/Scripts/python -m pytest -q
 git log --oneline -15
 ```
@@ -42,6 +43,9 @@ Não modifique código antes de entender esse estado. Só pergunte ao usuário q
 - Não versionar `*.safetensors *.ckpt *.pth *.pt *.mp4 *.png`.
 - Não substituir o backbone sem novo ADR + atualização de `CLAUDE.md` e `docs/architecture.md`.
 - Não mascarar falta de VRAM como bug de código.
+- Respeitar as camadas (ADR-009): `common ← runtime ← models ← core ← CLI/API`. Nada de `torch.cuda` fora de
+  `runtime/`; lógica de inferência só em `core/`; CLI/API/scripts apenas chamam o core.
+- Não declarar suporte a runtime/hardware sem teste (status por ambiente: PASS/PARTIAL/UNVERIFIED/BLOCKED).
 
 ## Sincronização da documentação
 

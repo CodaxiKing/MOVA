@@ -1,5 +1,33 @@
 # HANDOFF
 
+## Sessão atual — evolução arquitetural (Runtime/Model/Core/CLI), 2026-09-24, Claude Code
+
+Pedido: "prompt mestre" de evolução arquitetural (runtime desacoplado, device/precision/memory managers, interface
+de modelo, registry, capabilities, CLI/API sobre o mesmo core), sem quebrar o que funciona e sem funcionalidade
+fictícia. Branch **`refactor/runtime-architecture`** (sem upstream; não enviado ao GitHub, sem PR).
+
+Commits: 36b5a08 (docs de pesquisa pendentes da sessão anterior), 8284436 (auditoria + baseline), 9b22b9f
+(runtime), 059cfb5 (model/registry/core/CLI), acec055 (fix CLI), + docs.
+
+Feito e verificado nesta máquina (CPU): ver matriz em STATUS.md. Resumo: 129 testes; saída fp32 bit-idêntica ao
+baseline pré-refatoração; `mova infer --model tiny` ponta a ponta com MediaPipe real; todos os erros de
+compatibilidade saem antes de carregar qualquer coisa.
+
+NÃO verificado: nada com GPU. `TorchDeviceProbe.accelerator`, `PyTorchRuntime.place` com offload, stats de VRAM e
+`WanVACEModel.build/encode_prompts` com pesos reais nunca rodaram. API, plugins de encoders, produção, ONNX,
+TensorRT, multi-GPU e nativo: não iniciados/bloqueados (motivos na matriz).
+
+Como continuar:
+1. `git switch refactor/runtime-architecture`; `.venv/Scripts/python -m pip install -e . --no-deps` (comando `mova`).
+2. Na RTX 3060: `mova info` → conferir GPU/VRAM/cc/bf16; `mova test -q`; `mova infer --model tiny --device cuda`
+   (primeira validação real do runtime na GPU; barato); depois EXP-001 com `mova infer --model wan` e
+   `--allow-download` **somente com autorização** (19.04 GB).
+3. Atualizar `ModelSpec.verification` e a matriz do STATUS com o que for medido.
+4. API (Fase 11): precisa decidir a dependência FastAPI; deve chamar `core.inference.run_inference`.
+
+Cuidados: não reintroduzir `torch.cuda`/`"cuda"` fora de `runtime/`; não criar classes ONNX/TensorRT/ROCm vazias;
+`benchmark generate --resume` de runs antigos é recusado (hash do código mudou) — iniciar run novo.
+
 ## Sessão atual — pesquisa Kling 3.0 + auditoria do repositório, 2026-09-24
 
 Objetivo do usuário: "verificar como o Kling Motion Control 3.0 funciona e o que

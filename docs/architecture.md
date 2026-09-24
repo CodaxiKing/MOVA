@@ -1,8 +1,91 @@
 # Architecture
 
-Hipótese e evidências: `docs/research/architecture.md`. Decisões: `DECISIONS.md`.
+Hipótese e evidências: `docs/research/architecture.md`. Decisões: `DECISIONS.md` (camadas: ADR-009; linguagens
+e backends: ADR-010). Auditoria antes da refatoração: `docs/architecture-audit.md`.
 
-## Implementado (2026-09-24)
+## Camadas (ADR-009, implementado 2026-09-24)
+
+```text
+   mova CLI (mova/cli.py)      scripts/*.py (wrappers)      API (não iniciada)
+                 └──────────────────┬──────────────────────────┘
+                                    ▼
+   MOVA Core (core/)  config (runtime.yaml < run config < flags) · capabilities · inference · info · preprocess
+                                    │
+                 ┌──────────────────┴──────────────────┐
+                 ▼                                     ▼
+   Model Interface (models/)                Runtime Interface (runtime/)
+   base.MotionModel + ModelSpec             base.Runtime + ExecutionContext
+   registry (nome/alias → classe)           manager (nome → runtime disponível)
+   backbones/wan_vace.py                    backends/pytorch.py  (ONNX/TensorRT: não implementados)
+     WanVACEModel (1.3B)                    device.DeviceManager  (CPU, CUDA, ROCm*)
+     WanVACETinyRandomModel (smoke)         precision.PrecisionManager (fp32/fp16/bf16)
+                                            memory.MemoryManager (offload, stats, cleanup)
+                 │  numérica inalterada
+                 ▼
+   inference/baseline_vace.py (UMT5 cache, build_pipeline, generate)   preprocessing/  evaluation/  common/
+```
+
+Dependências só em um sentido: `common ← runtime ← models ← core ← interfaces`. O runtime não conhece modelos;
+o modelo recebe o runtime pela interface (nunca importa um backend); o core não importa framework.
+`*` ROCm: detectado (`torch.version.hip`) e endereçado como `cuda:<i>`, **nunca testado**.
+
+### Fluxo de `mova infer`
+```text
+resolve_run_config → validate(model, runtime, device, precision, offload)  ← erros estruturados, nada carregado
+→ entradas existem → model.configure(ctx) → weights_status (download só com --allow-download)
+→ model.resource_checks + enforce (disco/RAM/VRAM) → ExperimentRun → controle (MediaPipe ou vídeo pronto)
+→ model.load(runtime, ctx) → runtime.place (to / model offload / sequential offload no device escolhido)
+→ model.generate → runtime.run (no_grad + memória/tempo) → model.unload → runtime.release
+→ validação de pixels + integridade do vídeo → run.json → cópia opcional para --output
+```
+
+### Runtime Architecture
+`Runtime` define: `availability()`, `devices()`, `context(device, precision, offload)` (resolve `auto` e valida),
+`dtype(ctx)`, `place(obj, ctx)`, `run(fn, ctx)`, `generator(seed, ctx)`, `release(ctx)`, `memory_stats(ctx)`.
+`PyTorchRuntime` é o de referência. O gerador é de CPU de propósito: mesma semente → mesmo ruído inicial em
+qualquer device.
+
+### Device Abstraction
+`DeviceManager` lista aceleradores (em ordem de índice) e depois a CPU; `resolve("auto" | "cpu" | "cuda" |
+"cuda:N")`; device ausente ou string inválida → `DeviceNotSupportedError` com a lista disponível. Informações:
+nome, backend (cuda/rocm/cpu), VRAM, compute capability, bf16/fp16, tensor cores. O acesso ao framework passa por
+um `DeviceProbe` injetável (testes simulam 2 GPUs, GPU sem bf16, ROCm, sem GPU). `common/env.detect_hardware` e
+`common/resources.vram_free_gb` delegam ao `DeviceManager` (antes: `torch.cuda` no índice 0).
+
+### Model Interface
+`MotionModel`: `configure(ctx, reference_size)`, `weights_status/fetch_weights`, `resource_checks`,
+`record_fields`, `load(runtime, ctx)`, `generate(reference, control)`, `unload()`, `loaded`. O modelo nunca
+escolhe device/dtype. As etapas encode/condition/decode do Wan ficam dentro do `WanVACEPipeline`; separá-las só
+para cumprir um diagrama seria interface fictícia.
+
+### Backend System / Model Registry
+`ModelSpec` é a fonte única de metadados (nome, versão, família, licença, pesos e tamanho, runtimes, devices,
+devices que exigem opt-in, precisões, capabilities, requisitos Python, status de verificação por runtime/device).
+`mova info --model <nome>` imprime o spec e a matriz de compatibilidade desta máquina.
+
+### Plugin System (estado real)
+Plugável hoje: **backbone** (registry) e **runtime** (`register_runtime`). Encoders de identidade/rosto/mãos,
+módulo temporal e conditioning **ainda não existem** (Fase 3 do roadmap de pesquisa); suas interfaces serão
+definidas junto da primeira implementação real, para não congelar contratos sem uso.
+
+### Memory Management
+`MemoryManager`: offload `none/model/sequential` (automático por VRAM: <6.5 GB sequential, <20 GB model; CPU só
+`none`; limiares são fonte única, usados também por `select_profile`), estatísticas (alocado/reservado/livre/pico
+na GPU; RSS do processo e RAM do sistema na CPU), `track()` para pico por execução, `cleanup()` (gc +
+`empty_cache`). VAE tiling continua configuração do modelo. Quantização/otimização de atenção: não implementadas.
+
+### Precision Management
+`PrecisionManager.resolve(requested, device, allowed=spec.precisions)`. `auto`: bf16 na GPU que suporta, senão
+fp16; fp32 na CPU. CPU aceita fp16/bf16 (executado ponta a ponta no modelo minúsculo, torch 2.14). Aliases antigos
+(`bfloat16`, `float16`) aceitos. INT8 etc. só quando implementados e medidos.
+
+### Deployment Architecture
+Research = PyTorch eager (atual). Production (Fase 18) começará como PyTorch com config reproduzível; ONNX/TensorRT
+entram como novos `Runtime` + `ModelSpec.runtimes` apenas depois de exportação validada numericamente. Status:
+ONNX **UNSUPPORTED**, TensorRT **UNSUPPORTED** (sem export validado; sem GPU NVIDIA). Multi-GPU: seleção por índice
+implementada; execução distribuída (DDP/FSDP) não, e não será criada sem hardware e necessidade.
+
+## Pipeline de dados implementado (2026-09-24)
 
 ```text
                          ┌───────────────────────── preprocessing/pipeline.py ─────────────────────────┐

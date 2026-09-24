@@ -7,6 +7,23 @@
 - [ ] Na máquina RTX 3060: `check_env.py --cuda-test` e registrar VRAM/RAM/disco reais em `CLAUDE.md`
 - [ ] EXP-001: executar baseline 256px/17 frames, medir VRAM pico e tempo, registrar
 
+## Arquitetura (ADR-009/010) — próximos passos
+
+- [x] Runtime (PyTorchRuntime), DeviceManager, PrecisionManager, MemoryManager, erros estruturados
+- [x] Interface de modelo, ModelSpec, registry, Wan VACE + modelo minúsculo de smoke test
+- [x] Core: config (`configs/runtime.yaml`), capabilities, serviço de inferência; CLI `mova`
+- [x] Regressão CPU bit-exata contra o baseline da Fase 0
+- [ ] Na RTX 3060: `mova info` (validar TorchDeviceProbe: nome, VRAM, cc, bf16), `mova infer --model tiny --device cuda`
+      (valida place/offload/VRAM stats na GPU), depois EXP-001 com `mova infer --model wan`
+- [ ] Medir VRAM antes/pico/depois e tempo por precisão (bf16/fp16) na GPU; atualizar `ModelSpec.verification`
+- [ ] Fase 11 API: decidir dependência (FastAPI + uvicorn: licenças MIT/BSD) e criar `api/` chamando `core.inference`
+- [ ] Fase 9: definir interfaces de encoders (identidade/rosto/mãos/temporal) junto da 1ª implementação real (Fase 3 do roadmap)
+- [ ] Fase 18: config de produção reproduzível (modelo+config+runtime+hardware+seed+input)
+- [ ] `mova train` quando existir treino (usar runtime/ para device/precisão)
+- [ ] ONNX/TensorRT (Fases 13/14) só após export validado + benchmark; multi-GPU (15) só com hardware; nativo (16) só após profiling
+- [ ] Testar Linux e AMD/ROCm quando houver ambiente (hoje UNVERIFIED)
+- [ ] `ExperimentRun` usa run_id por segundo: duas execuções no mesmo segundo compartilham pasta (existente, não corrigido)
+
 ## High Priority
 
 - [x] Protocolo de benchmark com 20 vagas, check, preparo e lock por SHA-256

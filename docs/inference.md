@@ -1,5 +1,28 @@
 # Inference
 
+## `mova infer` (ADR-009)
+
+```bash
+.venv/Scripts/python -m pip install -e . --no-deps   # uma vez: instala o comando `mova` (ou use python -m mova)
+mova info                                  # versões, devices, runtimes, modelos
+mova info --model wan                      # spec + compatibilidade nesta máquina
+mova infer --reference assets/reference/maya.png --motion assets/motion/dance.mp4 --output outputs/maya_dance.mp4
+mova infer --model wan --runtime pytorch --device cuda:0 --precision bf16 --offload model            --reference ref.png --motion dance.mp4 --output out.mp4
+# smoke test da pilha inteira sem pesos (rede minúscula aleatória; saída é ruído):
+mova infer --model tiny --reference ref.png --motion dance.mp4 --output smoke.mp4
+```
+
+- Padrões em `configs/runtime.yaml` (`runtime: pytorch`, `device/precision/offload: auto`). Precedência:
+  flags > seção `runtime:` do run config (`--set runtime.precision=fp16`) > `model.dtype/offload` legado >
+  `runtime.yaml`.
+- `--model` sem `--config` usa o config padrão do modelo (`configs/baseline.yaml` para `wan`,
+  `configs/smoke_tiny_vace.yaml` para `tiny`). `--model` e um `--config` de outro modelo → erro.
+- Tudo é validado antes de carregar qualquer coisa (runtime, device, precisão, offload, pacotes, opt-in de CPU,
+  pesos, disco/RAM/VRAM). Erros saem como `ERROR [<code>]: …` + dica, exit code 2 (tabela em
+  `docs/troubleshooting.md`).
+- `--output` copia o `output.mp4` validado; recusa sobrescrever sem `--overwrite`. `--json` imprime o resultado.
+- `scripts/inference_baseline.py` aceita as mesmas flags (é um wrapper de `mova infer`).
+
 ## Baseline — Wan2.1-VACE-1.3B (Phase 1)
 
 **Status: implementado, testado com pipeline minúsculo aleatório; nunca executado com os pesos reais.**
@@ -36,9 +59,10 @@ marcam a execução como failed. Ver `docs/evaluation.md` para limites.
 - run.json registra `model_revision`, `model_cache`, `resource_checks` e `environment` (pacotes, git).
 
 ### Estratégia de memória (ADR-004)
+Desde o ADR-009, device/precisão/offload vêm do runtime (`runtime/`); a numérica abaixo não mudou.
 1. `encode_prompts_cached`: UMT5 em CPU uma vez → `checkpoints/embeds/prompt_<hash>.pt`.
 2. `WanVACEPipeline.from_pretrained(..., text_encoder=None, tokenizer=None)`.
-3. Perfil automático (`common/env.py`): 8 GB → `enable_model_cpu_offload()`, VAE tiling, 256px, 17 frames, bf16.
+3. Perfil automático: 8 GB → `enable_model_cpu_offload(device=<gpu escolhida>)` (via `PyTorchRuntime.place`), VAE tiling, 256px, 17 frames, bf16.
 4. `<6.5 GB` → `enable_sequential_cpu_offload()` (lento).
 
 ### Parâmetros relevantes
