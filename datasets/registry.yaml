@@ -1,0 +1,51 @@
+# Known data sources and model weights relevant to MOVA training/evaluation. Audited 2026-09-24 from primary
+# sources (docs/research/licenses.md). `status` decides what scripts/datasets.py allows:
+#   allowed           - may be used for the declared use
+#   research_only     - academic research only; never in a commercial release or checkpoint meant for one
+#   per_item          - each item carries its own license (e.g. Pexels videos); record it per clip
+#   blocked           - no usable license / non-commercial weights we do not want as a dependency
+# Nothing here is downloaded by MOVA code. `download` only prints a plan unless explicitly authorised.
+sources:
+  humanvid:
+    kind: dataset
+    url: https://github.com/zhenzhiwang/HumanVid
+    license: CC-BY-4.0 (annotations/repo); real videos from Pexels keep per-video Pexels license, not redistributed
+    status: per_item
+    content: human videos with DWPose 2D whole-body keypoints and camera parameters (real Pexels + Unreal synthetic)
+    notes: videos must be fetched from their original URLs; record each clip's source URL and license
+  aistpp:
+    kind: dataset
+    url: https://google.github.io/aistplusplus_dataset/
+    license: annotations CC-BY-4.0 (Google); videos = AIST Dance Video Database terms
+    status: research_only
+    content: multi-view dance videos with 3D keypoints / SMPL fits
+    notes: AIST Dance DB "may not be used for any purpose other than academic research"; commercial use needs
+      written consent from AIST; redistribution prohibited; application form required
+    terms_url: https://aistdancedb.ongaaccel.jp/terms_of_use/
+  insightface_models:
+    kind: weights
+    url: https://github.com/deepinsight/insightface
+    license: code MIT; models and training data "non-commercial research purposes only"
+    status: blocked
+    notes: not used for the identity metric (evaluation/identity.py uses MediaPipe geometry / optional DINOv2)
+  liveportrait:
+    kind: weights
+    url: https://github.com/KwaiVGI/LivePortrait
+    license: code MIT; HF repo KlingTeam/LivePortrait tagged MIT but ships insightface/models/buffalo_l ONNX files
+    status: blocked
+    notes: the bundled InsightFace detectors inherit the non-commercial restriction; a MediaPipe-based
+      alternative exists (ComfyUI-LivePortraitKJ) and would need its own audit
+  unianimate_dit:
+    kind: weights
+    url: https://github.com/ali-vilab/UniAnimate-DiT
+    license: none found (GitHub API license = null, no LICENSE file); README says "intended for academic research"
+    status: blocked
+    notes: without an explicit license all rights are reserved; do not use code or weights
+  dinov2_small:
+    kind: weights
+    url: https://huggingface.co/facebook/dinov2-small
+    license: Apache-2.0
+    status: allowed
+    size_bytes: 88249960
+    revision: ed25f3a31f01632728cabb09d1542f84ab7b0056
+    notes: optional identity embedding backend (hf:facebook/dinov2-small@ed25f3a3...); > 50 MB, needs authorisation

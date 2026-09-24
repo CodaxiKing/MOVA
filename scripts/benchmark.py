@@ -19,7 +19,8 @@ from common.config import PROJECT_ROOT, load_config, resolve_path
 from common.env import detect_hardware
 from common.provenance import package_versions
 from common.video_io import iter_frames, probe_video, write_video
-from evaluation.protocol import fingerprint, freeze_manifest, inspect_manifest, read_manifest, sha256, verify_lock
+from evaluation.protocol import (fingerprint, freeze_manifest, inspect_manifest, read_manifest, sha256, update_case,
+                                 verify_lock, write_manifest)
 from evaluation.video import validate_video
 from inference.conditioning import letterbox
 
@@ -37,6 +38,30 @@ def prepare_video(source, destination, protocol):
         raise FileExistsError(destination)
     write_video(destination, frames, p["fps"])
     return validate_video(destination, count=p["frames"], width=p["width"], height=p["height"], fps=p["fps"])
+
+
+def intake_case(manifest_path, case_id, *, reference, motion, **fields):
+    """Put one case's media in place (reference as PNG, motion prepared to the protocol) and fill its metadata.
+    Existing media are never overwritten; the manifest is rewritten only after both files are in place."""
+    manifest = read_manifest(manifest_path)
+    case = update_case(manifest, case_id, **fields)
+    ref_dst, mot_dst = resolve_path(case["reference"]), resolve_path(case["motion"])
+    for dst in (ref_dst, mot_dst):
+        if dst.exists():
+            raise FileExistsError(f"{dst} exists; remove it deliberately to replace this case")
+    ref_dst.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(resolve_path(reference)) as im:
+        im.verify()
+    with Image.open(resolve_path(reference)) as im:
+        im.convert("RGB").save(ref_dst)
+    try:
+        report = prepare_video(resolve_path(motion), mot_dst, manifest["protocol"])
+    except Exception:
+        ref_dst.unlink(missing_ok=True)
+        raise
+    write_manifest(manifest_path, manifest)
+    return {"case": case_id, "reference": str(ref_dst), "motion": str(mot_dst), "motion_validation": report,
+            "remaining_issues": [i for i in inspect_manifest(manifest) if i.startswith(case_id + ":")]}
 
 
 def generation_config(locked, case):
@@ -178,6 +203,13 @@ def main():
         if command == "prepare":
             ap.add_argument("--video", required=True)
             ap.add_argument("--out", required=True)
+    ap = sub.add_parser("intake", help="put one case's media in place and fill its source/license/identity")
+    ap.add_argument("--manifest", default="benchmark/v1.draft.yaml")
+    ap.add_argument("--case", required=True)
+    ap.add_argument("--reference", required=True)
+    ap.add_argument("--motion", required=True, help="raw clip already trimmed to the moment of interest")
+    for f in ("identity_id", "reference_source", "motion_source", "reference_license", "motion_license", "prompt"):
+        ap.add_argument("--" + f.replace("_", "-"), dest=f, default=None)
     for command in ("generate", "evaluate"):
         ap = sub.add_parser(command)
         ap.add_argument("--lock", required=True)
@@ -207,6 +239,12 @@ def main():
     ap.add_argument("--candidate", required=True)
     ap.add_argument("--out", required=True)
     args = parser.parse_args()
+    if args.command == "intake":
+        fields = {f: getattr(args, f) for f in ("identity_id", "reference_source", "motion_source",
+                                                 "reference_license", "motion_license", "prompt")}
+        print(json.dumps(intake_case(args.manifest, args.case, reference=args.reference, motion=args.motion, **fields),
+                         indent=2))
+        return 0
     if args.command in ("check", "freeze", "prepare"):
         manifest = read_manifest(args.manifest)
         if args.command == "check":
