@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -11,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import PROJECT_ROOT
+from .provenance import environment_fingerprint
 
 RUNS_DIR = PROJECT_ROOT / "experiments" / "runs"
 
@@ -19,15 +19,6 @@ STANDARD_FIELDS = (
     "model", "dataset", "resolution", "frames", "batch", "learning_rate", "optimizer",
     "scheduler", "vram_peak_gb", "training_time_s", "loss", "checkpoint",
 )
-
-
-def _git_commit() -> str | None:
-    try:
-        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=PROJECT_ROOT,
-                             capture_output=True, text=True, timeout=5)
-        return out.stdout.strip() or None
-    except (OSError, subprocess.SubprocessError):
-        return None
 
 
 @dataclass
@@ -52,10 +43,13 @@ class ExperimentRun:
             "kind": self.kind,
             "artifacts_dir": str(self.artifacts_dir),
             "started_at": datetime.now(timezone.utc).isoformat(),
-            "git_commit": _git_commit(),
             "status": "running",
             **{k: None for k in STANDARD_FIELDS},
         }
+        env = environment_fingerprint()
+        self.record["git_commit"] = env["git"]["commit"]
+        self.record["git_dirty"] = env["git"]["dirty"]
+        self.record["environment"] = env
         self.save()
 
     @property

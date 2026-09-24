@@ -44,6 +44,8 @@ def resolve_settings(cfg: dict, profile, ref_size: tuple[int, int]):
         width, height = fit_resolution(ref_size[0], ref_size[1], height * width)
     return BaselineSettings(
         model_id=m["model_id"],
+        revision=m.get("revision"),
+        local_files_only=True,
         prompt=g["prompt"],
         negative_prompt=g.get("negative_prompt") or DEFAULT_NEGATIVE,
         height=height,
@@ -59,6 +61,37 @@ def resolve_settings(cfg: dict, profile, ref_size: tuple[int, int]):
         vae_tiling=bool(auto(m["vae_tiling"], profile.vae_tiling)),
         fps=int(g["fps"]),
     )
+
+
+def check_model_cache(model_id: str, revision: str | None, check_hashes: bool):
+    """Resolve the exact revision and verify every required file, not just model_index.json."""
+    from common.hf_utils import load_or_fetch_manifest, verify_cache
+
+    try:
+        manifest = load_or_fetch_manifest(model_id, revision)
+    except Exception as e:  # offline without a saved manifest, bad revision, ...
+        raise SystemExit(f"Cannot resolve file list for {model_id}@{revision or 'main'}: {e}\n"
+                         "Run once online (scripts/check_model_size.py) to save the manifest.")
+    if not revision:
+        log.warning("model.revision is not pinned; resolved main -> %s. Pin it in the config for reproducibility.",
+                    manifest["revision"])
+    cache = verify_cache(manifest, check_hashes=check_hashes)
+    print(f"Model cache: {cache.summary()}")
+    return manifest, cache
+
+
+def download_missing(manifest: dict, check_hashes: bool):
+    from huggingface_hub import snapshot_download
+
+    from common.hf_utils import verify_cache
+
+    files = [f["path"] for f in manifest["files"]]
+    log.info("Downloading %d required files of %s@%s", len(files), manifest["repo_id"], manifest["revision"])
+    snapshot_download(manifest["repo_id"], revision=manifest["revision"], allow_patterns=files)
+    cache = verify_cache(manifest, check_hashes=check_hashes)
+    if not cache.complete:
+        raise SystemExit(f"Download finished but cache is still incomplete: {cache.summary()}")
+    return cache
 
 
 def build_control(cfg: dict, run_dir: Path) -> list[np.ndarray]:
@@ -93,6 +126,8 @@ def main() -> int:
     ap.add_argument("--set", action="append", default=[])
     ap.add_argument("--allow-download", action="store_true")
     ap.add_argument("--allow-cpu", action="store_true")
+    ap.add_argument("--verify-hashes", action="store_true", help="also SHA-256 every cached weight file (slow)")
+    ap.add_argument("--skip-resource-check", action="store_true", help="start even if the preflight says no")
     args = ap.parse_args()
 
     cfg = load_config(args.config, args.set)
@@ -113,21 +148,42 @@ def main() -> int:
         raise SystemExit(f"Reference image not found: {ref_path}")
     reference_raw = Image.open(ref_path).convert("RGB")
 
-    from common.hf_utils import is_cached, repo_size
-
     model_id = cfg["model"]["model_id"]
-    if not is_cached(model_id) and not args.allow_download:
-        sizes = repo_size(model_id)
-        raise SystemExit(
-            f"Model {model_id} is not cached. Download size: {sizes['TOTAL']} GB "
-            f"(breakdown: {sizes}); license: {LICENSES.get(model_id, 'check model card')}. "
-            "Re-run with --allow-download after confirming disk space (~25 GB recommended).")
-
+    manifest, cache = check_model_cache(model_id, cfg["model"].get("revision"), args.verify_hashes)
     s = resolve_settings(cfg, profile, reference_raw.size)
+    s.revision = manifest["revision"]  # always load the exact snapshot that was verified
+    if not cache.complete and not args.allow_download:
+        raise SystemExit(
+            f"Missing {cache.missing_bytes / 1e9:.2f} GB of {model_id}@{s.revision[:12]} "
+            f"(license: {LICENSES.get(model_id, 'check model card')}). "
+            "Re-run with --allow-download to fetch exactly these files.")
+
+    from huggingface_hub import constants as hf_constants
+
+    from common.resources import InsufficientResources, baseline_checks, enforce
+    from inference.baseline_vace import prompt_cache_path
+
+    checks = baseline_checks(
+        missing_download_bytes=0 if cache.complete else cache.missing_bytes,
+        hf_cache_dir=hf_constants.HF_HUB_CACHE, output_dir=resolve_path(cfg["output"]["dir"]),
+        need_text_encoder=not prompt_cache_path(s, resolve_path(s.embed_cache_dir)).exists(),
+        offload=s.offload, cuda=hw.cuda_available)
+    print("Resource preflight (estimates, see common/resources.py):\n  " + "\n  ".join(c.line() for c in checks))
+    try:
+        enforce(checks, override=args.skip_resource_check)
+    except InsufficientResources as e:
+        raise SystemExit(str(e))
+
+    if not cache.complete:
+        cache = download_missing(manifest, args.verify_hashes)
+
     run = ExperimentRun("baseline", artifacts_root=resolve_path(cfg["output"]["dir"]))
     out = run.artifacts_dir
     run.log(model=s.model_id, dataset=None, resolution=f"{s.width}x{s.height}", frames=s.num_frames, batch=1,
-            settings=vars(s), inputs=cfg["inputs"], hardware=hw.to_dict(), profile=profile.to_dict())
+            settings=vars(s), inputs=cfg["inputs"], hardware=hw.to_dict(), profile=profile.to_dict(),
+            model_revision=s.revision, revision_pinned=bool(cfg["model"].get("revision")),
+            model_cache=cache.to_dict(), resource_checks=[c.to_dict() for c in checks],
+            resource_check_skipped=args.skip_resource_check)
     log.info("Settings: %s", vars(s))
 
     try:

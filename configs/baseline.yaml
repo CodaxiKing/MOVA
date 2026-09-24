@@ -9,6 +9,8 @@ inputs:
 
 model:
   model_id: Wan-AI/Wan2.1-VACE-1.3B-diffusers
+  # Exact Hub commit (resolved 2026-09-24; last modified upstream 2025-06-06). Change only with a new experiment.
+  revision: ec4d2cb062b548996b179d493fdd05340de702a1
   dtype: auto                          # auto -> bfloat16 if supported, else float16
   offload: auto                        # auto | none | model | sequential
   vae_tiling: auto

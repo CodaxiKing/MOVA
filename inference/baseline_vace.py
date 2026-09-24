@@ -31,6 +31,8 @@ DEFAULT_NEGATIVE = (
 @dataclass
 class BaselineSettings:
     model_id: str = "Wan-AI/Wan2.1-VACE-1.3B-diffusers"
+    revision: str | None = None  # full commit SHA; None = whatever "main" is (not reproducible)
+    local_files_only: bool = True  # never fetch weights implicitly
     prompt: str = "A person dancing, full body, clean background, high quality"
     negative_prompt: str = DEFAULT_NEGATIVE
     height: int = 256
@@ -52,10 +54,18 @@ def _dtype(name: str) -> torch.dtype:
     return {"bfloat16": torch.bfloat16, "float16": torch.float16, "float32": torch.float32}[name]
 
 
+def prompt_cache_path(s: BaselineSettings, cache_dir: Path) -> Path:
+    key = hashlib.sha1(f"{s.model_id}|{s.revision}|{s.prompt}|{s.negative_prompt}".encode()).hexdigest()[:16]
+    return cache_dir / f"prompt_{key}.pt"
+
+
+def _hub_kwargs(s: BaselineSettings) -> dict[str, Any]:
+    return {"revision": s.revision, "local_files_only": s.local_files_only}
+
+
 def encode_prompts_cached(s: BaselineSettings, cache_dir: Path) -> tuple[torch.Tensor, torch.Tensor]:
     """Encode prompt/negative on CPU once; reuse from disk afterwards."""
-    key = hashlib.sha1(f"{s.model_id}|{s.prompt}|{s.negative_prompt}".encode()).hexdigest()[:16]
-    path = cache_dir / f"prompt_{key}.pt"
+    path = prompt_cache_path(s, cache_dir)
     if path.exists():
         d = torch.load(path, map_location="cpu")
         log.info("Loaded cached prompt embeddings %s", path.name)
@@ -65,8 +75,9 @@ def encode_prompts_cached(s: BaselineSettings, cache_dir: Path) -> tuple[torch.T
 
     log.info("Encoding prompts on CPU with UMT5 (one-time, needs ~12 GB system RAM)...")
     t0 = time.perf_counter()
-    tok = AutoTokenizer.from_pretrained(s.model_id, subfolder="tokenizer")
-    enc = UMT5EncoderModel.from_pretrained(s.model_id, subfolder="text_encoder", torch_dtype=torch.bfloat16)
+    tok = AutoTokenizer.from_pretrained(s.model_id, subfolder="tokenizer", **_hub_kwargs(s))
+    enc = UMT5EncoderModel.from_pretrained(s.model_id, subfolder="text_encoder", torch_dtype=torch.bfloat16,
+                                           **_hub_kwargs(s))
     enc.eval()
 
     def _enc(text: str) -> torch.Tensor:
@@ -83,7 +94,7 @@ def encode_prompts_cached(s: BaselineSettings, cache_dir: Path) -> tuple[torch.T
     del enc
     cache_dir.mkdir(parents=True, exist_ok=True)
     torch.save({"prompt_embeds": pe, "negative_prompt_embeds": ne, "prompt": s.prompt,
-                "negative_prompt": s.negative_prompt}, path)
+                "negative_prompt": s.negative_prompt, "model_id": s.model_id, "revision": s.revision}, path)
     log.info("Prompt embeddings cached to %s (%.1fs)", path, time.perf_counter() - t0)
     return pe, ne
 
@@ -93,8 +104,9 @@ def load_pipeline(s: BaselineSettings):
     from diffusers.schedulers.scheduling_unipc_multistep import UniPCMultistepScheduler
 
     dtype = _dtype(s.dtype)
-    vae = AutoencoderKLWan.from_pretrained(s.model_id, subfolder="vae", torch_dtype=torch.float32)
-    pipe = WanVACEPipeline.from_pretrained(s.model_id, vae=vae, text_encoder=None, tokenizer=None, torch_dtype=dtype)
+    vae = AutoencoderKLWan.from_pretrained(s.model_id, subfolder="vae", torch_dtype=torch.float32, **_hub_kwargs(s))
+    pipe = WanVACEPipeline.from_pretrained(s.model_id, vae=vae, text_encoder=None, tokenizer=None, torch_dtype=dtype,
+                                           **_hub_kwargs(s))
     pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config, flow_shift=s.flow_shift)
     if s.vae_tiling:
         pipe.vae.enable_tiling()
