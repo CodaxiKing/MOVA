@@ -9,6 +9,13 @@
 .venv/Scripts/python benchmark/regression/tiny_vace_regression.py   # exit 0 = bit-exact + finite
 ```
 
+**Uma referência por conjunto de instruções da CPU.** O fp32 em CPU é bit-exato numa mesma CPU, mas o PyTorch
+escolhe kernels SIMD por `torch.backends.cpu.get_cpu_capability()`, e isso muda os últimos bits (~1e-8).
+`../baseline/reference.py` escolhe o arquivo: `tiny_vace_cpu_avx2.json` para AVX2 (i5-10400F, capturado com o script
+congelado no próprio commit 8284436), `tiny_vace_cpu.json` para o resto (ProBook i7-1165G7; AVX512 é INFERENCE, a
+capacidade não foi registrada na captura). Falha numa CPU nova sem arquivo próprio: primeiro rode
+`capture_tiny_vace.py` do commit 8284436 nessa CPU; se ele reproduzir o hash novo, é hardware, não código.
+
 Result 2026-09-24 (HP ProBook, i7-1165G7, CPU only, torch 2.14.0+cpu):
 
 | Metric | Baseline | New architecture |
