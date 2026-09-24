@@ -22,7 +22,7 @@
 ✋ &nbsp;Hands &amp; fingers · <i>Mãos e dedos</i><br><br>
 👤 &nbsp;Identity preservation · <i>Preservação de identidade</i><br><br>
 🎞️ &nbsp;Temporal consistency · <i>Consistência temporal</i><br><br>
-⚡ &nbsp;Runs on 8 GB VRAM · <i>Roda com 8 GB de VRAM</i>
+⚡ &nbsp;Designed for 8 GB VRAM · <i>Projetado para 8 GB de VRAM</i>
 </p>
 
 <br>
