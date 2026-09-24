@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mova"
+version = "0.1.0"
+description = "MOVA: open-source character motion control (reference image + motion video -> video) for low-VRAM GPUs"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "numpy>=2.0", "opencv-python>=4.10", "mediapipe>=1.0.1", "pyyaml>=6.0", "pillow>=10.0",
+    "imageio>=2.34", "imageio-ffmpeg>=0.5", "psutil>=5.9", "huggingface_hub>=1.0", "torch>=2.4",
+]
+
+[project.optional-dependencies]
+diffusion = ["diffusers>=0.40.0", "transformers>=5.0", "accelerate>=1.0", "sentencepiece>=0.2", "ftfy>=6.0", "safetensors>=0.4"]
+dev = ["pytest>=8.0", "scikit-image>=0.24"]
+
+[tool.setuptools.packages.find]
+include = ["common*", "preprocessing*", "inference*", "models*", "training*", "evaluation*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
