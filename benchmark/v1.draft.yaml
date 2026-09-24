@@ -1,0 +1,236 @@
+# DRAFT: 20 planned cases; media and rights metadata have not been supplied.
+schema_version: 1
+version: mova-v1-draft
+protocol:
+  width: 256
+  height: 256
+  frames: 17
+  fps: 16
+  seed: 42
+  pck_threshold: 0.1
+  visibility: 0.5
+cases:
+- id: walking-01
+  category: walking
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/walking-01/reference.png
+  motion: assets/benchmark/v1/walking-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing walking, consistent appearance, detailed face and hands
+- id: walking-02
+  category: walking
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/walking-02/reference.png
+  motion: assets/benchmark/v1/walking-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing walking, consistent appearance, detailed face and hands
+- id: dancing-01
+  category: dancing
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/dancing-01/reference.png
+  motion: assets/benchmark/v1/dancing-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing dancing, consistent appearance, detailed face and hands
+- id: dancing-02
+  category: dancing
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/dancing-02/reference.png
+  motion: assets/benchmark/v1/dancing-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing dancing, consistent appearance, detailed face and hands
+- id: running-01
+  category: running
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/running-01/reference.png
+  motion: assets/benchmark/v1/running-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing running, consistent appearance, detailed face and hands
+- id: running-02
+  category: running
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/running-02/reference.png
+  motion: assets/benchmark/v1/running-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing running, consistent appearance, detailed face and hands
+- id: turning-01
+  category: turning
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/turning-01/reference.png
+  motion: assets/benchmark/v1/turning-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing turning, consistent appearance, detailed face and hands
+- id: turning-02
+  category: turning
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/turning-02/reference.png
+  motion: assets/benchmark/v1/turning-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing turning, consistent appearance, detailed face and hands
+- id: sitting-01
+  category: sitting
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/sitting-01/reference.png
+  motion: assets/benchmark/v1/sitting-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing sitting, consistent appearance, detailed face and hands
+- id: sitting-02
+  category: sitting
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/sitting-02/reference.png
+  motion: assets/benchmark/v1/sitting-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing sitting, consistent appearance, detailed face and hands
+- id: arms-01
+  category: arms
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/arms-01/reference.png
+  motion: assets/benchmark/v1/arms-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing arms, consistent appearance, detailed face and hands
+- id: arms-02
+  category: arms
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/arms-02/reference.png
+  motion: assets/benchmark/v1/arms-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing arms, consistent appearance, detailed face and hands
+- id: hands-01
+  category: hands
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/hands-01/reference.png
+  motion: assets/benchmark/v1/hands-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing hands, consistent appearance, detailed face and hands
+- id: hands-02
+  category: hands
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/hands-02/reference.png
+  motion: assets/benchmark/v1/hands-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing hands, consistent appearance, detailed face and hands
+- id: face-01
+  category: face
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/face-01/reference.png
+  motion: assets/benchmark/v1/face-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing face, consistent appearance, detailed face and hands
+- id: face-02
+  category: face
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/face-02/reference.png
+  motion: assets/benchmark/v1/face-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing face, consistent appearance, detailed face and hands
+- id: occlusion-01
+  category: occlusion
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/occlusion-01/reference.png
+  motion: assets/benchmark/v1/occlusion-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing occlusion, consistent appearance, detailed face and
+    hands
+- id: occlusion-02
+  category: occlusion
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/occlusion-02/reference.png
+  motion: assets/benchmark/v1/occlusion-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing occlusion, consistent appearance, detailed face and
+    hands
+- id: difficult-01
+  category: difficult
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/difficult-01/reference.png
+  motion: assets/benchmark/v1/difficult-01/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing difficult, consistent appearance, detailed face and
+    hands
+- id: difficult-02
+  category: difficult
+  split: test
+  identity_id: null
+  reference: assets/benchmark/v1/difficult-02/reference.png
+  motion: assets/benchmark/v1/difficult-02/motion.mp4
+  reference_source: null
+  motion_source: null
+  reference_license: null
+  motion_license: null
+  prompt: A person performing difficult, consistent appearance, detailed face and
+    hands

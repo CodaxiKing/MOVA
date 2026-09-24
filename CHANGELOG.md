@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Added
+- Benchmark versionado com 20 vagas, preparação de clipes, lock de hashes, execução sequencial do baseline, avaliação e comparação de relatórios.
+- Métricas CPU de corpo/mãos (PCK, erro e cobertura), expressão e aceleração; ausência de evidência retorna null, sem declarar qualidade PASS.
+- Modelos de revisão visual/falhas, guia do benchmark, EXP-005 e ADR-007.
 - Validação de pixels e integridade do vídeo gerado, relatório no run.json e sete novos casos de teste (35 testes no total).
 - Estrutura do projeto, empacotamento (`pyproject.toml`), `requirements.txt`, `.gitignore` (pesos/mídia bloqueados).
 - `common/`: detecção de hardware e perfis de VRAM automáticos, config YAML com overrides, registro de experimentos, I/O de vídeo, helpers HF.

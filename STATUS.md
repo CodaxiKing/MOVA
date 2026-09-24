@@ -1,60 +1,55 @@
 # Project Status
 
-## Current Phase
-Phase 1 — Baseline (código pronto, execução real bloqueada) · Phase 2 — Motion Extraction (implementada em CPU)
+## Estado atual — 2026-09-24
 
-## Overall Progress
-[███░░░░░░░] ~25% (Fases 0 e 2 concluídas na parte CPU; Fase 1 aguardando GPU; Fases 3–6 não iniciadas)
+- Baseline: implementado, validado apenas com pipeline minúsculo aleatório; geração real BLOQUEADA.
+- Extração MediaPipe: implementada e testada em CPU.
+- Avaliação: integridade e métricas de movimento implementadas e testadas em CPU.
+- Benchmark: protocolo de 20 vagas e ferramentas implementados; mídias reais ausentes, conjunto não congelado.
+- Adapter, identidade treinável e treinamento: não iniciados; MVP e equivalência ao Kling não demonstrados.
 
-## Auditoria e implementação — Codex, 2026-09-24
+## Entrega desta sessão
 
-- Estado inicial: branch main, commit 3174705, árvore limpa.
-- CUDA indisponível confirmado; PyTorch 2.14.0+cpu; RAM disponível 0.99/15.69 GB.
-- Implementado: validação de pixels antes de conversão e de output.mp4 por
-  decodificação completa; relatório em stats.output_validation.
-- Verificado: suíte completa, incluindo geração VACE minúscula → encoding → validação.
-- Resultado: **35 passed in 12.55s**.
-- Comando: `.venv/Scripts/python -m pytest -q -p no:cacheprovider --basetemp outputs/test-final-20260924`.
-- Execução fora da restrição de sandbox: tentativas restritas deram PermissionError
-  nas pastas temporárias do pytest; não eram falhas funcionais dos componentes.
-- Baseline real, qualidade e suporte a 8 GB continuam não verificados.
-- A porcentagem e numeração de fases acima são estimativas históricas; não são critérios de PASS do anexo 49.
+- Auditoria inicial: branch main, HEAD 6943f0f, árvore limpa; alterações anteriores preservadas.
+- `evaluation/motion.py`: PCK/erro de corpo e mãos, cobertura, expressão e aceleração, sem interpolação de ausências.
+- `evaluation/protocol.py`: manifesto, validação e lock SHA-256 de mídia/condições.
+- `evaluation/benchmark.py`: re-extração, relatório por caso, registro automático e comparação estrita.
+- `scripts/benchmark.py`: check, prepare, freeze, generate, evaluate e compare.
+- `benchmark/v1.draft.yaml`: 20 vagas em dez categorias; templates de revisão visual e registro de falhas.
+- ADR-007 e EXP-005 documentam decisões, limitações e próximos experimentos.
 
-## Working (verificação anterior)
-- Ambiente CPU: Python 3.12.10, PyTorch 2.14.0+cpu, diffusers 0.40.0, MediaPipe 1.0.1
-- `scripts/check_env.py` — detecção de GPU/VRAM/RAM e seleção automática de perfil (verificado só no caminho sem CUDA)
-- `scripts/check_model_size.py` — tamanho de repositórios HF sem baixar
-- Extração de movimento body/face/hands → `.pt` + prévias + controle OpenPose (vídeo sintético "astronaut": corpo 100%, rosto 100%)
-- Contrato do baseline com `WanVACEPipeline` (pipeline minúsculo aleatório em CPU)
-- Registro automático de experimentos (`experiments/runs/<id>/run.json`)
-- Gates de segurança do baseline (sem CUDA → recusa; sem cache → mostra tamanho e recusa download)
+## Verificação executada
 
-## In Progress
-- Nada em execução.
-
-## Not Started
-- Execução real do baseline (EXP-001)
-- Comparação de representações de movimento (EXP-003)
-- DWPose vs render MediaPipe (EXP-004)
-- Motion Encoder / Projection / Temporal Attention / Motion Adapter
-- Identity Encoder
-- Dataset experimental, pipeline de treino, losses
-- Avaliação automatizada (`evaluation/`)
-
-## Blocked
-- **Baseline com pesos reais**: máquina atual sem GPU NVIDIA (Intel Iris Xe). Precisa da máquina com RTX 3060.
-- **Download de Wan2.1-VACE-1.3B-diffusers (19.04 GB)**: aguardando autorização do usuário; e a máquina atual só tem 17.9 GB livres.
-- **Extração em vídeo real**: `assets/reference/maya.png` e `assets/motion/dance.mp4` não existem — usuário precisa fornecer.
-
-## Last Verified
-2026-09-24
-
-## Last Validation anterior (substituída pela auditoria acima)
-Command:
 ```bash
-.venv/Scripts/python -m pytest -q
+.venv/Scripts/python scripts/check_env.py --cuda-test
+.venv/Scripts/python -m pytest -q -p no:cacheprovider --basetemp outputs/test-benchmark-release-20260924
+.venv/Scripts/python scripts/benchmark.py check
 ```
-Result:
-```text
-28 passed in 25.57s   (máquina sem GPU; testes GPU não existem ainda)
-```
+
+- Ambiente: Python 3.12.10, PyTorch 2.14.0+cpu, CUDA False; RAM disponível 0.94/15.69 GB; disco C livre 16.66 GB.
+- Testes: **51 passed in 29.42s**. Execução com acesso fora do sandbox às pastas temporárias, devido às restrições já documentadas.
+- Testes cobrem erros conhecidos de keypoints, ausências, alinhamento, adulteração de dados/lock, integridade, extração real MediaPipe e repetição de avaliação facial.
+- Retrato astronaut: corpo/rosto detectados, mas quadris insuficientemente visíveis; PCK corporal null é esperado. Comparação facial do vídeo consigo mesmo teve erro zero e foi repetida. Não é vídeo gerado por difusão.
+- Orquestração generate testada com baseline simulado; geração CUDA real permanece não testada.
+- Check: código de saída 2, **BLOCKED**, 20 casos, 140 pendências de arquivos/metadados. Relatório local: outputs/benchmark-preflight.json.
+- A mensagem de decoder sobre moov ausente durante pytest vem do teste de arquivo inválido; suíte terminou com código 0.
+
+## Bloqueios reais
+
+- Máquina atual sem CUDA; precisa executar na RTX 3060.
+- Pesos Wan não presentes no cache; download estimado anteriormente em 19.04 GB segue sem autorização e sem espaço suficiente nesta máquina.
+- Imagens/vídeos e fontes/licenças não fornecidos; nenhum dataset novo baixado.
+
+## Limitações
+
+- PCK normalizado não mede trajetória global; expressão não mede identidade.
+- Aceleração não mede flicker de textura. Não há score global nem promoção automática.
+- Identidade, head pose, fluxo óptico e qualidade perceptual continuam pendentes.
+- Loader legado não fixa revisão HF: geração registra model_revision=null.
+- Compatibilidade com 8 GB, qualidade, tempo de geração real e ganho sobre baseline não medidos.
+
+## Próxima ação
+
+Preencher as mídias/metadados conforme benchmark/README.md. Na máquina CUDA,
+executar primeiro EXP-001, depois congelar o benchmark e gerar duas execuções
+comparáveis; avaliar e revisar antes de iniciar adapters ou treinamento.

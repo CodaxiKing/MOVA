@@ -12,13 +12,13 @@ Sistema próprio, open-source, de **Motion Control de personagens**: `reference 
 - Fase 0 (pesquisa): **concluída** → `docs/research/`.
 - Fase 1 (baseline): **código pronto e testado com pipeline minúsculo aleatório; NÃO executado com pesos reais** (sem GPU na máquina atual + download de 19 GB aguardando autorização).
 - Fase 2 (extração de movimento): **implementada e testada em CPU** (MediaPipe).
-- Fases 3+ (adapter, identidade, treino, avaliação): não iniciadas.
+- Adapter, identidade e treino: não iniciados. Avaliação CPU e infraestrutura de benchmark implementadas (ADR-007); benchmark real pendente.
 
 ## Hardware
 
 | Máquina | GPU | RAM | Disco livre | Uso |
 |---|---|---|---|---|
-| HP ProBook 640 G8 (atual) | **nenhuma NVIDIA** (Intel Iris Xe) | 16 GB | ~18 GB | pesquisa, docs, extração CPU, testes |
+| HP ProBook 640 G8 (atual) | **nenhuma NVIDIA** (Intel Iris Xe) | 16 GB | ~16.66 GB | pesquisa, docs, extração CPU, testes |
 | Máquina alvo | RTX 3060 **8 GB** | ? | ? | inferência/treino — **ainda não vista por nenhum agente** |
 
 Sempre rode `python scripts/check_env.py --cuda-test` no início da sessão para saber em qual máquina está.
@@ -52,10 +52,10 @@ preprocessing/  pose/ face/ hands/ extratores; features.py (representações); r
 inference/      conditioning.py (resolução, 4k+1, letterbox); baseline_vace.py
 models/         identity/ motion/{body,face,hands}/ fusion/ adapters/   (vazios — Fase 3+)
 training/       treino pendente
-evaluation/     integridade de vídeo; métricas de qualidade pendentes
-scripts/        check_env, check_model_size, extract_motion, inference_baseline
+evaluation/     integridade, métricas de movimento, protocolo e comparação de benchmark
+scripts/        check_env, check_model_size, extract_motion, inference_baseline, benchmark
 configs/        baseline.yaml, extraction.yaml
-tests/          pytest (35 testes)
+tests/          pytest (51 testes)
 docs/           research/, experiments/, guias
 experiments/runs/<run_id>/run.json   registro automático (git-ignored)
 assets/ checkpoints/ outputs/        dados locais (git-ignored)
@@ -110,12 +110,12 @@ py -3.12 -m venv .venv
 
 - Baseline nunca executado com pesos reais.
 - Mapeamento MediaPipe→OpenPose-18 é aproximado (EXP-004 pendente).
-- Máquina atual: ~1 GB de RAM livre durante a sessão (outros apps abertos) e 17.9 GB de disco — insuficiente para o download de 19 GB.
+- Máquina atual: ~1 GB de RAM livre durante a sessão (outros apps abertos) e 16.66 GB de disco — insuficiente para o download de 19 GB.
 - "Motion Mirror" (citado pelo usuário) não foi encontrado.
 
 ## Validação da saída
 
-`evaluation/video.py` implementa integridade de vídeo em CPU; métricas de qualidade continuam pendentes.
+`evaluation/video.py` implementa integridade de vídeo; motion/protocol/benchmark implementam métricas CPU, hashes e comparação (ADR-007). Identidade e qualidade perceptual continuam pendentes. Comandos em `benchmark/README.md`.
 
 ## Próximos passos
 

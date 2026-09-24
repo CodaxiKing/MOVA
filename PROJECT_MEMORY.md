@@ -17,7 +17,22 @@ compatibilidade com RTX 3060 8 GB permanece não medida.
   autorizada fora da restrição passou (35 testes). Não modificar algoritmos para
   contornar uma falha de permissões do ambiente.
 
-## Continuidade
+## Benchmark e avaliação
+
+- Benchmark fixo é dado + protocolo + versão de avaliação; manifestos sem mídias
+  são apenas vagas planejadas. O check atual deve retornar BLOCKED.
+- Detectar corpo não garante âncoras visíveis. No retrato astronaut, corpo/rosto
+  são detectados, mas quadris não têm visibilidade suficiente: PCK corporal null
+  é correto; não reduzir o threshold para forçar uma nota.
+- Sem observações, null; nunca zero de erro como evidência de qualidade.
+- PCK inclui falhas de detecção no output como incorretas. Erro condicional deve
+  sempre ser lido junto da cobertura.
+- Aceleração baixa pode significar um personagem congelado. Avaliar movimento
+  e identidade junto da estabilidade, com revisão visual antes de promoção.
+- Loader baseline ainda não fixa revisão dos pesos HF; não afirmar reprodução
+  exata entre caches diferentes. Ver ADR-007.
+
+## Leitura para continuidade
 
 Ler STATUS.md e HANDOFF.md para comandos, evidências e próximos experimentos.
 A pesquisa anterior não foi reauditada nesta sessão; não assumir que testes CPU

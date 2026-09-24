@@ -1,3 +1,5 @@
-# evaluation/ (não implementado)
+# evaluation/
 
-Métricas planejadas: `docs/evaluation.md`.
+Integridade de vídeo, métricas de movimento com cobertura e benchmark versionado.
+Contratos, limitações e métricas ainda pendentes: `docs/evaluation.md`.
+Comandos: `benchmark/README.md`.

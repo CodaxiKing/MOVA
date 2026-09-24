@@ -1,5 +1,42 @@
 # HANDOFF
 
+## Sessão atual — benchmark e avaliação, 2026-09-24
+
+Objetivo autorizado: criar o ciclo de baseline real + benchmark + métricas.
+Implementada a infraestrutura possível em CPU; geração real bloqueada por
+hardware, pesos e mídia. Não houve treinamento ou download.
+
+Arquivos principais novos: evaluation/{motion,protocol,benchmark}.py,
+scripts/benchmark.py, tests/test_benchmark.py, benchmark/ (manifesto de 20 vagas,
+guia e templates), docs/experiments/EXP-005.md. Docs sincronizados, ADR-007.
+Arquitetura: mesma extração e backbone; camada de avaliação independente.
+
+Validação final: `.venv/Scripts/python -m pytest -q -p no:cacheprovider --basetemp outputs/test-benchmark-release-20260924`
+→ **51 passed in 29.42s**, CPU. Testes do generate usam baseline simulado;
+extração e avaliação MediaPipe foram executadas realmente em fixtures sintéticas.
+Avaliação facial foi repetida. Astronaut não tem quadris visíveis suficientes:
+PCK corporal null é correto. Não baixar o limiar para forçar pontuação.
+
+Preflight: `python scripts/benchmark.py check` → BLOCKED, 20 vagas, 140 pendências.
+Mídias ainda não fornecidas. CUDA False, RAM disponível 0.94 GB, disco 16.66 GB.
+Pergunta enviada ao usuário solicitando caminhos de mídias autorizadas e aviso
+quando estiver na máquina RTX 3060; ainda sem resposta nesta sessão.
+
+Próximos passos:
+1. Ler benchmark/README.md e docs/evaluation.md para contratos e limitações.
+2. Obter mídias autorizadas; preparar clipes e preencher fontes/licenças/identity_id.
+3. Na GPU, executar EXP-001 primeiro; pesos grandes ainda exigem autorização.
+4. Congelar benchmark, generate, evaluate, repetir e compare; revisar visualmente.
+5. Usar falhas medidas para planejar adapter; manter test separado de treino/validação.
+
+Não promover checkpoints por PCK isolado. compare exige mesmos hashes/condições
+e retorna REQUIRES_REVIEW. null não é erro zero. Arquivos ausentes não podem
+ser removidos silenciosamente. Loader legado não fixa revisão HF; corrigir
+antes de afirmar reprodutibilidade entre caches diferentes. Linux não testado.
+
+Histórico anterior abaixo; STATUS.md contém o estado consolidado atual.
+
+
 ## Continuação — Codex, 2026-09-24
 
 Objetivo: auditar e continuar a preparação do baseline sem avançar para adapters

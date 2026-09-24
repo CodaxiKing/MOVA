@@ -254,6 +254,21 @@ Isso gera `body_motion.pt`, `face_motion.pt`, `hand_motion.pt`, vídeos de prév
 .venv/Scripts/python scripts/inference_baseline.py --allow-download
 ```
 
+### Benchmark e melhoria mensurável
+
+O protocolo de 20 casos está em `benchmark/v1.draft.yaml`; as mídias reais ainda
+precisam ser fornecidas. Preparação, congelamento por hashes, geração sequencial,
+avaliação CPU e comparação estão descritos em [benchmark/README.md](benchmark/README.md).
+Nenhum resultado de qualidade ou equivalência ao Kling foi demonstrado.
+
+```bash
+.venv/Scripts/python scripts/benchmark.py check
+```
+
+O comando retorna BLOCKED enquanto faltarem entradas. Métricas cobrem corpo,
+mãos, expressão e aceleração com cobertura explícita; identidade e revisão
+visual continuam necessárias. Comparações não promovem checkpoints automaticamente.
+
 ### 🧠 Estratégia para pouca VRAM
 
 | Técnica | Onde |
@@ -272,7 +287,7 @@ preprocessing/   extratores de corpo / rosto / mãos, features de movimento, ren
 inference/       pipeline do baseline e utilitários de condicionamento
 models/          identity · motion (body/face/hands) · fusion · adapters   (planejado)
 training/        loop de treino e losses                                    (planejado)
-evaluation/      métricas                                                   (planejado)
+evaluation/      integridade, métricas de movimento e comparação de benchmark
 scripts/         check_env · check_model_size · extract_motion · inference_baseline
 configs/         configs YAML
 docs/            pesquisa, arquitetura, pipeline, inferência, treino, datasets, experimentos

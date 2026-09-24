@@ -177,7 +177,16 @@ Ver `docs/dataset.md` para a tabela completa. Fontes:
 - AIST++: https://google.github.io/aistplusplus_dataset/ — anotações CC BY 4.0; vídeos do AIST Dance DB com termos próprios (INFERENCE, página de factsheet retornou 404 — reverificar)
 - OpenHumanVid: https://arxiv.org/abs/2412.00115
 
-## Fontes secundárias (não usadas como verdade)
+## Avaliação — consultado em 2026-09-24
+
+- FACT: PCK depende do limiar e fator de normalização; implementação primária
+  consultada: https://github.com/open-mmlab/mmpose/blob/main/mmpose/evaluation/metrics/keypoint_2d_metrics.py
+- FACT: MediaPipe expõe 52 coeficientes de blendshape:
+  https://ai.google.dev/edge/api/mediapipe/python/mp/tasks/vision/drawing_styles/face_landmarker/Blendshapes
+- HYPOTHESIS de engenharia: PCK com torso/palma e limiar 0.1 fornece diagnóstico
+  inicial útil no MOVA. Não validado como limiar perceptual de sucesso.
+
+## Fontes secundárias históricas
 
 - https://www.opensourceforu.com/2026/08/alibaba-open-sources-wan-animate-2/
 - https://comfyui-wiki.com/en/news/2026-08-07-wan-animate-2

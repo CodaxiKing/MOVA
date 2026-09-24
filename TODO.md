@@ -9,6 +9,12 @@
 
 ## High Priority
 
+- [x] Protocolo de benchmark com 20 vagas, check, preparo e lock por SHA-256
+- [x] Avaliação CPU de corpo/mãos/expressão/aceleração com cobertura e dados ausentes
+- [x] Comparação estrita de relatórios e modelos de revisão/falhas (sem promoção automática)
+- [ ] Preencher as 20 vagas com mídias autorizadas, revisar recortes e congelar benchmark real
+- [ ] Executar duas gerações equivalentes na GPU, medir e revisar antes de treinar
+
 - [x] Validação automática da integridade de output.mp4 (requisito 49.18), testada em CPU
 
 - [x] Pesquisa Fase 0 (`docs/research/`)
@@ -27,6 +33,7 @@
 - [ ] Extrator DWPose ONNX opcional (Apache 2.0; ~2 arquivos ONNX, pedir autorização se >50 MB)
 - [ ] Baseline B: Wan2.1-Fun-V1.1-1.3B-Control (19.81 GB — autorização)
 - [ ] `evaluation/`: métricas de pose (PCK/erro de keypoints re-extraídos), identidade (face embedding), temporal (warp/flow error), qualidade (FVD/CLIP)
+- [x] Parte inicial de evaluation: PCK/erro, mãos separadas, blendshape MAE, aceleração; demais métricas acima pendentes
 - [ ] Protótipo do Motion Adapter (encoder + projection + temporal attention, zero-init) com testes de forma em CPU
 
 ## Low Priority
@@ -52,6 +59,9 @@
 - [ ] EXP-004 DWPose vs MediaPipe render
 
 ## Technical Debt
+
+- [ ] Fixar revisão HF no loader baseline e identificar checkpoint nos registros; atualmente model_revision=null
+- [ ] Medir trajetórias globais e head pose; métricas normalizadas atuais removem translação/escala
 
 - [ ] `select_profile` thresholds são chutes iniciais
 - [ ] `encode_prompts_cached` replica a lógica de padding do Diffusers (sem `prompt_clean`) — validar igualdade numérica contra `pipe.encode_prompt` quando os pesos existirem

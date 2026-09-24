@@ -1,0 +1,12 @@
+# Preencher após avaliar; não é evidência de falha já observada.
+benchmark_sha256: null
+case_id: null
+report_path: null
+axis: null  # body | identity | face | hands | temporal | integrity
+observation: null
+frame_range: null
+hypothesis: null
+proposed_experiment: null
+training_data_needed: null
+validation_cases: null  # separados das identidades do benchmark de teste
+result: NOT_RUN

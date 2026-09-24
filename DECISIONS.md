@@ -112,3 +112,32 @@ Compatível com todas as dependências e modelos escolhidos (todos Apache 2.0).
 
 ### Date
 2026-09-24
+
+---
+
+## ADR-007 — Benchmark versionado e avaliação sem promoção automática
+
+### Decision
+Manifesto YAML de casos de teste + lock JSON com SHA-256 das mídias e condições.
+Preparar vídeos com duração/FPS/resolução fixos antes de gerar ou avaliar.
+Executar casos sequencialmente pelo baseline existente, depois re-extrair
+movimento com MediaPipe e comparar tracks crus. Não alterar o backbone.
+
+### Why
+Sem entradas fixas e cobertura explícita, uma mudança de dados ou detecções
+ausentes pode parecer melhoria. Separar comparabilidade, execução e qualidade
+evita promover uma versão só porque não houve erro de código.
+
+### Constraints
+Mídias reais e CUDA ausentes; manifesto inicial tem 20 vagas, não 20 vídeos.
+PCK@0.1 com torso/palma é diagnóstico experimental, sem threshold perceptual
+validado. Identidade e qualidade continuam dependendo de avaliação futura.
+
+### Consequences
+Mudanças no benchmark ou avaliador exigem reavaliar ambas as versões.
+Dados insuficientes retornam null; casos falhos não desaparecem da comparação.
+compare só produz deltas e REQUIRES_REVIEW, sem trocar checkpoints.
+O loader legado não fixa revisão HF; registrar essa limitação até corrigi-la.
+
+### Date
+2026-09-24

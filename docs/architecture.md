@@ -18,7 +18,18 @@ pose_openpose.mp4 ─► 4k+1 frames ├─► WanVACEPipeline (Wan2.1-VACE-1.3B
 prompt ─► UMT5 (CPU, 1×) ─► cache┘      offload + VAE tiling  ─► output.mp4 / side_by_side.mp4
 ```
 
-## Planejado
+## Avaliação implementada (ADR-007)
+
+`benchmark/v1.draft.yaml` → preparação das mídias → lock com hashes → geração
+sequencial pelo baseline → re-extração de driver/output → métricas por caso →
+comparação de relatórios → revisão humana. Comando: `scripts/benchmark.py`.
+
+Componentes `evaluation/{protocol,motion,benchmark}.py`: Python 3.12 testado em
+Windows; NumPy, PyTorch (leitura segura dos tracks), MediaPipe, OpenCV,
+imageio-ffmpeg e PyYAML já existentes. Avaliação em CPU sem CUDA. Geração exige
+CUDA e pesos do baseline; ainda não testada com pesos reais. Linux não verificado.
+
+## Modelo treinável planejado
 
 ```text
 Reference image(s) ─► Identity Encoder ─► identity tokens ───────────────────────┐

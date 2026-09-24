@@ -2,6 +2,13 @@
 
 Nada foi baixado. Não baixar datasets grandes sem autorização.
 
+Benchmark separado do treino: `benchmark/v1.draft.yaml` contém 20 vagas com
+fonte/licença independentes para referência e movimento e identity_id obrigatório.
+Os dados ainda precisam ser fornecidos. `benchmark/README.md` descreve preparação,
+congelamento e revisão. Não usar suas identidades no treino; criar validação
+separada para seleção de hiperparâmetros. A verificação automatizada de vazamento
+entre splits depende do futuro manifesto de treinamento.
+
 | Dataset | Origem | Licença | Tamanho | Resolução | Conteúdo | Treino legal? |
 |---|---|---|---|---|---|---|
 | **HumanVid** | https://github.com/zhenzhiwang/HumanVid | CC-BY-4.0 (código + sintéticos UE); vídeos reais seguem termos do Pexels | real (Pexels) + sintético; tamanho exato não confirmado | variada (vertical/horizontal) | humanos em movimento com parâmetros de câmera | **Sim** para sintéticos (atribuição); Pexels permite uso livre — reverificar termos atuais |
