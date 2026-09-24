@@ -22,6 +22,7 @@ from common.logging_utils import get_logger
 from common.video_io import iter_frames, probe_video, write_video
 from preprocessing import features as F
 from preprocessing import render as R
+from preprocessing.hands_post import postprocess_hands
 
 log = get_logger("mova.extract")
 
@@ -41,6 +42,12 @@ class ExtractionConfig:
     write_previews: bool = True
     write_openpose: bool = True
     smooth_alpha: float = 1.0  # 1.0 = raw tracks; smoothing is stored separately from raw data
+    # Control-video signal cleaning (raw tracks are always saved unchanged; see docs/pipeline.md).
+    smoothing: str = "none"          # none | one_euro  (one_euro: preprocessing/filters.py)
+    one_euro_min_cutoff: float = 2.0  # Hz; preset from docs/experiments/EXP-006.md (synthetic calibration)
+    one_euro_beta: float = 100.0      # speed coefficient for normalised image coordinates
+    hand_postprocess: bool = True     # reject far hands, fix L/R swaps, fill short gaps for the control only
+    hand_max_gap: int = 3             # frames
 
 
 def _to_torch(d: dict[str, Any]) -> dict[str, Any]:
@@ -89,6 +96,39 @@ def _hand_features(hands: dict[str, Any], fps: float) -> dict[str, Any]:
     return out
 
 
+def _smooth(x: np.ndarray, present: np.ndarray, fps: float, cfg: ExtractionConfig) -> np.ndarray:
+    from preprocessing.filters import one_euro
+
+    return one_euro(x, fps, min_cutoff=cfg.one_euro_min_cutoff, beta=cfg.one_euro_beta, present=present)
+
+
+def _control_frames(b, hd, f, width, height, fps, cfg: ExtractionConfig) -> list[np.ndarray]:
+    """OpenPose-style control from the tracks: filled hand gaps and (optionally) One-Euro smoothed positions.
+    With smoothing 'none' and no hand post-processing this draws exactly what the live renderer used to draw."""
+    from preprocessing.control import render_control_frames
+
+    body = hands = face = None
+    if b is not None and len(b["kp2d"]):
+        kp = b["kp2d"].copy()
+        if cfg.smoothing == "one_euro":
+            kp[..., :2] = _smooth(kp[..., :2], b["present"], fps, cfg)
+        body = {"kp2d": kp, "present": b["present"]}
+    if hd is not None and len(hd["kp2d"]):
+        kp = hd.get("kp2d_filled", hd["kp2d"]).copy()
+        pres = hd["present"] | hd.get("filled", np.zeros_like(hd["present"]))
+        if cfg.smoothing == "one_euro":
+            kp[..., :2] = _smooth(kp[..., :2], pres, fps, cfg)
+        hands = {"kp2d": kp, "present": pres}
+    if f is not None and len(f["landmarks"]):
+        lm = f["landmarks"].copy()
+        if cfg.smoothing == "one_euro":
+            lm[..., :2] = _smooth(lm[..., :2], f["present"], fps, cfg)
+        face = {"landmarks": lm, "present": f["present"]}
+    if body is None and hands is None and face is None:
+        return []
+    return render_control_frames(body, hands, face, width, height)
+
+
 def extract_motion(video: str | Path, out_dir: str | Path, cfg: ExtractionConfig | None = None) -> dict[str, Any]:
     from preprocessing.face.extract_face import FaceExtractor
     from preprocessing.hands.extract_hands import HandExtractor
@@ -106,7 +146,7 @@ def extract_motion(video: str | Path, out_dir: str | Path, cfg: ExtractionConfig
     face = FaceExtractor(cfg.min_confidence) if cfg.face else None
     hands = HandExtractor(cfg.min_confidence, cfg.mirrored_input) if cfg.hands else None
 
-    previews: dict[str, list[np.ndarray]] = {"body": [], "face": [], "hands": [], "openpose": []}
+    previews: dict[str, list[np.ndarray]] = {"body": [], "face": [], "hands": []}
     timings = {"body": 0.0, "face": 0.0, "hands": 0.0}
     n = 0
     try:
@@ -137,17 +177,6 @@ def extract_motion(video: str | Path, out_dir: str | Path, cfg: ExtractionConfig
                         if hands.present[-1][s]:
                             R.draw_openpose_hand(layer, hk[s])
                     previews["hands"].append(R.put_label(R.overlay(rgb, layer, 0.8), f"hands {idx}"))
-            if cfg.write_openpose:
-                ctrl = R.blank(h, w)
-                if bk is not None and body.present[-1]:
-                    R.draw_openpose_body(ctrl, R.mp_body_to_openpose18(R.body_xyv(bk)))
-                if hands is not None:
-                    for s in range(2):
-                        if hands.present[-1][s]:
-                            R.draw_openpose_hand(ctrl, hk[s])
-                if fk is not None:
-                    R.draw_face_points(ctrl, fk, step=4)
-                previews["openpose"].append(ctrl)
     finally:
         for ex in (body, face, hands):
             if ex is not None:
@@ -160,28 +189,44 @@ def extract_motion(video: str | Path, out_dir: str | Path, cfg: ExtractionConfig
                    "width": meta.width, "height": meta.height, "num_frames": n}
     summary: dict[str, Any] = {**common_meta, "timings_s": {k: round(v, 2) for k, v in timings.items()}}
 
+    if cfg.smoothing not in ("none", "one_euro"):
+        raise ValueError(f"smoothing must be 'none' or 'one_euro', got {cfg.smoothing!r}")
+    b = body.result() if body is not None else None
+    hd = f = None
     if cfg.body and body is not None:
-        b = body.result()
         feats = _body_features(b, fps, cfg.smooth_alpha)
+        if cfg.smoothing == "one_euro" and len(b["kp2d"]):
+            feats["kp2d_smoothed"] = _smooth(b["kp2d"][..., :2], b["present"], fps, cfg)
         torch.save({"meta": common_meta, **_to_torch(b), "features": _to_torch(feats)}, out_dir / "body_motion.pt")
         summary["body"] = {"detection_rate": float(b["present"].mean()),
                            "jitter_xy": F.temporal_jitter(b["kp2d"][..., :2], b["present"])}
     if face is not None:
         f = face.result()
         feats = _face_features(f, fps)
+        if cfg.smoothing == "one_euro" and len(f["landmarks"]):
+            feats["landmarks_smoothed"] = _smooth(f["landmarks"], f["present"], fps, cfg)
         torch.save({"meta": common_meta, **_to_torch(f), "features": _to_torch(feats)}, out_dir / "face_motion.pt")
         summary["face"] = {"detection_rate": float(f["present"].mean())}
     if hands is not None:
         hd = hands.result()
+        if cfg.hand_postprocess:
+            hd, post = postprocess_hands(hd, b["kp2d"] if b is not None and len(b["kp2d"]) else None,
+                                         meta.width, meta.height, max_gap=cfg.hand_max_gap)
+            summary["hands_postprocess"] = post
         feats = _hand_features(hd, fps)
+        if cfg.smoothing == "one_euro" and len(hd["kp2d"]):
+            feats["kp2d_smoothed"] = _smooth(hd.get("kp2d_filled", hd["kp2d"]),
+                                             hd["present"] | hd.get("filled", np.zeros_like(hd["present"])), fps, cfg)
         torch.save({"meta": common_meta, **_to_torch(hd), "features": _to_torch(feats)}, out_dir / "hand_motion.pt")
         summary["hands"] = {"detection_rate_left": float(hd["present"][:, 0].mean()),
                             "detection_rate_right": float(hd["present"][:, 1].mean())}
 
-    for key, name in (("body", "body_preview.mp4"), ("face", "face_preview.mp4"),
-                      ("hands", "hands_preview.mp4"), ("openpose", "pose_openpose.mp4")):
+    for key, name in (("body", "body_preview.mp4"), ("face", "face_preview.mp4"), ("hands", "hands_preview.mp4")):
         if previews[key]:
             write_video(out_dir / name, previews[key], fps)
+    if cfg.write_openpose:
+        write_video(out_dir / "pose_openpose.mp4", _control_frames(b, hd, f, meta.width, meta.height, fps, cfg), fps)
+        summary["control"] = {"smoothing": cfg.smoothing, "hand_postprocess": cfg.hand_postprocess}
 
     with (out_dir / "summary.json").open("w", encoding="utf-8") as fh:
         json.dump(summary, fh, indent=2)

@@ -1,0 +1,85 @@
+{
+  "experiment": "EXP-003-synthetic",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "config": {
+    "experiment": "EXP-003-synthetic",
+    "seed": 0,
+    "frames": 48,
+    "motions": [
+      "walk",
+      "dance",
+      "turn",
+      "kick"
+    ],
+    "cameras": [
+      "front",
+      "yaw30",
+      "zoom",
+      "shift"
+    ],
+    "pixel_noise": 0.004,
+    "world_noise_rel_torso": 0.01
+  },
+  "mean_over_seeds": {
+    "2d_image": {
+      "nuisance_camera": 8.564584701400507,
+      "nuisance_body_size": 5.230891620872302,
+      "noise_jitter_ratio": 0.8903776715714304,
+      "pca_components_95": 4.0,
+      "prediction_error": 0.7251530686748402,
+      "dims": 66
+    },
+    "2d_normalized": {
+      "nuisance_camera": 1.1109331846237183,
+      "nuisance_body_size": 3.9175777435302734,
+      "noise_jitter_ratio": 1.4702355266096496,
+      "pca_components_95": 5.0,
+      "prediction_error": 0.7591904401779175,
+      "dims": 66
+    },
+    "3d_world": {
+      "nuisance_camera": 0.0,
+      "nuisance_body_size": 2.7860578244895002,
+      "noise_jitter_ratio": 0.15360172108703216,
+      "pca_components_95": 5.0,
+      "prediction_error": 0.7058195026206064,
+      "dims": 99
+    },
+    "3d_world_normalized": {
+      "nuisance_camera": 0.0,
+      "nuisance_body_size": 1.9233592936613313,
+      "noise_jitter_ratio": 0.20360770656408414,
+      "pca_components_95": 5.0,
+      "prediction_error": 0.7058195026215254,
+      "dims": 99
+    },
+    "rot6d_bones": {
+      "nuisance_camera": 0.0,
+      "nuisance_body_size": 4.481022570173739e-15,
+      "noise_jitter_ratio": 5.68459012859762,
+      "pca_components_95": 7.0,
+      "prediction_error": 0.7568900345753975,
+      "dims": 204
+    },
+    "rot6d_limbs": {
+      "nuisance_camera": 0.0,
+      "nuisance_body_size": 1.4475557088582005e-15,
+      "noise_jitter_ratio": 0.634167129936383,
+      "pca_components_95": 7.0,
+      "prediction_error": 0.7275485669674496,
+      "dims": 84
+    },
+    "3d_normalized+rot6d_limbs": {
+      "nuisance_camera": 0.0,
+      "nuisance_body_size": 1.6404434496838498,
+      "noise_jitter_ratio": 0.3284280651304832,
+      "pca_components_95": 7.0,
+      "prediction_error": 0.7165588527201483,
+      "dims": 183
+    }
+  }
+}

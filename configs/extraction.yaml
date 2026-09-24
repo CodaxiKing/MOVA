@@ -10,3 +10,9 @@ mirrored_input: false     # true only for selfie/mirrored footage (affects hand 
 write_previews: true
 write_openpose: true
 smooth_alpha: 1.0         # EMA on derived features only; raw tracks are always kept
+# Control-video signal cleaning (raw tracks are always saved unchanged). See docs/experiments/EXP-006.md.
+smoothing: none           # none | one_euro. Synthetic calibration: one_euro cuts calm jitter ~25% but adds lag on fast moves
+one_euro_min_cutoff: 2.0
+one_euro_beta: 100.0
+hand_postprocess: true    # drop hands far from the body wrist, fix left/right swaps, fill <= hand_max_gap frames (control only)
+hand_max_gap: 3
