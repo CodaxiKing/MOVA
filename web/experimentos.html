@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0a0b">
+<title>Experimentos · MOVA</title>
+<!-- Gerado por scripts/build_web.py a partir de design/canvas/project/Runs.dc.html. Não editar à mão. -->
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0a0a0b;font-family:'Geist',system-ui,sans-serif;color:#f4f4f5}
+a{color:#d2ff3c}a:hover{color:#e6ff8a}
+button{font-family:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid #d2ff3c;outline-offset:2px}
+</style>
+<style>html,body{background:#0a0a0b}#dc-root>div{margin:0 auto}input[type=range]{cursor:pointer}</style>
+<script src="dc-runtime.js" defer></script>
+</head>
+<body>
+<div id="dc-root"></div>
+<template id="dc-template">
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0a0a0b; color: #f4f4f5; font-family: 'Geist', system-ui, sans-serif; display: flex; flex-direction: column">
+
+<header style="height: 64px; box-sizing: border-box; padding: 0 20px; display: flex; align-items: center; gap: 24px; border-bottom: 1px solid #1c1c1f">
+<a href="index.html" aria-label="MOVA início" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #f4f4f5">
+<span style="width: 32px; height: 32px; border-radius: 9px; background: #d2ff3c; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4.5" r="2"></circle><path d="M12 7.5l-2 6 4 3v5"></path><path d="M10 13.5l-4 7"></path><path d="M11.5 9l5 2.5 2-3"></path><path d="M11.5 9l-4.5 1-1.5 3"></path></svg>
+</span>
+<span style="font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 24px; letter-spacing: 0.02em">MOVA</span>
+</a>
+<nav aria-label="Principal" style="display: flex; gap: 4px; flex-grow: 1">
+<a href="index.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Início</a>
+<a href="estudio.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Estúdio</a>
+<a href="movimento.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Movimento</a>
+<a href="resultados.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Resultados</a>
+<a href="experimentos.html" aria-current="page" style="padding: 9px 16px; border-radius: 999px; background: #1c1c1f; color: #f4f4f5; text-decoration: none; font-size: 14px; font-weight: 500">Experimentos</a>
+<a href="ambiente.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Ambiente</a>
+</nav>
+<span style="padding: 8px 14px; border-radius: 999px; background: #141416; border: 1px solid #26262a; font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">experiments/runs · snapshot 24/09/2026</span>
+</header>
+
+<div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 24px 24px; display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 20px">
+
+<section aria-labelledby="runs-h" style="min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 id="runs-h" style="margin: 0; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 48px; line-height: 1; text-transform: uppercase">Experimentos</h1>
+<span style="font-size: 14px; color: #a1a1aa">Cada script que roda modelo grava um run.json. Estes são os registros locais reais.</span>
+</div>
+<div role="group" aria-label="Filtrar por tipo" style="display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: #141416; border: 1px solid #26262a">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="4"><button type="button" onClick="{{f.pick}}" aria-pressed="{{f.pressed}}" style="min-height: 36px; padding: 0 14px; border: none; border-radius: 999px; background: {{f.bg}}; color: {{f.fg}}; font-size: 13px; cursor: pointer">{{f.label}}</button></sc-for>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+<div style="padding: 16px 18px; border-radius: 20px; background: #141416; border: 1px solid #26262a; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 40px; line-height: 1">5</span><span style="font-size: 13px; color: #a1a1aa">runs registrados</span></div>
+<div style="padding: 16px 18px; border-radius: 20px; background: #141416; border: 1px solid #26262a; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 40px; line-height: 1">3</span><span style="font-size: 13px; color: #a1a1aa">extrações MediaPipe</span></div>
+<div style="padding: 16px 18px; border-radius: 20px; background: #141416; border: 1px solid #26262a; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 40px; line-height: 1">2</span><span style="font-size: 13px; color: #a1a1aa">smoke tests (tiny)</span></div>
+<div style="padding: 16px 18px; border-radius: 20px; background: #2a1320; border: 1px solid #5c2442; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 40px; line-height: 1; color: #ff8cc4">0</span><span style="font-size: 13px; color: #ffc2de">com pesos reais (EXP-001)</span></div>
+</div>
+
+<div role="table" aria-label="Runs" style="flex-grow: 1; min-height: 0; border-radius: 22px; background: #141416; border: 1px solid #26262a; overflow: hidden; display: flex; flex-direction: column">
+<div role="row" style="display: grid; grid-template-columns: 230px 100px minmax(0, 1fr) 120px 90px 100px; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #26262a; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8b8b93">
+<span role="columnheader">Run</span><span role="columnheader">Tipo</span><span role="columnheader">Modelo</span><span role="columnheader">Entrada</span><span role="columnheader">Tempo</span><span role="columnheader">Status</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+<button type="button" role="row" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="display: grid; grid-template-columns: 230px 100px minmax(0, 1fr) 120px 90px 100px; gap: 12px; align-items: center; min-height: 60px; padding: 0 20px; border: none; border-bottom: 1px solid #1c1c1f; border-left: 3px solid {{r.mark}}; background: {{r.bg}}; color: #f4f4f5; text-align: left; cursor: pointer; font-size: 14px">
+<span role="cell" style="font-family: 'Geist Mono', monospace; font-size: 13px">{{r.id}}</span>
+<span role="cell"><span style="padding: 4px 10px; border-radius: 999px; background: {{r.kindBg}}; color: {{r.kindFg}}; font-size: 11px; font-weight: 700; letter-spacing: 0.04em">{{r.kind}}</span></span>
+<span role="cell" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.model}}</span>
+<span role="cell" style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">{{r.input}}</span>
+<span role="cell" style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">{{r.time}}</span>
+<span role="cell" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #d2ff3c"><span style="width: 7px; height: 7px; border-radius: 50%; background: #d2ff3c"></span>success</span>
+</button>
+</sc-for>
+</div>
+</section>
+
+<aside aria-labelledby="det-h" style="border-radius: 22px; background: #141416; border: 1px solid #26262a; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-height: 0">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: {{sel.kindBg}}; color: {{sel.kindFg}}; font-size: 11px; font-weight: 700; letter-spacing: 0.04em">{{sel.kind}}</span>
+<h2 id="det-h" style="margin: 0; font-family: 'Geist Mono', monospace; font-size: 18px; font-weight: 500">{{sel.id}}</h2>
+<span style="font-size: 14px; line-height: 1.5; color: #a1a1aa">{{sel.summary}}</span>
+</div>
+<dl style="margin: 0; display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 10px 14px; font-size: 13px">
+<sc-for list="{{sel.fields}}" as="f" hint-placeholder-count="6">
+<dt style="color: #8b8b93">{{f.k}}</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace; overflow-wrap: anywhere">{{f.v}}</dd>
+</sc-for>
+</dl>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; color: #8b8b93">Abrir o registro</span>
+<pre style="margin: 0; padding: 12px 14px; border-radius: 14px; background: #0a0a0b; border: 1px solid #26262a; font-family: 'Geist Mono', monospace; font-size: 12px; line-height: 1.6; color: #d4d4d8; white-space: pre-wrap">{{sel.path}}</pre>
+<a href="{{sel.link}}" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: #d2ff3c; color: #0a0a0b; text-decoration: none; font-size: 14px; font-weight: 600">{{sel.cta}}</a>
+</div>
+</aside>
+</div>
+</div>
+</template>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+var KIND = {
+  extract: { label: 'EXTRACT', bg: '#1c1c1f', fg: '#f4f4f5' },
+  baseline: { label: 'BASELINE', bg: '#d2ff3c', fg: '#0a0a0b' },
+  train: { label: 'TRAIN', bg: '#ff4fa3', fg: '#0a0a0b' }
+};
+var RUNS = [
+  { id: '20260924-173426-train', kind: 'train', model: 'MOVA adapter on tiny (smoke)', input: '2 amostras', time: '0.8 s',
+    summary: 'Smoke test de treino do adapter sobre o backbone tiny: valida o laço de treino, não a qualidade.',
+    fields: [['modelo', 'MOVA adapter on tiny'], ['smoke', 'true'], ['batch', '2'], ['otimizador', 'AdamW · lr 0.003'], ['parâmetros treináveis', '282 994'], ['loss', '1.917 → 1.622'], ['tempo de treino', '0.685 s'], ['commit', '8f52e18 (dirty)']],
+    link: 'estudio.html', cta: 'Abrir o Estúdio' },
+  { id: '20260924-170321-extract', kind: 'extract', model: 'mediapipe', input: '512² · 6 q', time: '3.04 s',
+    summary: 'Extração de movimento do vídeo de teste da auditoria de arquitetura.',
+    fields: [['modelo', 'mediapipe'], ['vídeo', 'outputs/arch-audit/e2e/motion.mp4'], ['resolução', '512x512'], ['quadros', '6'], ['saída', 'outputs/arch-audit/e2e/pre'], ['commit', '059cfb5 (dirty)']],
+    link: 'movimento.html', cta: 'Ver extração' },
+  { id: '20260924-165927-baseline', kind: 'baseline', model: 'wan2.1-vace-tiny-random', input: '32² · 5 q', time: '14.45 s',
+    summary: 'Pipeline completo com a rede tiny aleatória em CPU. A saída é ruído: prova só a fiação CLI → core → runtime.',
+    fields: [['modelo', 'wan2.1-vace-tiny-random'], ['dispositivo', 'cpu'], ['resolução', '32x32'], ['quadros', '5'], ['carregar', '10.6 s'], ['gerar', '0.1 s'], ['revisão fixada', 'não (tiny)'], ['commit', '9b22b9f (dirty)']],
+    link: 'resultados.html', cta: 'Ver resultado' },
+  { id: '20260924-151441-extract', kind: 'extract', model: 'mediapipe', input: '512² · 24 q', time: '5.57 s',
+    summary: 'Extração de corpo, rosto e mãos em CPU.',
+    fields: [['modelo', 'mediapipe'], ['vídeo', 'astronaut.mp4'], ['resolução', '512x512'], ['quadros', '24'], ['commit', 'b1209aa']],
+    link: 'movimento.html', cta: 'Ver extração' },
+  { id: '20260924-151334-extract', kind: 'extract', model: 'mediapipe', input: '512² · 24 q', time: '5.05 s',
+    summary: 'Extração de corpo, rosto e mãos em CPU.',
+    fields: [['modelo', 'mediapipe'], ['vídeo', 'astronaut.mp4'], ['resolução', '512x512'], ['quadros', '24'], ['commit', 'b1209aa']],
+    link: 'movimento.html', cta: 'Ver extração' }
+];
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { filter: 'all', selected: '20260924-165927-baseline' }; }
+  renderVals() {
+    var s = this.state, self = this;
+    var list = RUNS.filter(function (r) { return s.filter === 'all' || r.kind === s.filter; });
+    var cur = RUNS.filter(function (r) { return r.id === s.selected; })[0] || RUNS[0];
+    var k = KIND[cur.kind];
+    return {
+      filters: [['all', 'Todos'], ['extract', 'Extração'], ['baseline', 'Baseline'], ['train', 'Treino']].map(function (f) {
+        var on = s.filter === f[0];
+        return { label: f[1], pressed: on ? 'true' : 'false', bg: on ? '#d2ff3c' : 'transparent', fg: on ? '#0a0a0b' : '#f4f4f5',
+          pick: function () { self.setState({ filter: f[0] }); } };
+      }),
+      rows: list.map(function (r) {
+        var on = r.id === cur.id, kk = KIND[r.kind];
+        return { id: r.id, kind: kk.label, kindBg: kk.bg, kindFg: kk.fg, model: r.model, input: r.input, time: r.time,
+          pressed: on ? 'true' : 'false', bg: on ? '#1c1c1f' : 'transparent', mark: on ? '#d2ff3c' : 'transparent',
+          pick: function () { self.setState({ selected: r.id }); } };
+      }),
+      sel: { id: cur.id, kind: k.label, kindBg: k.bg, kindFg: k.fg, summary: cur.summary, link: cur.link, cta: cur.cta,
+        fields: cur.fields.map(function (f) { return { k: f[0], v: f[1] }; }),
+        path: 'experiments/runs/' + cur.id + '/run.json' }
+    };
+  }
+}
+</script>
+</body>
+</html>
