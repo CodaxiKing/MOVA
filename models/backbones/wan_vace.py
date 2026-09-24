@@ -59,7 +59,7 @@ class WanVACEModel(MotionModel):
         weights=f"{VACE_REPO}@{VACE_REVISION}",
         weights_size_gb=19.04,
         verification={
-            "pytorch/cuda": "UNVERIFIED - never run with the real weights (no CUDA machine yet, EXP-001)",
+            "pytorch/cuda": "UNVERIFIED - never run with the real weights (EXP-001); wiring verified via tiny",
             "pytorch/cpu": "UNVERIFIED with real weights; code path VERIFIED only via wan2.1-vace-tiny-random",
             "onnx": "UNSUPPORTED", "tensorrt": "UNSUPPORTED",
         },
@@ -242,7 +242,8 @@ class WanVACETinyRandomModel(WanVACEModel):
         capabilities=("pose-video-control", "reference-image", "smoke-test-only"),
         requirements=("diffusers",),
         verification={"pytorch/cpu": "VERIFIED (fp32 bit-exact vs benchmark/baseline; bf16/fp16 finite)",
-                      "pytorch/cuda": "UNVERIFIED (no CUDA machine yet)"},
+                      "pytorch/cuda": "VERIFIED on RTX 2060 SUPER (tests/test_cuda.py: fp32/bf16/fp16 x "
+                                      "offload none/model/sequential; fp32 matches CPU < 1e-3)"},
     )
 
     def weights_status(self, verify_hashes: bool = False) -> WeightsStatus:

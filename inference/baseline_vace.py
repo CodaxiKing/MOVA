@@ -125,7 +125,11 @@ def generate(pipe, s: BaselineSettings, reference: Image.Image, control: list[Im
         raise ValueError(f"control has {len(control)} frames, expected {s.num_frames}")
     mask = [Image.new("L", (s.width, s.height), 255)] * s.num_frames  # white = generate everywhere
     dtype = _dtype(s.dtype)
-    pe, ne = prompt_embeds, negative_prompt_embeds
+    # Cached embeddings live on CPU (ADR-004). The pipeline only casts their dtype, and Wan's condition
+    # embedder does `temb.type_as(encoder_hidden_states)`, which would pull timesteps back to CPU. So they must
+    # sit on the pipeline's execution device (the offload target when hooks are on). No-op on CPU.
+    device = pipe._execution_device
+    pe, ne = prompt_embeds.to(device), negative_prompt_embeds.to(device)
     t0 = time.perf_counter()
     out = pipe(
         video=control,

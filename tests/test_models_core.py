@@ -30,8 +30,9 @@ from runtime import get_runtime
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "benchmark/baseline"))
 from capture_tiny_vace import frames_digest, synthetic_inputs  # noqa: E402
+from reference import baseline_sha256  # noqa: E402
 
-BASELINE_SHA = json.loads((ROOT / "benchmark/baseline/tiny_vace_cpu.json").read_text())["runs"][0]["output"]["sha256"]
+BASELINE_SHA = baseline_sha256()  # per CPU instruction set, see benchmark/baseline/reference.py
 
 
 @pytest.fixture
@@ -55,7 +56,8 @@ def isolated_runs(tmp_path, monkeypatch):
 
 def _tiny_request(media, tmp_path, **kw):
     ref, ctl = media
-    over = ["inputs.motion_is_control=true", f"output.dir={(tmp_path / 'out').as_posix()}"]
+    # CPU pinned: these tests check wiring/numerics and must not depend on the machine (cuda: see test_cuda.py).
+    over = ["inputs.motion_is_control=true", f"output.dir={(tmp_path / 'out').as_posix()}", "runtime.device=cpu"]
     kw.setdefault("reference", str(ref))
     kw.setdefault("motion", str(ctl))
     return InferenceRequest(model="tiny", overrides=over + kw.pop("extra", []), **kw)
