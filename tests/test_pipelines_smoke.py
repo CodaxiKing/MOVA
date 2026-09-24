@@ -69,7 +69,7 @@ def _tiny_vace_pipe():
                            scheduler=FlowMatchEulerDiscreteScheduler(shift=3.0), transformer=transformer)
 
 
-def test_baseline_generate_with_tiny_vace():
+def test_baseline_generate_with_tiny_vace(tmp_path):
     pytest.importorskip("diffusers")
     from PIL import Image
 
@@ -83,3 +83,8 @@ def test_baseline_generate_with_tiny_vace():
     frames, stats = generate(_tiny_vace_pipe(), s, ref, control, pe, ne)
     assert np.asarray(frames).shape == (5, 32, 32, 3)
     assert stats["generation_time_s"] >= 0
+    from evaluation.video import prepare_generated_frames, validate_video
+
+    encoded = prepare_generated_frames(frames, count=5, width=32, height=32)
+    path = write_video(tmp_path / "generated.mp4", encoded, s.fps)
+    assert validate_video(path, count=5, width=32, height=32, fps=s.fps)["status"] == "PASS"

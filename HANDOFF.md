@@ -1,5 +1,28 @@
 # HANDOFF
 
+## Continuação — Codex, 2026-09-24
+
+Objetivo: auditar e continuar a preparação do baseline sem avançar para adapters
+antes da geração real, conforme prompt mestre. Estado inicial: main/3174705, limpo.
+
+Concluído: `evaluation/video.py`, integração em `scripts/inference_baseline.py`,
+`tests/test_video_validation.py`, smoke VACE com encoding e validação.
+Documentação sincronizada e PROJECT_MEMORY.md criado (estava ausente).
+Nenhum download, treino ou alteração do backbone.
+
+Teste final: `.venv/Scripts/python -m pytest -q -p no:cacheprovider --basetemp outputs/test-final-20260924`
+→ **35 passed in 12.55s**, CPU, fora do sandbox devido a PermissionError nas pastas
+temporárias. Use uma pasta temporária nova em cada execução. check_env confirmou
+CUDA False, torch 2.14.0+cpu, RAM livre 0.99 GB.
+
+Próximos passos: obter acesso à máquina RTX 3060, autorização para pesos e mídia;
+executar EXP-002/EXP-001 conforme roteiro abaixo. Depois comparar controle e só
+então prototipar adapter. Não declarar baseline PASS com testes de pesos aleatórios.
+A validação de vídeo mede integridade e não certifica fidelidade visual.
+
+## Handoff anterior (histórico)
+
+
 ## Date
 2026-09-24
 

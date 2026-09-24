@@ -6,7 +6,21 @@ Phase 1 — Baseline (código pronto, execução real bloqueada) · Phase 2 — 
 ## Overall Progress
 [███░░░░░░░] ~25% (Fases 0 e 2 concluídas na parte CPU; Fase 1 aguardando GPU; Fases 3–6 não iniciadas)
 
-## Working (verificado nesta sessão)
+## Auditoria e implementação — Codex, 2026-09-24
+
+- Estado inicial: branch main, commit 3174705, árvore limpa.
+- CUDA indisponível confirmado; PyTorch 2.14.0+cpu; RAM disponível 0.99/15.69 GB.
+- Implementado: validação de pixels antes de conversão e de output.mp4 por
+  decodificação completa; relatório em stats.output_validation.
+- Verificado: suíte completa, incluindo geração VACE minúscula → encoding → validação.
+- Resultado: **35 passed in 12.55s**.
+- Comando: `.venv/Scripts/python -m pytest -q -p no:cacheprovider --basetemp outputs/test-final-20260924`.
+- Execução fora da restrição de sandbox: tentativas restritas deram PermissionError
+  nas pastas temporárias do pytest; não eram falhas funcionais dos componentes.
+- Baseline real, qualidade e suporte a 8 GB continuam não verificados.
+- A porcentagem e numeração de fases acima são estimativas históricas; não são critérios de PASS do anexo 49.
+
+## Working (verificação anterior)
 - Ambiente CPU: Python 3.12.10, PyTorch 2.14.0+cpu, diffusers 0.40.0, MediaPipe 1.0.1
 - `scripts/check_env.py` — detecção de GPU/VRAM/RAM e seleção automática de perfil (verificado só no caminho sem CUDA)
 - `scripts/check_model_size.py` — tamanho de repositórios HF sem baixar
@@ -35,7 +49,7 @@ Phase 1 — Baseline (código pronto, execução real bloqueada) · Phase 2 — 
 ## Last Verified
 2026-09-24
 
-## Last Validation
+## Last Validation anterior (substituída pela auditoria acima)
 Command:
 ```bash
 .venv/Scripts/python -m pytest -q

@@ -1,4 +1,19 @@
-# Evaluation (planejado — `evaluation/` vazio)
+# Evaluation
+
+## Integridade implementada
+
+`evaluation/video.py` rejeita arrays com quantidade/shape incorretos, NaN/Inf,
+e valores fora do contrato uint8 ou float [0,1] antes da conversão.
+O baseline decodifica output.mp4 completamente com OpenCV e FFmpeg estrito,
+confere frames, resolução e FPS (tolerância absoluta 0.01), identifica codec e
+registra duração (frames/FPS) em stats.output_validation no run.json.
+Falhas impedem o registro de sucesso. O contrato é para saída de FPS constante.
+PASS aqui significa integridade, não qualidade visual, identidade ou movimento.
+Decoders podem ocultar certas corrupções; não se promete detectar todas.
+Dependências existentes: NumPy, OpenCV, imageio-ffmpeg; CPU, sem novos pesos.
+Verificado em Windows/Python 3.12; Linux não testado.
+
+## Métricas de qualidade pendentes
 
 Cada eixo é avaliado separadamente (princípio também usado na avaliação do Kling-MotionControl tech report: identidade, precisão de movimento, expressão, qualidade dinâmica e visual).
 

@@ -51,10 +51,11 @@ common/         env (GPU/VRAM/perfil), config YAML, experiment registry, video I
 preprocessing/  pose/ face/ hands/ extratores; features.py (representações); render.py; pipeline.py
 inference/      conditioning.py (resolução, 4k+1, letterbox); baseline_vace.py
 models/         identity/ motion/{body,face,hands}/ fusion/ adapters/   (vazios — Fase 3+)
-training/ evaluation/                                                    (vazios — Fase 3+)
+training/       treino pendente
+evaluation/     integridade de vídeo; métricas de qualidade pendentes
 scripts/        check_env, check_model_size, extract_motion, inference_baseline
 configs/        baseline.yaml, extraction.yaml
-tests/          pytest (28 testes)
+tests/          pytest (35 testes)
 docs/           research/, experiments/, guias
 experiments/runs/<run_id>/run.json   registro automático (git-ignored)
 assets/ checkpoints/ outputs/        dados locais (git-ignored)
@@ -111,6 +112,10 @@ py -3.12 -m venv .venv
 - Mapeamento MediaPipe→OpenPose-18 é aproximado (EXP-004 pendente).
 - Máquina atual: ~1 GB de RAM livre durante a sessão (outros apps abertos) e 17.9 GB de disco — insuficiente para o download de 19 GB.
 - "Motion Mirror" (citado pelo usuário) não foi encontrado.
+
+## Validação da saída
+
+`evaluation/video.py` implementa integridade de vídeo em CPU; métricas de qualidade continuam pendentes.
 
 ## Próximos passos
 

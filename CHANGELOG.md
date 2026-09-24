@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Validação de pixels e integridade do vídeo gerado, relatório no run.json e sete novos casos de teste (35 testes no total).
 - Estrutura do projeto, empacotamento (`pyproject.toml`), `requirements.txt`, `.gitignore` (pesos/mídia bloqueados).
 - `common/`: detecção de hardware e perfis de VRAM automáticos, config YAML com overrides, registro de experimentos, I/O de vídeo, helpers HF.
 - `preprocessing/`: extratores MediaPipe separados de corpo, rosto e mãos; representações derivadas (normalizada, velocidade, aceleração, rot6d, blendshapes); prévias; vídeo de controle OpenPose-18.

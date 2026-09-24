@@ -9,6 +9,8 @@
 
 ## High Priority
 
+- [x] Validação automática da integridade de output.mp4 (requisito 49.18), testada em CPU
+
 - [x] Pesquisa Fase 0 (`docs/research/`)
 - [x] Seleção de backbone (ADR-001/002)
 - [x] `scripts/inference_baseline.py` com gates de download/CPU

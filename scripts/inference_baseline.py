@@ -26,6 +26,7 @@ from common.env import detect_hardware, select_profile, summarize  # noqa: E402
 from common.experiment import ExperimentRun  # noqa: E402
 from common.logging_utils import get_logger  # noqa: E402
 from common.video_io import read_video, write_video  # noqa: E402
+from evaluation.video import prepare_generated_frames, validate_video  # noqa: E402
 from inference.conditioning import fit_resolution, letterbox, prepare_control_frames, valid_num_frames  # noqa: E402
 
 log = get_logger("mova.baseline")
@@ -140,8 +141,10 @@ def main() -> int:
         from inference.baseline_vace import run_baseline
 
         frames, stats = run_baseline(s, reference, control, resolve_path(s.embed_cache_dir))
-        frames_u8 = [(np.clip(f, 0, 1) * 255).astype(np.uint8) if f.dtype != np.uint8 else f for f in frames]
+        frames_u8 = prepare_generated_frames(frames, count=s.num_frames, width=s.width, height=s.height)
         write_video(out / "output.mp4", frames_u8, s.fps)
+        stats["output_validation"] = validate_video(
+            out / "output.mp4", count=s.num_frames, width=s.width, height=s.height, fps=s.fps)
         if cfg["output"].get("save_side_by_side", True):
             ref_np = np.asarray(reference)
             write_video(out / "side_by_side.mp4",

@@ -21,6 +21,10 @@ python scripts/inference_baseline.py --motion outputs/motion/dance/pose_openpose
 
 Saídas em `outputs/baseline/<run_id>/`: `output.mp4`, `control.mp4`, `reference_letterboxed.png`, `side_by_side.mp4` (referência | pose | resultado), `motion/` (extração). Registro: `experiments/runs/<run_id>/run.json` (VRAM pico, tempos, settings, hardware).
 
+A saída principal passa pela validação de `evaluation/video.py` antes do
+registro de sucesso. O relatório fica em `stats.output_validation`; falhas
+marcam a execução como failed. Ver `docs/evaluation.md` para limites.
+
 ### Estratégia de memória (ADR-004)
 1. `encode_prompts_cached`: UMT5 em CPU uma vez → `checkpoints/embeds/prompt_<hash>.pt`.
 2. `WanVACEPipeline.from_pretrained(..., text_encoder=None, tokenizer=None)`.
