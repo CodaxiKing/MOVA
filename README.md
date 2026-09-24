@@ -1,10 +1,33 @@
 <div align="center">
 
-# 🎬 MOVA
+<img src="docs/assets/banner.svg" alt="MOVA — Character Motion Control" width="100%">
 
-### Open-source Character Motion Control · Motion Control de Personagens open-source
+<br>
+<br>
 
-**Reference image + motion video → your character performing the motion**
+<h1>MOVA</h1>
+
+<h3>Character Motion Control</h3>
+<h3>Motion Control de Personagens</h3>
+
+<br>
+
+<p>
+🖼️ <b>Reference image</b> &nbsp;+&nbsp; 🎥 <b>Motion video</b><br>
+⬇️<br>
+🎬 <b>Your character performing the motion</b>
+</p>
+
+<br>
+
+<p>
+🕺 &nbsp;Full-body motion transfer · <i>Transferência de movimento do corpo</i><br><br>
+🙂 &nbsp;Facial expression &amp; head pose · <i>Expressão facial e pose da cabeça</i><br><br>
+✋ &nbsp;Hands &amp; fingers · <i>Mãos e dedos</i><br><br>
+👤 &nbsp;Identity preservation · <i>Preservação de identidade</i><br><br>
+🎞️ &nbsp;Temporal consistency · <i>Consistência temporal</i><br><br>
+⚡ &nbsp;Runs on 8 GB VRAM · <i>Roda com 8 GB de VRAM</i>
+</p>
 
 <br>
 
@@ -13,19 +36,14 @@
 ![Diffusers](https://img.shields.io/badge/🤗_Diffusers-0.40-FFD21E)
 ![Backbone](https://img.shields.io/badge/Backbone-Wan2.1_DiT_1.3B-6C5CE7)
 ![VRAM](https://img.shields.io/badge/Target-RTX_3060_8GB-76B900?logo=nvidia&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-28_passing-2EA44F)
+![Tests](https://img.shields.io/badge/tests-pytest-2EA44F)
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue)
 ![Status](https://img.shields.io/badge/status-research_preview-orange)
 
 <br>
-
-**[🇺🇸 English](#-english)** &nbsp;·&nbsp; **[🇧🇷 Português](#-português)**
-
 <br>
 
-```text
-   maya.png   +   dance.mp4   ──►   MOVA   ──►   maya_dancing.mp4
-```
+### 🌐 &nbsp; **[English](#-english)** &nbsp;·&nbsp; **[Português](#-português)**
 
 </div>
 
