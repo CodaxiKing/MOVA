@@ -1,5 +1,30 @@
 # HANDOFF
 
+## Sessão atual — pesquisa Kling 3.0 + auditoria do repositório, 2026-09-24
+
+Objetivo do usuário: "verificar como o Kling Motion Control 3.0 funciona e o que
+temos/falta". Sem alterações de código; apenas docs de pesquisa e auditoria.
+
+- Auditoria do repo (subagent): 16 commits, main == origin/main; `models/` e
+  `training/` vazios (só `__init__.py`); `datasets/` e `assets/` sem conteúdo;
+  0 pesos Wan em cache; 0 gerações reais; 49 funções de teste.
+- Pesquisa Kling: paper 2603.03160 **não tem seção Method** (FACT, lido
+  integralmente); detalhes de produto no guia oficial
+  kling.ai/quickstart/motion-control-user-guide (Element Binding = só facial,
+  entradas 3–30 s, saída 720p/1080p, preços 9/12 credits/s, sujeito único).
+  Comparação independente: Wan-Animate-2 §5 = "comparable performance".
+- `docs/research/kling_analysis.md` ganhou §6 (produto 3.0) e fontes novas;
+  `sources.md` atualizado; CHANGELOG e TODO (itens PE e GSB) atualizados.
+
+Validação: `.venv/Scripts/python -m pytest -q -p no:cacheprovider --basetemp outputs/test-klingresearch-20260924`
+→ **64 passed in 47.63s**, CPU. Nenhum download; nenhum peso tocado.
+
+Gap consolidado (detalhe na resposta da sessão): baseline real bloqueado
+(sem GPU/autorização/mídia) e Fase 3 (`models/`, `training/`) 100% planejada.
+Próxima ação inalterada: RTX 3060 + autorização 19 GB + mídia → EXP-001.
+
+Histórico abaixo; STATUS.md contém o estado consolidado.
+
 ## Continuação — Claude Code, 2026-09-24 (reprodutibilidade e revisão)
 
 Pedido do usuário: fixar pesos/dependências, verificar cache completo, checar RAM/disco, retomar benchmarks,

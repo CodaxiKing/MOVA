@@ -149,8 +149,11 @@ Números de VRAM são os publicados pelos autores; **nenhum foi medido por nós 
 
 ## Kling-MotionControl (Kuaishou) — proprietário
 
-- Technical report: https://arxiv.org/abs/2603.03160 (HTML: https://arxiv.org/html/2603.03160v1)
-- API pública (terceiros): https://replicate.com/kwaivgi/kling-v3-motion-control
+- Technical report: https://arxiv.org/abs/2603.03160 (HTML: https://arxiv.org/html/2603.03160v1) — **sem seção Method**, sem parâmetros/ablations/dataset (FACT, lido integralmente 2026-09-24)
+- Docs oficiais do produto: https://kling.ai/quickstart/motion-control-user-guide · https://kling.ai/feature/ai-motion-control · https://kling.ai/quickstart/klingai-video-3-model-user-guide
+- API pública (terceiros): https://replicate.com/kwaivgi/kling-v3-motion-control (+ `/api` schema)
+- Comparação de terceiros: Wan-Animate-2 (https://arxiv.org/abs/2608.06009, §5) — user study cego: "comparable performance" vs Kling; confirma que Kling é modelo fechado/maior
+- Inacessíveis por fetch (JS-only): release note `kling.ai/release-note/release-notes/4titicw2vg`, `app.klingai.com/global/video-motion-control/new`, `kling.ai/document-api/api/video/motion-control`
 - Code/Weights: **não disponíveis** (FACT). Análise completa em `kling_analysis.md`.
 
 ## Motion Mirror

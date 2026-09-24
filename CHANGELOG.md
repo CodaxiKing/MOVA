@@ -26,6 +26,7 @@
 
 ### Research
 - Fase 0 completa: Wan2.1, VACE, Fun-Control, Wan-Animate, Wan-Animate-2, MimicMotion, Animate Anyone, MagicAnimate, UniAnimate-DiT, StableAnimator, SteadyDancer, LivePortrait, Kling-MotionControl (público vs inferência), datasets.
+- Kling 3.0 Motion Control aprofundado (2026-09-24): paper sem seção Method; guia oficial do produto (Element Binding facial, entradas/saídas, preços, limites); números GSB; comparação independente do Wan-Animate-2 — `kling_analysis.md` §6 e `sources.md`.
 
 ### Experiments
 - Nenhum experimento de geração executado ainda (sem GPU).

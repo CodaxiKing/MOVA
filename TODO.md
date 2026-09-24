@@ -54,6 +54,8 @@
 ## Research
 
 - [ ] Descobrir o que é "Motion Mirror" (pedir link ao usuário)
+- [ ] Prompt Enhancer (PE) do Kling: sem implementação pública — decidir se o MOVA precisa de controle semântico por texto no MVP (provavelmente não; baseline VACE já aceita prompt)
+- [ ] Avaliação GSB pareada humana por eixo (5 eixos do Kling) como extensão de `evaluation/review.py` / review.csv
 - [ ] Auditar licença dos pesos LivePortrait / InsightFace antes de usar como face encoder
 - [ ] Verificar licença do UniAnimate-DiT
 - [ ] Reverificar termos do AIST++ (factsheet deu 404)
