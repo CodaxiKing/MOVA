@@ -10,7 +10,7 @@ import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from common.errors import InsufficientResourcesError
+from common.errors import InsufficientResourcesError, InsufficientVRAMError
 
 GB = 1e9
 
@@ -104,7 +104,9 @@ def baseline_checks(*, missing_download_bytes: int, hf_cache_dir: str | Path, ou
 def enforce(checks: list[ResourceCheck], override: bool = False) -> None:
     failed = [c for c in checks if not c.ok]
     if failed and not override:
-        raise InsufficientResources("Insufficient resources; nothing was started:\n  " +
-                                    "\n  ".join(c.line() for c in failed) +
-                                    "\nFree resources, lower frames/resolution, or pass --skip-resource-check "
-                                    "if you know the estimate is wrong (record why).")
+        # VRAM-only shortfalls get the more specific error type; both are InsufficientResources.
+        cls = InsufficientVRAMError if all(c.name.startswith("VRAM") for c in failed) else InsufficientResourcesError
+        raise cls("Insufficient resources; nothing was started:\n  " +
+                  "\n  ".join(c.line() for c in failed) +
+                  "\nFree resources, lower frames/resolution, or pass --skip-resource-check "
+                  "if you know the estimate is wrong (record why).")

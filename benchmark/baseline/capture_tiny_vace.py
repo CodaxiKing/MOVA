@@ -87,7 +87,7 @@ def main() -> int:
         ref, control, pe, ne = synthetic_inputs()
         frames, stats = generate(pipe, s, ref, control, pe, ne)
         runs.append({"build_s": round(t_build, 4), "total_s": round(time.perf_counter() - t0, 4),
-                     "generation_time_s": stats["generation_time_s"], "vram_peak_gb": stats["vram_peak_gb"],
+                     "generation_time_s": stats["generation_time_s"], "vram_peak_gb": stats.get("vram_peak_gb"),
                      "output": frames_digest(frames)})
     digests = {r["output"]["sha256"] for r in runs}
     result = {

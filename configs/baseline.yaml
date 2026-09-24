@@ -1,5 +1,6 @@
 # Phase 1 baseline: Wan2.1-VACE-1.3B (Diffusers). See docs/inference.md.
 # "auto" values are filled from the detected hardware profile (common/env.py).
+# Runtime/device/precision/offload come from configs/runtime.yaml (or a `runtime:` section here, or CLI flags).
 inputs:
   reference: assets/reference/maya.png
   motion: assets/motion/dance.mp4      # raw video (pose is extracted) or an existing pose_openpose.mp4
@@ -8,11 +9,10 @@ inputs:
   frame_stride: 1
 
 model:
+  name: wan2.1-vace-1.3b               # registry key (models/registry.py; `mova info` lists them)
   model_id: Wan-AI/Wan2.1-VACE-1.3B-diffusers
   # Exact Hub commit (resolved 2026-09-24; last modified upstream 2025-06-06). Change only with a new experiment.
   revision: ec4d2cb062b548996b179d493fdd05340de702a1
-  dtype: auto                          # auto -> bfloat16 if supported, else float16
-  offload: auto                        # auto | none | model | sequential
   vae_tiling: auto
 
 generation:

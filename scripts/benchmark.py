@@ -51,8 +51,9 @@ def generation_config(locked, case):
 
 CODE_ROOT = Path(__file__).resolve().parent.parent
 # Files whose content can change a generated video; resuming across a change would mix two systems.
-GENERATION_CODE = ("inference", "common", "preprocessing", "scripts/inference_baseline.py",
-                   "evaluation/video.py", "configs/baseline.yaml")
+GENERATION_CODE = ("inference", "common", "preprocessing", "runtime", "models", "core", "mova",
+                   "scripts/inference_baseline.py", "evaluation/video.py", "configs/baseline.yaml",
+                   "configs/runtime.yaml")
 
 
 def generation_code_fingerprint(root=CODE_ROOT):

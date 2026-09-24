@@ -4,6 +4,9 @@ Memory strategy for 8 GB GPUs (ADR-004):
   1. UMT5 text encoder runs once on CPU; prompt embeddings are cached to disk.
   2. The generation pipeline is then loaded WITHOUT the text encoder.
   3. Model CPU offload (or sequential offload) + VAE tiling.
+
+This module holds the numerics only. Device placement, offload and memory stats are applied by the runtime
+(runtime/backends/pytorch.py) through models/backbones/wan_vace.py (ADR-009).
 """
 
 from __future__ import annotations
@@ -99,7 +102,8 @@ def encode_prompts_cached(s: BaselineSettings, cache_dir: Path) -> tuple[torch.T
     return pe, ne
 
 
-def load_pipeline(s: BaselineSettings):
+def build_pipeline(s: BaselineSettings):
+    """Load the VACE pipeline WITHOUT placing it on a device (the runtime does that, see runtime/)."""
     from diffusers import AutoencoderKLWan, WanVACEPipeline
     from diffusers.schedulers.scheduling_unipc_multistep import UniPCMultistepScheduler
 
@@ -110,31 +114,15 @@ def load_pipeline(s: BaselineSettings):
     pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config, flow_shift=s.flow_shift)
     if s.vae_tiling:
         pipe.vae.enable_tiling()
-    if s.offload == "model":
-        pipe.enable_model_cpu_offload()
-    elif s.offload == "sequential":
-        pipe.enable_sequential_cpu_offload()
-    else:
-        pipe.to("cuda")
     return pipe
 
 
-def run_baseline(s: BaselineSettings, reference: Image.Image, control: list[Image.Image],
-                 cache_dir: Path) -> tuple[list[Any], dict[str, Any]]:
-    pe, ne = encode_prompts_cached(s, cache_dir)
-    t_load = time.perf_counter()
-    pipe = load_pipeline(s)
-    load_s = time.perf_counter() - t_load
-    frames, stats = generate(pipe, s, reference, control, pe, ne)
-    return frames, {"load_time_s": round(load_s, 1), **stats}
-
-
 def generate(pipe, s: BaselineSettings, reference: Image.Image, control: list[Image.Image],
-             prompt_embeds: torch.Tensor, negative_prompt_embeds: torch.Tensor) -> tuple[list[Any], dict[str, Any]]:
+             prompt_embeds: torch.Tensor, negative_prompt_embeds: torch.Tensor,
+             generator: torch.Generator | None = None) -> tuple[list[Any], dict[str, Any]]:
+    """Pure generation call. Device placement and memory accounting belong to the runtime."""
     if len(control) != s.num_frames:
         raise ValueError(f"control has {len(control)} frames, expected {s.num_frames}")
-    if torch.cuda.is_available():
-        torch.cuda.reset_peak_memory_stats()
     mask = [Image.new("L", (s.width, s.height), 255)] * s.num_frames  # white = generate everywhere
     dtype = _dtype(s.dtype)
     pe, ne = prompt_embeds, negative_prompt_embeds
@@ -151,12 +139,6 @@ def generate(pipe, s: BaselineSettings, reference: Image.Image, control: list[Im
         num_frames=s.num_frames,
         num_inference_steps=s.num_inference_steps,
         guidance_scale=s.guidance_scale,
-        generator=torch.Generator().manual_seed(s.seed),
+        generator=generator if generator is not None else torch.Generator().manual_seed(s.seed),
     ).frames[0]
-    gen_s = time.perf_counter() - t0
-    stats = {
-        "generation_time_s": round(gen_s, 1),
-        "vram_peak_gb": round(torch.cuda.max_memory_allocated() / 1024**3, 2) if torch.cuda.is_available() else None,
-        "vram_reserved_peak_gb": round(torch.cuda.max_memory_reserved() / 1024**3, 2) if torch.cuda.is_available() else None,
-    }
-    return out, stats
+    return out, {"generation_time_s": round(time.perf_counter() - t0, 1)}

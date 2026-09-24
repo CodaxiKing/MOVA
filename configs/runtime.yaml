@@ -1,0 +1,9 @@
+# Execution defaults for every command (mova infer, scripts/inference_baseline.py, benchmark generate).
+# Precedence (highest first): CLI flags (--runtime/--device/--precision/--offload)
+#   > `runtime:` section of the run config (or --set runtime.<key>=...)
+#   > legacy model.dtype / model.offload in old run configs
+#   > this file.
+runtime: pytorch      # pytorch (onnx / tensorrt: not implemented, see docs/architecture.md)
+device: auto          # auto | cpu | cuda | cuda:<index>   (auto = first GPU, else CPU; ROCm GPUs are cuda:<index>)
+precision: auto       # auto | fp32 | fp16 | bf16          (auto = bf16 if the GPU supports it, else fp16; fp32 on CPU)
+offload: auto         # auto | none | model | sequential   (auto = by VRAM: <6.5 GB sequential, <20 GB model; none on CPU)

@@ -1,0 +1,33 @@
+# Smoke-test model: the real Diffusers WanVACE code path with a tiny RANDOM network (no downloads).
+# Output is noise by construction; use it to verify CLI -> core -> model -> runtime -> video on any machine.
+#   mova infer --model tiny --reference ref.png --motion control.mp4 --set inputs.motion_is_control=true
+inputs:
+  reference: assets/reference/maya.png
+  motion: assets/motion/dance.mp4
+  motion_is_control: false
+  motion_fps: 16
+  frame_stride: 1
+
+model:
+  name: wan2.1-vace-tiny-random
+  model_id: wan2.1-vace-tiny-random
+  revision: null
+  vae_tiling: false
+
+generation:
+  prompt: "(ignored: random prompt embeddings seeded by generation.seed)"
+  negative_prompt: null
+  height: 32
+  width: 32
+  keep_reference_aspect: false
+  num_frames: 5
+  num_inference_steps: 2
+  guidance_scale: 5.0
+  flow_shift: 3.0
+  conditioning_scale: 1.0
+  seed: 42
+  fps: 16
+
+output:
+  dir: outputs/smoke
+  save_side_by_side: true
