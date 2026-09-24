@@ -1,4 +1,31 @@
-# Training (planejado — nada implementado)
+# Training (scaffolding implementado e testado em CPU; nenhum treino real)
+
+## Implementado (2026-09-24)
+
+| Parte | Arquivo | Verificado |
+|---|---|---|
+| Loss flow-matching do Wan (x_t = (1-σ)x0 + σε, alvo v = ε - x0, σ com shift) + pesos por região rosto/mãos (média 1) | `training/losses.py` | fórmulas, pooling 4k+1, normalização |
+| Latentes do VAE com a normalização exata do `WanVACEPipeline` | `training/precompute.py` | comparado com a fórmula do pipeline (VAE minúsculo) |
+| Dataset: manifesto validado de uma vez, identidades do benchmark recusadas, pontos 2D de rosto/mãos para a loss | `training/dataset.py` | arquivos ausentes, shape errado, split, identidade proibida |
+| Trainer: backbone congelado, só o condicionamento MOVA treina, acumulação, clipping, autocast pelo runtime, checkpoint com retomada exata | `training/trainer.py` | overfit num batch fixo, backbone intacto, retomada idêntica |
+| Backbones: `tiny`, `tiny-vace` (controle VACE nulo), `wan2.1-vace-1.3b` (só cache local) | `training/backbone.py` | minúsculos rodam; o real nunca baixa |
+| Ingestão de dados -> manifesto | `training/data_sources.py`, `scripts/datasets.py` | licença/vazamento; build com VAE minúsculo |
+| Serviço + CLI | `core/train.py`, `mova train [--smoke]` | smoke: 15 passos, loss 1.92 -> 1.62, run.json |
+
+```bash
+mova train --smoke --steps 20                               # qualquer máquina, sem pesos
+python scripts/datasets.py validate --sources my_sources.yaml
+python scripts/datasets.py build --sources my_sources.yaml --out datasets/built/v1 --prompt-embeds checkpoints/embeds/prompt_<hash>.pt
+mova train --config configs/train_adapter.yaml --set dataset=datasets/built/v1/manifest.json   # GPU + pesos: UNVERIFIED
+```
+
+Descoberta: o `forward` do `WanVACETransformer3DModel` exige entradas de controle; o trainer passa controle zero
+com escala 0 (equivale ao DiT puro). Treino real: não executado (sem GPU, sem pesos, sem dados autorizados).
+
+---
+
+Plano original (mantido como referência):
+
 
 `mova train` existe na CLI mas responde "não implementado" (exit 2). Quando o treino existir, deve obter
 device/precisão/memória do `runtime/` (ADR-009) e ser registrado como serviço em `core/`, sem `torch.cuda` direto.

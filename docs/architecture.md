@@ -112,7 +112,23 @@ Windows; NumPy, PyTorch (leitura segura dos tracks), MediaPipe, OpenCV,
 imageio-ffmpeg e PyYAML já existentes. Avaliação em CPU sem CUDA. Geração exige
 CUDA e pesos do baseline; ainda não testada com pesos reais. Linux não verificado.
 
-## Modelo treinável planejado
+## Módulos treináveis — implementados, testados em CPU, NÃO treinados (2026-09-24)
+
+| Módulo | Arquivo | Contrato verificado |
+|---|---|---|
+| Features de movimento | `models/motion/features.py` | corpo (33x6), rosto (52 blendshapes + rot6d), mãos (2x21x4) a partir dos `.pt` |
+| Encoders corpo/rosto/mãos + pooling 4k+1 -> k+1 + atenção temporal | `models/motion/encoders.py` | tokens por frame latente, máscaras de streams ausentes |
+| Identity Encoder v0 (N vistas -> K tokens globais) | `models/identity/encoder.py` | invariante à ordem das vistas; vistas mascaradas não influenciam |
+| Fusão (tipo por fonte, frame_index, máscara) | `models/fusion/condition.py` | concatena motion + identity |
+| Motion Adapter (cross-attn por bloco, frame-local; caminho denso opcional), zero-init, via hooks | `models/adapters/motion_adapter.py` | **saída bit-idêntica ao backbone no passo 0**, inclusive no pipeline VACE completo (SHA do baseline) |
+| Pilha completa | `models/adapters/stack.py` | `MovaConditioning.for_transformer(...)` |
+
+Achado do teste ponta a ponta: o VACE prefixa a referência como um frame latente extra (`reference_frames=1`);
+esses frames só enxergam tokens de identidade. É assim que blendshapes e mãos 3D chegam ao modelo: hoje o baseline
+só recebe o esqueleto desenhado. Nenhum modelo MOVA foi registrado no registry; isso só acontece com um checkpoint
+treinado e avaliado.
+
+## Modelo treinável planejado (desenho original)
 
 ```text
 Reference image(s) ─► Identity Encoder ─► identity tokens ───────────────────────┐

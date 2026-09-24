@@ -47,6 +47,21 @@ compatibilidade com RTX 3060 8 GB permanece não medida.
   antes do argparse.
 - No Windows, `Path.write_text` grava CRLF; o repositório é LF (`.gitattributes`). Usar `write_bytes` ou `newline`.
 
+## Qualidade do motion control — descobertas verificadas 2026-09-24
+
+- Identidade: 24 landmarks rígidos do Face Mesh bastam para detectar deriva de morfologia (0.009 → 0.055 com rosto
+  29 % mais largo), mas não distinguem pessoas de proporções parecidas. Cor Lab separa roupa/pele trocada.
+- Temporal: warp error distingue textura suave (0.0009) de ruído por frame (0.05) e flicker (0.157); vídeo congelado
+  dá warp 0, então sempre ler junto com o fluxo médio e a razão contra o driver.
+- Retargeting: usar comprimentos 3D (world) da referência e multiplicar o vetor 2D do ator pelo mesmo fator
+  preserva o escorço; o caminho da raiz precisa escalar com o torso (um teste pegou esse erro).
+- VACE prefixa a referência como frame latente extra; o forward do transformer VACE exige controle.
+- One-Euro em dança rápida a 16 fps aumenta o erro mais do que reduz o jitter; padrão sem suavização.
+- rot6d de todos os ossos é muito sensível a ruído (ossos curtos); só ossos longos: invariante e robusto (sintético).
+- Licenças: pesos InsightFace são não comerciais e o LivePortrait os embute; UniAnimate-DiT não tem licença;
+  AIST Dance DB é só pesquisa acadêmica.
+- No bash desta máquina, heredocs com aspas misturadas quebram; escrever scripts de edição com a ferramenta Write.
+
 ## Leitura para continuidade
 
 Ler STATUS.md e HANDOFF.md para comandos, evidências e próximos experimentos.

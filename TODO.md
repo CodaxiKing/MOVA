@@ -7,6 +7,22 @@
 - [ ] Na máquina RTX 3060: `check_env.py --cuda-test` e registrar VRAM/RAM/disco reais em `CLAUDE.md`
 - [ ] EXP-001: executar baseline 256px/17 frames, medir VRAM pico e tempo, registrar
 
+## Qualidade do motion control (ADR-011..014) — próximos passos
+
+- [x] identity-v1, temporal-v1, GSB cego; integrados ao evaluate/compare/review
+- [x] Retargeting por comprimento de ossos; One-Euro; pós-processamento de mãos; controle a partir das tracks
+- [x] Encoders, Identity Encoder v0, fusão, Motion Adapter zero-init; scaffolding de treino; `mova train --smoke`
+- [x] Auditoria de licenças; registro de fontes; validação de pares; build do manifesto; `benchmark intake`
+- [ ] Calibrar limiares identity/temporal (`REVIEW_HINTS`) com vídeos gerados revisados
+- [ ] Autorizar DINOv2-small (88 MB, Apache-2.0) para o embedding de identidade, se desejado
+- [ ] Primeira sessão GSB real (baseline VACE vs baseline + retarget) quando houver geração na GPU
+- [ ] Testar retargeting com personagem real de corpo inteiro (torso visível) e com o baseline VACE
+- [ ] EXP-003 com tracks reais; decidir trocar a entrada do corpo para rot6d dos ossos longos
+- [ ] EXP-006 com vídeo real: decidir suavização e medir o efeito do pós-processamento de mãos
+- [ ] Na GPU: `mova train` com o transformer real (UNVERIFIED), medir VRAM do adapter em 8 GB
+- [ ] Integrar o condicionamento MOVA treinado no `mova infer` (novo modelo no registry com checkpoint avaliado)
+- [ ] Auditar TikTok dataset, UBC Fashion, Champ; registrar licença Pexels clipe a clipe ao usar HumanVid
+
 ## Arquitetura (ADR-009/010) — próximos passos
 
 - [x] Runtime (PyTorchRuntime), DeviceManager, PrecisionManager, MemoryManager, erros estruturados
@@ -19,7 +35,7 @@
 - [ ] Fase 11 API: decidir dependência (FastAPI + uvicorn: licenças MIT/BSD) e criar `api/` chamando `core.inference`
 - [ ] Fase 9: definir interfaces de encoders (identidade/rosto/mãos/temporal) junto da 1ª implementação real (Fase 3 do roadmap)
 - [ ] Fase 18: config de produção reproduzível (modelo+config+runtime+hardware+seed+input)
-- [ ] `mova train` quando existir treino (usar runtime/ para device/precisão)
+- [x] `mova train` quando existir treino (usar runtime/ para device/precisão)
 - [ ] ONNX/TensorRT (Fases 13/14) só após export validado + benchmark; multi-GPU (15) só com hardware; nativo (16) só após profiling
 - [ ] Testar Linux e AMD/ROCm quando houver ambiente (hoje UNVERIFIED)
 - [ ] `ExperimentRun` usa run_id por segundo: duas execuções no mesmo segundo compartilham pasta (existente, não corrigido)
@@ -55,16 +71,16 @@
 ## Medium Priority
 
 - [ ] EXP-003: comparar representações (2D, 3D world, normalizada, velocidade, rot6d) — reconstrução/predição e jitter
-- [ ] Retargeting de proporções (comprimento de ossos) do ator para a personagem
+- [x] Retargeting de proporções (comprimento de ossos) do ator para a personagem
 - [ ] Extrator DWPose ONNX opcional (Apache 2.0; ~2 arquivos ONNX, pedir autorização se >50 MB)
 - [ ] Baseline B: Wan2.1-Fun-V1.1-1.3B-Control (19.81 GB — autorização)
 - [ ] `evaluation/`: métricas de pose (PCK/erro de keypoints re-extraídos), identidade (face embedding), temporal (warp/flow error), qualidade (FVD/CLIP)
 - [x] Parte inicial de evaluation: PCK/erro, mãos separadas, blendshape MAE, aceleração; demais métricas acima pendentes
-- [ ] Protótipo do Motion Adapter (encoder + projection + temporal attention, zero-init) com testes de forma em CPU
+- [x] Protótipo do Motion Adapter (encoder + projection + temporal attention, zero-init) com testes de forma em CPU
 
 ## Low Priority
 
-- [ ] Suavização One-Euro para keypoints
+- [x] Suavização One-Euro para keypoints
 - [ ] Vídeos longos: janelas sobrepostas (progressive latent fusion)
 - [ ] Integração ComfyUI (opcional)
 
@@ -72,10 +88,10 @@
 
 - [ ] Descobrir o que é "Motion Mirror" (pedir link ao usuário)
 - [ ] Prompt Enhancer (PE) do Kling: sem implementação pública — decidir se o MOVA precisa de controle semântico por texto no MVP (provavelmente não; baseline VACE já aceita prompt)
-- [ ] Avaliação GSB pareada humana por eixo (5 eixos do Kling) como extensão de `evaluation/review.py` / review.csv
-- [ ] Auditar licença dos pesos LivePortrait / InsightFace antes de usar como face encoder
-- [ ] Verificar licença do UniAnimate-DiT
-- [ ] Reverificar termos do AIST++ (factsheet deu 404)
+- [x] Avaliação GSB pareada humana por eixo (5 eixos do Kling) como extensão de `evaluation/review.py` / review.csv
+- [x] Auditar licença dos pesos LivePortrait / InsightFace antes de usar como face encoder
+- [x] Verificar licença do UniAnimate-DiT
+- [x] Reverificar termos do AIST++ (factsheet deu 404)
 - [ ] Ler o paper completo do Wan-Animate-2 (arquitetura do encoder de vídeo de condução)
 - [ ] Ler seções de método do Wan-Animate (2509.14055) sobre face adapter
 

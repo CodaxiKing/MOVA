@@ -22,6 +22,18 @@ ou duração, crie outra versão do protocolo; não misture resultados.
 5. Faça revisão visual usando `review-template.csv` e registre falhas em
    `failure-template.yaml`. Só depois decida qual experimento treinar.
 
+Atalho para os passos 1–2, um caso por vez (copia a referência, prepara o vídeo, preenche fonte/licença/identidade
+e mostra o que ainda falta; nunca sobrescreve mídia existente):
+
+```bash
+python scripts/benchmark.py intake --case walking-01 --reference raw/maya_front.png --motion raw/walk_clip.mp4 \
+  --identity-id maya --reference-source "own photo" --reference-license "CC-BY-4.0" \
+  --motion-source "own recording" --motion-license "CC-BY-4.0"
+```
+
+Depois da avaliação: `benchmark.py gsb` monta uma sessão GSB cega entre dois relatórios e `benchmark.py gsb-score`
+calcula (G+S)/(B+S) por eixo (`docs/evaluation.md`).
+
 ```bash
 python scripts/benchmark.py check --manifest benchmark/v1.draft.yaml
 python scripts/benchmark.py prepare --video assets/raw/walking.mp4 --out assets/benchmark/v1/walking-01/motion.mp4

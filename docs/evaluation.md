@@ -88,3 +88,40 @@ Cada eixo é avaliado separadamente (princípio também usado na avaliação do 
 | Video Quality | FVD (se houver conjunto de referência), CLIP-score do prompt, avaliação visual lado a lado | — | a definir |
 
 Toda avaliação grava `experiments/runs/<id>/run.json` e compara BASELINE × MOVA no mesmo conjunto de pares (referência, movimento).
+
+## Identidade — identity-v1 (`evaluation/identity.py`)
+
+Referência (imagem original, resolução cheia) × cada frame gerado. Sem pesos novos, sem InsightFace
+(modelos não comerciais — `docs/research/licenses.md`).
+
+- **Geometria facial:** 24 landmarks rígidos do Face Mesh (cantos dos olhos, nariz, maçãs, laterais, testa); todas
+  as distâncias 3D par a par, em log, sem a escala global. Erro = média |log razão| contra a referência.
+  Invariante a rotação/escala/enquadramento (testado exatamente); pontos de expressão (boca, sobrancelha, queixo)
+  excluídos (testado). Detecta deriva de morfologia; **não** é reconhecimento facial.
+- **Cor do rosto e do torso:** CIELAB dentro do casco dos landmarks / polígono ombros–quadris: ΔE76 da média e
+  interseção de histograma a\*b\*. Torso exige quadris visíveis (senão null, como no PCK).
+- **Embedding (opcional):** `--identity-embedder hf:facebook/dinov2-small@<rev>` usa um modelo **já em cache**
+  (nunca baixa); sem ele o campo é UNAVAILABLE, nunca 0.
+- Evidência (astronaut, MediaPipe real): mesma pessoa 0.009 · rosto 29 % mais largo 0.055 · recolorido ΔE 35 vs 1.5.
+  Alertas de revisão: geometria > 0.035, ΔE rosto > 10, ΔE torso > 12 — **não calibrados em vídeo gerado**.
+
+## Qualidade dinâmica — temporal-v1 (`evaluation/temporal.py`)
+
+Fluxo óptico Farneback (OpenCV) entre frames consecutivos: `warp_error` (frame t deformado sobre t+1, só pixels
+que passam no teste forward-backward), `static_flicker` (variação onde o fluxo < 0.5 px), `luma_flicker` (brilho
+global pulsando) e `mean_flow_px`. Os mesmos números no vídeo **driver** real dão a referência: `*_ratio`.
+Sintético: textura suave 0.0009 · ruído por frame 0.05 · flicker de brilho 0.157 · congelado 0 com fluxo ≈ 0
+(sinalizado por `mean_flow_px_ratio` < 0.3). A aceleração de keypoints (motion-v2) não vê nada disso.
+
+## GSB pareado cego (`evaluation/gsb.py`) — o protocolo do relatório Kling
+
+```bash
+python scripts/benchmark.py gsb --baseline <reportA.json> --candidate <reportB.json> --out outputs/gsb/A_vs_B
+# avaliadores recebem index.html + ratings.csv (L/S/R por eixo); key.json fica escondido
+python scripts/benchmark.py gsb-score --ratings outputs/gsb/A_vs_B/ratings.csv --key outputs/gsb/A_vs_B/key.json
+```
+
+Eixos: visual_quality, dynamic_quality, identity_preservation, motion_accuracy, expression_accuracy (os 5 do
+Kling) + hands_accuracy e overall. Lado esquerdo/direito sorteado por caso (seed). Score por eixo
+**GSB = (G+S)/(B+S)** do ponto de vista do candidato (> 1 favorece o candidato) + win rate G/(G+B). Preferência
+humana neste benchmark, não medida objetiva. Nenhuma sessão real foi feita (não há vídeo gerado real).

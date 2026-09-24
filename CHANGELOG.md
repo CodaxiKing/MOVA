@@ -3,6 +3,18 @@
 ## [Unreleased]
 
 ### Added
+- Métricas identity-v1 (geometria facial rígida, cor Lab rosto/torso, embedding opcional em cache) e temporal-v1
+  (warp error por fluxo óptico, flicker, fluxo, razão contra o driver) no `benchmark evaluate`, `compare` e na
+  página de revisão; `benchmark gsb` / `gsb-score` (GSB pareado cego, (G+S)/(B+S), 5 eixos Kling + mãos).
+- Retargeting por comprimento de ossos (`preprocessing/retarget.py`, `inputs.retarget`, `mova preprocess --retarget-to`).
+- One-Euro (`preprocessing/filters.py`), pós-processamento de mãos (`preprocessing/hands_post.py`), controle desenhado
+  a partir das tracks (`preprocessing/control.py`), `scripts/calibrate_extraction.py`.
+- Encoders de movimento corpo/rosto/mãos, Identity Encoder v0, fusão de condições e Motion Adapter zero-init por hooks.
+- Treino: losses flow-matching com pesos por região, precompute de latentes, dataset, trainer com retomada,
+  backbones, `mova train [--smoke]`, `configs/train_adapter.yaml`.
+- Dados: auditoria de licenças (`docs/research/licenses.md`), `datasets/registry.yaml`, `scripts/datasets.py`
+  (list/validate/plan/build), `benchmark intake`.
+- EXP-003 (sintético) e EXP-006; 75 testes novos (204 no total).
 - Camada de runtime (ADR-009): `runtime/` com `Runtime`, `PyTorchRuntime`, `DeviceManager` (CPU/CUDA/ROCm*, seleção
   `cuda:N`), `PrecisionManager` (fp32/fp16/bf16), `MemoryManager` (offload, stats, cleanup), `RuntimeManager`.
 - Interface de modelo e registry: `models/base.py`, `models/registry.py`, `models/backbones/wan_vace.py`
@@ -16,6 +28,8 @@
   ADR-009 e ADR-010. 65 testes novos (129 no total).
 
 ### Changed
+- Tracks `FORMAT_VERSION = 2` (mãos pós-processadas por padrão; cru em `*_raw`); a avaliação exige a mesma versão.
+- `pose_openpose.mp4` desenhado após a extração (pixel-idêntico com os padrões antigos).
 - `scripts/inference_baseline.py` e `scripts/extract_motion.py` são wrappers da CLI; mesmas flags + novas.
 - `inference/baseline_vace.py`: `load_pipeline`/`run_baseline` → `build_pipeline` (sem placement) + `generate`
   puro; placement/offload/VRAM pelo runtime. Saída fp32 bit-idêntica.

@@ -1,5 +1,29 @@
 # Project Status
 
+## Qualidade do motion control em CPU (2026-09-24, Claude Code, branch `feat/motion-quality`)
+
+Tudo abaixo roda e foi testado em CPU, sem os 19 GB e sem GPU. **Nada foi treinado e nenhum vídeo real foi gerado**:
+isto melhora o que medimos e o que o modelo poderá usar, não a qualidade já demonstrada.
+Testes: **204 passed** (antes: 129). Máquina: i7-1165G7, sem CUDA, torch 2.14.0+cpu.
+
+| Item | Status | Evidência |
+|---|---|---|
+| Identidade identity-v1 (geometria facial rígida + cor Lab rosto/torso + embedding opcional) | **PASS (sintético + foto real)** / calibração em vídeo gerado **UNVERIFIED** | astronaut: mesma pessoa 0.009, rosto +29 % 0.055, recolorido ΔE 35 vs 1.5; invariância exata a pose/escala testada |
+| Temporal temporal-v1 (warp error com oclusão, flicker, fluxo, razão vs driver) | **PASS (sintético)** | suave 0.0009, ruído 0.05, flicker 0.157, congelado 0 + fluxo ≈ 0 sinalizado |
+| GSB pareado cego (5 eixos Kling + mãos + overall, (G+S)/(B+S)) | **PASS (ferramenta)**; nenhuma sessão real | cegamento, pontuação do ponto de vista do candidato, validação de entradas |
+| Integração benchmark evaluate / compare / review | **PASS** | avaliação real com MediaPipe inclui identity/temporal; review mostra tabelas e alertas |
+| Retargeting por comprimento de ossos (+ mãos, rosto, âncora na referência) | **PASS (geometria sintética)** / com personagem real **UNVERIFIED** | comprimentos 3D = referência, direções = driver, 2D = projeção do 3D, identidade = no-op |
+| One-Euro + pós-processamento de mãos + controle a partir das tracks | **PASS** | controle pixel-idêntico ao antigo nos padrões; trocas E/D e mãos distantes corrigidas em testes |
+| EXP-003 (representações) | **PARTIAL** (sintético) | rot6d dos ossos longos: invariante a câmera/corpo, ruído 0.63 vs 5.69 (todos os ossos) |
+| EXP-006 (suavização) | **PARTIAL** (sintético) | padrão continua sem suavização: atraso > jitter em movimento rápido |
+| Motion/Face/Hand encoders, Identity Encoder v0, fusão, Motion Adapter zero-init | **PASS (forma/invariantes)** / treinado **NÃO** | backbone bit-idêntico no passo 0, inclusive no pipeline VACE (SHA do baseline) |
+| Treino: losses, precompute, dataset, trainer, `mova train --smoke` | **PASS (CPU minúsculo)** / treino real **BLOCKED** | overfit, retomada exata, backbone intacto, run.json |
+| Licenças + registro de fontes + validação de pares + build do manifesto | **PASS** | InsightFace/LivePortrait/UniAnimate-DiT bloqueados, AIST research-only (fontes primárias) |
+| `benchmark intake` (mídia + metadados, depois freeze) | **PASS (sintético)**; benchmark real ainda **BLOCKED** (sem mídia) | intake → freeze funciona com um caso sintético |
+
+Formato dos tracks: `FORMAT_VERSION = 2` (mãos pós-processadas por padrão; cru preservado). Detalhes:
+`docs/pipeline.md`, `docs/evaluation.md`, `docs/training.md`, `docs/architecture.md`, ADR-011..014.
+
 ## Evolução arquitetural — Runtime / Model / Core / CLI (2026-09-24, Claude Code, branch `refactor/runtime-architecture`)
 
 Máquina: HP ProBook, i7-1165G7, **sem CUDA**, torch 2.14.0+cpu, RAM livre 0.8–1.9 GB. Nenhum download.
@@ -16,8 +40,8 @@ Testes: **129 passed** (antes: 64). Detalhes: `docs/architecture.md`, ADR-009/01
 | 6 | Memory Manager | Métricas/controle | **PARTIAL** — política de offload, stats CPU, cleanup e load/unload testados; VRAM antes/pico/depois UNVERIFIED |
 | 7 | Capability System | Validação de compatibilidade | **PASS** — runtime/modelo/device/precisão/offload/pacotes/opt-in/pesos/recursos com erro claro antes de executar |
 | 8 | Model Registry | Registro/carregamento | **PASS** — 2º backbone registrado em teste e executado sem mudar core/CLI |
-| 9 | Plugins/Adapters | Substituição de módulo | **UNVERIFIED** — não iniciada: encoders/temporal ainda não existem (Fase 3 do roadmap); só backbone e runtime são plugáveis |
-| 10 | CLI | Execução end-to-end | **PARTIAL** — info/infer/preprocess/benchmark/evaluate/test PASS; `train` não implementado; sem API para comparar |
+| 9 | Plugins/Adapters | Substituição de módulo | **PARTIAL** — encoders corpo/rosto/mãos, identidade, fusão e adapter com interfaces e testes; streams selecionáveis por config; não treinados |
+| 10 | CLI | Execução end-to-end | **PARTIAL** — info/infer/preprocess/benchmark/evaluate/test PASS; `train --smoke` PASS (treino real bloqueado); sem API para comparar |
 | 11 | API | Inferência via API | **UNVERIFIED** — não iniciada (FastAPI não instalado; core pronto para ser chamado) |
 | 12 | Regression Benchmark | Baseline vs nova arquitetura | **PARTIAL** — CPU minúsculo: bit-exato, overhead explicado; modelo real BLOCKED |
 | 13 | ONNX | Benchmark real | **BLOCKED** — sem export validado; `onnx` não instalado. UNSUPPORTED |

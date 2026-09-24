@@ -243,3 +243,87 @@ Ecossistema (PyTorch, Diffusers), velocidade de pesquisa e manutenção; o garga
 
 ### Date
 2026-09-24
+
+---
+
+## ADR-011 — Métricas de identidade e qualidade dinâmica sem pesos não comerciais
+
+### Decision
+identity-v1 = geometria de 24 landmarks faciais rígidos do MediaPipe (distâncias 3D par a par em log, sem escala
+global) + cor CIELAB do rosto e do torso; embedding por modelo em cache (ex.: DINOv2-small, Apache-2.0) é opcional.
+temporal-v1 = warp error por fluxo Farneback com checagem forward-backward, flicker estático e de brilho, fluxo
+médio, e razões contra o vídeo driver real. GSB cego com (G+S)/(B+S) por eixo, como no relatório Kling.
+
+### Alternatives Considered
+ArcFace/InsightFace (padrão da literatura, mas pesos não comerciais), CLIP/DINOv2 obrigatórios (download não
+autorizado), FVD (exige I3D e muitas amostras).
+
+### Why
+Sem medir identidade e estabilidade temporal, dois dos cinco eixos do Kling ficavam cegos. As escolhas rodam em CPU,
+sem novas dependências nem licenças problemáticas, e têm invariâncias provadas em teste.
+
+### Constraints
+Geometria não é reconhecimento facial; limiares de alerta vêm de fixtures sintéticos e precisam de calibração com
+vídeos gerados revisados.
+
+### Date
+2026-09-24
+
+---
+
+## ADR-012 — Retargeting por comprimento de ossos com proporções 3D da referência
+
+### Decision
+`preprocessing/retarget.py`: escala por osso L_ref/L_driver ao longo da árvore a partir da pelve; comprimentos da
+referência vêm dos landmarks 3D (world) do MediaPipe; o mesmo fator multiplica o vetor 2D do ator (preserva
+escorço); caminho da raiz escala com o torso; saída ancorada no enquadramento da referência. Opt-in
+(`inputs.retarget`), porque a referência e o driver precisam ter torso visível.
+
+### Alternatives Considered
+Normalização só por torso (atual; não muda proporções), SMPL/SMPL-X (licença não comercial), IK completo (mais
+complexo, sem dados para validar).
+
+### Why
+É o princípio público do Kling de desacoplar movimento de morfologia, implementável como geometria pura e testável
+com invariantes exatos.
+
+### Date
+2026-09-24
+
+---
+
+## ADR-013 — Motion Adapter por hooks, cross-attention frame-local e zero-init
+
+### Decision
+Um `BlockAdapter` por bloco do DiT, anexado com `register_forward_hook` (backbone intocado, removível). Tokens de
+corpo/rosto/mãos por frame latente (4k+1 → k+1, regra do VAE Wan) + tokens globais de identidade; cada token do
+vídeo só vê os tokens do seu frame latente e os globais. Projeção de saída zero-init; caminho denso opcional
+(pose → grade de tokens). Frames de referência prefixados pelo VACE (`reference_frames`) só veem identidade.
+
+### Why
+Garante saída idêntica ao backbone no passo 0 (provado bit a bit até no pipeline VACE), leva blendshapes e mãos 3D
+ao modelo (hoje descartados) e mantém o treino barato (backbone congelado).
+
+### Consequences
+O forward do VACE exige controle: o treino usa controle nulo (escala 0). Nenhum modelo MOVA entra no registry antes
+de um checkpoint treinado e avaliado.
+
+### Date
+2026-09-24
+
+---
+
+## ADR-014 — Tracks v2, controle a partir das tracks, suavização opcional
+
+### Decision
+`FORMAT_VERSION = 2`: mãos pós-processadas por padrão (mão longe do punho descartada, troca E/D corrigida por
+continuidade), cru preservado em `*_raw`, lacunas ≤ 3 frames preenchidas só para o controle (`present` continua
+significando detecção). O vídeo de controle é desenhado a partir das tracks. One-Euro disponível, mas o padrão é
+sem suavização (EXP-006: atraso custa mais que o jitter em movimento rápido).
+
+### Consequences
+Comparações exigem a mesma versão de formato nos dois lados. Com os padrões e sem pós-processamento de mãos, o
+controle é pixel-idêntico ao anterior.
+
+### Date
+2026-09-24

@@ -91,10 +91,10 @@ flowchart LR
 | 0 | Research: models, licenses, VRAM, Kling public analysis | ✅ Done |
 | 1 | Baseline: Wan2.1-VACE-1.3B inference | 🟡 Code ready, not yet run with real weights (needs the GPU) |
 | 2 | Motion extraction: body, face and hands | ✅ Works on CPU |
-| 3 | Motion Encoder + Temporal Attention + Adapter | ⏳ Planned |
+| 3 | Motion Encoder + Temporal Attention + Adapter | 🟡 Implemented and shape-tested on CPU, not trained |
 | 4 | Identity system | ⏳ Planned |
-| 5 | Training (LoRA / adapters, 8 GB) | ⏳ Planned |
-| 6 | Automated evaluation | ⏳ Planned |
+| 5 | Training (LoRA / adapters, 8 GB) | 🟡 Training loop tested on a tiny model (`mova train --smoke`); no real training |
+| 6 | Automated evaluation | 🟡 Motion, identity, temporal metrics + blind GSB tooling; no real generated video yet |
 
 The live, verified state is in [STATUS.md](STATUS.md).
 
@@ -226,10 +226,10 @@ flowchart LR
 | 0 | Pesquisa: modelos, licenças, VRAM, análise pública do Kling | ✅ Concluída |
 | 1 | Baseline: inferência com Wan2.1-VACE-1.3B | 🟡 Código pronto, ainda não rodou com os pesos reais (precisa da GPU) |
 | 2 | Extração de movimento: corpo, rosto e mãos | ✅ Funciona em CPU |
-| 3 | Motion Encoder + Atenção Temporal + Adapter | ⏳ Planejada |
+| 3 | Motion Encoder + Atenção Temporal + Adapter | 🟡 Implementado e testado em CPU, não treinado |
 | 4 | Sistema de identidade | ⏳ Planejada |
-| 5 | Treino (LoRA / adapters, 8 GB) | ⏳ Planejada |
-| 6 | Avaliação automatizada | ⏳ Planejada |
+| 5 | Treino (LoRA / adapters, 8 GB) | 🟡 Loop testado com modelo minúsculo (`mova train --smoke`); sem treino real |
+| 6 | Avaliação automatizada | 🟡 Métricas de movimento, identidade e temporal + GSB cego; sem vídeo gerado real |
 
 O estado real e verificado fica em [STATUS.md](STATUS.md).
 

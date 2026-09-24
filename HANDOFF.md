@@ -1,5 +1,27 @@
 # HANDOFF
 
+## Sessão atual — qualidade do motion control em CPU, 2026-09-24, Claude Code
+
+Pedido: implementar tudo o que é testável em CPU e melhora o motion control (métricas, retargeting, sinal, Fase 3,
+dados). Branch **`feat/motion-quality`** (criada a partir de `refactor/runtime-architecture`, sem upstream, sem
+push, sem PR). 204 testes passando. Nada treinado, nada baixado, nenhum vídeo real gerado.
+
+Feito (commits e4f4d91 → 9f79376 + docs): métricas identity-v1/temporal-v1 + GSB cego; retargeting; One-Euro,
+pós-processamento de mãos, controle a partir das tracks, tracks v2; encoders, identidade, fusão e Motion Adapter
+zero-init; scaffolding de treino e `mova train --smoke`; auditoria de licenças, registro de fontes, validação de
+pares, build do manifesto e `benchmark intake`. EXP-003 e EXP-006 (sintéticos). ADR-011..014.
+
+Achados que valem para a GPU:
+- O `WanVACEPipeline` prefixa a referência como um frame latente extra → `reference_frames=1` no adapter.
+- O `forward` do `WanVACETransformer3DModel` exige controle → treino com controle nulo (escala 0).
+- Suavizar o controle custa atraso em dança rápida (EXP-006); padrão continua sem suavização.
+- A entrada atual do encoder de corpo (2D normalizado) é a mais sensível a ruído no EXP-003 sintético.
+
+Não tocado: pasta `design/` (canvas criado fora desta sessão, não rastreado).
+
+Próximo: na RTX 3060, EXP-001 → gerar o benchmark → `benchmark evaluate` com identity/temporal → primeira sessão GSB
+(baseline vs baseline + retarget) → só então `mova train` real.
+
 ## Sessão atual — evolução arquitetural (Runtime/Model/Core/CLI), 2026-09-24, Claude Code
 
 Pedido: "prompt mestre" de evolução arquitetural (runtime desacoplado, device/precision/memory managers, interface

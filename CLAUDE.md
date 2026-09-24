@@ -13,7 +13,9 @@ Sistema próprio, open-source, de **Motion Control de personagens**: `reference 
 - Fase 1 (baseline): **código pronto e testado com pipeline minúsculo aleatório; NÃO executado com pesos reais** (sem GPU na máquina atual + download de 19 GB aguardando autorização).
 - Fase 2 (extração de movimento): **implementada e testada em CPU** (MediaPipe).
 - Arquitetura em camadas Core/Model/Runtime + CLI `mova` (ADR-009): implementada e testada em CPU (129 testes, saída bit-idêntica ao baseline); caminho GPU UNVERIFIED. Matriz de fases em `STATUS.md`.
-- Adapter, identidade e treino: não iniciados. Avaliação CPU e infraestrutura de benchmark implementadas (ADR-007); benchmark real pendente.
+- Métricas identity-v1/temporal-v1 + GSB, retargeting, One-Euro/mãos, encoders + Motion Adapter zero-init,
+  scaffolding de treino (`mova train --smoke`), auditoria de licenças e pipeline de dados: implementados e testados
+  em CPU (204 testes). **Nada treinado; nenhum vídeo real gerado.** ADR-011..014. Avaliação CPU e infraestrutura de benchmark implementadas (ADR-007); benchmark real pendente.
 
 ## Hardware
 
@@ -59,7 +61,7 @@ common/         env (fachada de hardware/perfil), config YAML, errors, experimen
 preprocessing/  pose/ face/ hands/ extratores; features.py (representações); render.py; pipeline.py
 inference/      conditioning.py (resolução, 4k+1, letterbox); baseline_vace.py (só numérica)
 models/         base.py, registry.py, backbones/wan_vace.py; identity/ motion/ fusion/ adapters/ (vazios — Fase 3+)
-training/       treino pendente
+training/       losses, precompute, dataset, trainer, backbones, data_sources (scaffolding testado; sem treino real)
 evaluation/     integridade, métricas de movimento, protocolo e comparação de benchmark
 scripts/        check_env, check_model_size, extract_motion, inference_baseline, benchmark
 configs/        runtime.yaml, baseline.yaml, smoke_tiny_vace.yaml, extraction.yaml, model_manifests/
@@ -116,13 +118,17 @@ mova infer --model wan --device cuda:0 --precision bf16 --reference … --motion
 
 ## Arquivos críticos (não quebrar)
 
-- `preprocessing/pipeline.py` — formato dos `.pt` (FORMAT_VERSION=1). Mudou o formato? Incrementar a versão e documentar em `docs/pipeline.md`.
+- `preprocessing/pipeline.py` — formato dos `.pt` (FORMAT_VERSION=2; mãos pós-processadas, cru em `*_raw`). Mudou o formato? Incrementar a versão e documentar em `docs/pipeline.md`.
 - `preprocessing/render.py::body_xyv` — linhas do corpo são `[x, y, z, vis]`; desenho usa `[x, y, vis]` (bug já corrigido uma vez).
 - `inference/baseline_vace.py` — contrato com `WanVACEPipeline` (validado por `tests/test_pipelines_smoke.py`).
 - `common/env.py::select_profile` — resolução/frames por VRAM; limiares de offload vivem em `runtime/memory.py`.
 - `runtime/` é o **único** lugar com `torch.cuda` (fora `scripts/check_env.py`). Não escrever `"cuda"`/`.to("cuda")`
   em core/models/inference. Não criar runtimes/backends vazios (ONNX/TensorRT/ROCm) — ADR-009/010.
 - `models/backbones/wan_vace.py::ModelSpec` — fonte única de metadados; `verification` só muda com evidência.
+- `models/adapters/motion_adapter.py` — zero-init é contrato: `tests/test_adapter.py` exige backbone bit-idêntico no
+  passo 0 (inclusive no pipeline VACE). Não inicializar `out` com valores não nulos.
+- `datasets/registry.yaml` + `docs/research/licenses.md` — não usar fontes `blocked`; `research_only` só em
+  manifestos de pesquisa.
 - `benchmark/baseline/tiny_vace_cpu.json` — referência bit-exata; se `tiny_vace_regression.py` falhar, a numérica mudou.
 
 ## Problemas conhecidos
