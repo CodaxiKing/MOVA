@@ -84,7 +84,7 @@ def test_temporal_error_and_missing_gaps():
     assert compare_tracks(reference, generated)['body']['acceleration_error_paired'] is None
 
 
-@pytest.mark.parametrize('key,value', [('fps', 8), ('num_frames', 4), ('format_version', 2)])
+@pytest.mark.parametrize('key,value', [('fps', 8), ('num_frames', 4), ('format_version', 2), ('format_version', 3)])
 def test_alignment_is_strict(key, value):
     reference, generated = tracks(), tracks()
     generated['face']['meta'][key] = value
@@ -259,3 +259,11 @@ def test_generate_cli_delegates_and_records_provenance(tmp_path, monkeypatch):
     monkeypatch.setattr(cli, 'detect_hardware', lambda: SimpleNamespace(cuda_available=False))
     with pytest.raises(ValueError, match='requires CUDA'):
         cli.main()
+
+
+def test_format_v2_tracks_compare_with_each_other():
+    reference, generated = tracks(), tracks()
+    for t in (reference, generated):
+        for kind in ('body', 'hands', 'face'):
+            t[kind]['meta']['format_version'] = 2
+    assert compare_tracks(reference, generated)['body']['paired_coverage'] is not None

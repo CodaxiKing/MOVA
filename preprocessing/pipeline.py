@@ -26,7 +26,9 @@ from preprocessing.hands_post import postprocess_hands
 
 log = get_logger("mova.extract")
 
-FORMAT_VERSION = 1
+# 2: hand kp2d/present are post-processed by default (raw kept as kp2d_raw/present_raw), kp2d_filled/filled
+#    added; optional features *_smoothed. See docs/pipeline.md.
+FORMAT_VERSION = 2
 
 
 @dataclass

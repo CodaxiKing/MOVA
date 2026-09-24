@@ -1,4 +1,4 @@
-"""Model inputs from the saved motion tracks (docs/pipeline.md, FORMAT_VERSION 1). NumPy only.
+"""Model inputs from the saved motion tracks (docs/pipeline.md, FORMAT_VERSION 1 and 2). NumPy only.
 
 Per frame:
   body  (33, 6): hip-centred / torso-scaled 2D xy (2) + world xyz in metres (3) + visibility (1)

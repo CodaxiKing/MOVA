@@ -6,6 +6,8 @@ import numpy as np
 import torch
 
 METRIC_VERSION = "motion-v2"
+# v1: raw hands. v2: hands post-processed (preprocessing/hands_post.py). Both sides of a comparison must match.
+SUPPORTED_FORMATS = (1, 2)
 
 
 def _array(track, key, shape):
@@ -79,11 +81,14 @@ def compare_tracks(reference, generated, *, pck_threshold=0.1, visibility=0.5):
     n, fps = meta["num_frames"], meta["fps"]
     if not isinstance(n, int) or n < 1 or not np.isfinite(fps) or fps <= 0:
         raise ValueError("Invalid frame count or FPS")
+    version = meta.get("format_version")
     for tracks in (reference, generated):
         for kind in ("body", "hands", "face"):
             m = tracks[kind]["meta"]
-            if m["format_version"] != 1 or m["num_frames"] != n or not np.isclose(m["fps"], fps, atol=0.01, rtol=0):
-                raise ValueError("Tracks must have matching frame count/FPS and format version 1")
+            if (m["format_version"] not in SUPPORTED_FORMATS or m["format_version"] != version or m["num_frames"] != n
+                    or not np.isclose(m["fps"], fps, atol=0.01, rtol=0)):
+                raise ValueError(f"Tracks must have matching frame count/FPS and the same format version "
+                                 f"(supported: {SUPPORTED_FORMATS})")
     result = {"metric_version": METRIC_VERSION, "frames": n, "fps": fps}
     for kind in ("body", "hands"):
         ref, rv = _normalized(reference[kind], kind, n, visibility)
