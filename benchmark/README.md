@@ -40,7 +40,15 @@ python scripts/benchmark.py compare --baseline outputs/evaluation/BASELINE/repor
 Execute duas vezes nas mesmas condições para observar a reprodutibilidade.
 Cada generate executa no máximo um caso por vez, uma vez por caso; não há
 repetição automática, treino ou alteração de checkpoints. Os registros parciais
-ficam preservados se a execução parar. Não retoma uma execução interrompida.
+ficam preservados se a execução parar. Para retomar, use o comando impresso no início
+(`generate --lock ... --resume outputs/benchmark/RUN`): casos concluídos são pulados se o vídeo
+não mudou; a retomada é recusada se lock, pacotes ou código de geração mudaram. `evaluate` também
+aceita `--resume outputs/evaluation/RUN` (usa `report.partial.json`).
+
+Revisão visual: `evaluate` gera `review/index.html` ao lado do `report.json` (vídeo
+referência | driver | gerado | sobreposição de esqueletos, métricas por grupo, alertas e
+`review.csv` pré-preenchido). Para refazer: `python scripts/benchmark.py review --report <report.json>`.
+Os alertas (`evaluation/review.py::REVIEW_HINTS`) só indicam onde olhar primeiro.
 
 Para avaliar vídeos produzidos externamente, organize `<id>.mp4` e forneça um
 JSON de condições com `--contract`. Sem generation-index, tempo e VRAM ficam

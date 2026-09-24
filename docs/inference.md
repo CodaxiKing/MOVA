@@ -25,6 +25,16 @@ A saída principal passa pela validação de `evaluation/video.py` antes do
 registro de sucesso. O relatório fica em `stats.output_validation`; falhas
 marcam a execução como failed. Ver `docs/evaluation.md` para limites.
 
+### Reprodutibilidade e pré-checagem (ADR-008)
+- `model.revision` fixa o commit exato do Hub; o manifesto `configs/model_manifests/` lista os 17 arquivos
+  (19.04 GB) com tamanho e hash. `check_model_size.py` mostra quais faltam; `--verify-hashes` confere conteúdo.
+- Sem `--allow-download`, o script para se faltar qualquer arquivo. Com ele, baixa só os arquivos do manifesto
+  e verifica de novo. O carregamento usa sempre `local_files_only=True`.
+- Antes de baixar ou carregar, `common/resources.py` compara disco, RAM e VRAM livres com estimativas e recusa
+  se não couber (`--skip-resource-check` fica registrado no run). Estimativas: UMT5 13 GB de RAM (só quando o
+  prompt não está em cache), pipeline 6 GB de RAM, ≥3 GB de VRAM livre com model offload.
+- run.json registra `model_revision`, `model_cache`, `resource_checks` e `environment` (pacotes, git).
+
 ### Estratégia de memória (ADR-004)
 1. `encode_prompts_cached`: UMT5 em CPU uma vez → `checkpoints/embeds/prompt_<hash>.pt`.
 2. `WanVACEPipeline.from_pretrained(..., text_encoder=None, tokenizer=None)`.

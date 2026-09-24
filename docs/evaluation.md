@@ -53,6 +53,27 @@ Ver `benchmark/README.md` para comandos. Sem mídia real, os testes de infraestr
 não estabelecem qualidade do MOVA. Identidade, qualidade perceptual, fluxo óptico
 e FVD continuam NOT_MEASURED/pendentes.
 
+## Métricas globais — motion-v2
+
+A normalização acima remove posição e escala de propósito. motion-v2 acrescenta o que ela esconde
+(`evaluation/motion.py`), sempre em frames observados nos dois vídeos, relativos ao primeiro frame em comum:
+
+- **trajectory**: caminho da raiz (meio dos quadris) dividido pelo torso médio de cada vídeo →
+  `trajectory_error`, `final_displacement_error` (comprimentos de torso); `scale_log_error` (|log| da razão
+  de tamanho aparente, detecta aproximar/afastar); `absolute_root_error` (fração da diagonal, enquadramento);
+  `reference_path_length` para contexto. Personagem maior no mesmo caminho → erro 0.
+- **head_rotation**: ângulo geodésico entre rotações da cabeça (matriz facial do MediaPipe projetada para
+  SO(3)), absoluto e relativo ao 1º frame (desvio constante de orientação vira só erro absoluto).
+- **body_orientation**: yaw do tronco pelos ombros em 3D (world landmarks), diferença circular, absoluto e relativo.
+- Sem âncoras/cabeça/3D → `null` ou `UNAVAILABLE`, nunca 0.
+
+## Revisão visual
+
+`evaluation/review.py` gera `review/index.html`: vídeo por caso com referência | driver | gerado |
+sobreposição (esqueleto do driver em ciano, gerado em magenta), tabelas por grupo de métrica, erros,
+integridade, tempo/VRAM/revisão do modelo, alertas e `review.csv`. Alertas são dicas de revisão
+(`REVIEW_HINTS`), não veredito.
+
 ## Demais métricas planejadas
 
 Cada eixo é avaliado separadamente (princípio também usado na avaliação do Kling-MotionControl tech report: identidade, precisão de movimento, expressão, qualidade dinâmica e visual).

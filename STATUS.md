@@ -1,5 +1,17 @@
 # Project Status
 
+## Atualização — reprodutibilidade e revisão (2026-09-24, Claude Code)
+
+- Revisão do Wan2.1-VACE-1.3B fixada (`ec4d2cb0…`), manifesto versionado com 17 arquivos e hashes.
+- Cache verificado arquivo por arquivo (tamanho; `--verify-hashes` para conteúdo). Nesta máquina: 0/17, 19.04 GB faltando.
+- Pré-checagem de recursos com números reais desta máquina: disco 17.8 < 22.0 GB, RAM 1.7 < 13 GB → recusaria antes de baixar.
+- Proveniência (pacotes, git commit/dirty, diferenças do `requirements.lock.txt`) em todo run.json.
+- `benchmark generate/evaluate --resume` testados com interrupção simulada; retomada recusa ambiente/código/vídeo alterados.
+- Métricas motion-v2 (trajetória, escala, cabeça, yaw do tronco) e página de revisão visual.
+- Testes: **64 passed** (CPU). E2E com MediaPipe real: foto "astronaut" com deriva sintética → rotação relativa da
+  cabeça 0.0° (fiel) vs 11.4° (deriva); trajetória null (quadris fora do quadro, correto).
+- Continua sem geração real: sem CUDA, sem pesos, sem mídia do usuário.
+
 ## Estado atual — 2026-09-24
 
 - Baseline: implementado, validado apenas com pipeline minúsculo aleatório; geração real BLOQUEADA.
@@ -42,10 +54,10 @@
 
 ## Limitações
 
-- PCK normalizado não mede trajetória global; expressão não mede identidade.
+- ~~PCK normalizado não mede trajetória global~~ → motion-v2 mede trajetória/escala/rotação; expressão não mede identidade.
 - Aceleração não mede flicker de textura. Não há score global nem promoção automática.
-- Identidade, head pose, fluxo óptico e qualidade perceptual continuam pendentes.
-- Loader legado não fixa revisão HF: geração registra model_revision=null.
+- Identidade, fluxo óptico e qualidade perceptual continuam pendentes (head pose: motion-v2).
+- ~~Loader legado não fixa revisão HF~~ → revisão fixada (ADR-008); model_revision gravado por caso.
 - Compatibilidade com 8 GB, qualidade, tempo de geração real e ganho sobre baseline não medidos.
 
 ## Próxima ação

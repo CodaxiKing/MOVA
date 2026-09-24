@@ -141,3 +141,41 @@ O loader legado não fixa revisão HF; registrar essa limitação até corrigi-l
 
 ### Date
 2026-09-24
+
+---
+
+## ADR-008 — Reprodutibilidade: revisão fixa, cache verificado, pré-checagem e retomada
+
+### Decision
+1. `configs/baseline.yaml` fixa `model.revision` num commit exato do Hub (`ec4d2cb0…`); todos os
+   `from_pretrained` usam essa revisão com `local_files_only=True`. O download, quando autorizado, é explícito
+   e restrito aos arquivos do manifesto.
+2. O manifesto (`configs/model_manifests/<repo>@<sha>.json`, versionado) lista os 17 arquivos necessários com
+   tamanho e hash (SHA-256 LFS ou SHA-1 de blob git). O cache só é "completo" se todos existirem com o tamanho
+   certo; `--verify-hashes` confere o conteúdo. Substitui a checagem apenas por `model_index.json`.
+3. Todo `run.json` grava versões dos pacotes, Python, commit e se a árvore git estava suja, além das diferenças
+   contra `requirements.lock.txt` (versões exatas verificadas; tag `+cpu/+cuXXX` ignorada).
+4. Pré-checagem de disco/RAM/VRAM (`common/resources.py`) recusa antes de baixar ou carregar qualquer coisa;
+   `--skip-resource-check` existe, mas fica registrado no run.
+5. `benchmark generate/evaluate` salvam estado atômico após cada caso e aceitam `--resume`. A retomada é recusada
+   se lock, versões de pacotes, código de geração ou avaliador mudaram, ou se um vídeo concluído foi alterado.
+6. Métricas `motion-v2`: trajetória global da raiz, escala aparente, rotação da cabeça (geodésica) e orientação
+   do tronco (yaw 3D), absolutas e relativas ao primeiro frame.
+7. Página de revisão (`review/index.html`) com vídeo lado a lado e alertas de revisão por caso; alertas não são
+   veredito e não promovem modelos (mantém ADR-007).
+
+### Why
+Sem revisão fixa, o mesmo config pode carregar pesos diferentes; `model_index.json` presente não garante os
+19 GB restantes; iniciar sem recursos desperdiça horas e pode corromper o cache; benchmarks longos param; a
+normalização por raiz/torso esconde "andar no lugar" e giros; revisão manual precisa de contexto visual.
+
+### Constraints
+Requisitos de RAM/VRAM são estimativas a partir do tamanho dos arquivos — recalibrar com EXP-001.
+Métricas de trajetória exigem quadris e ombros visíveis; caso contrário retornam null.
+
+### Consequences
+Mudar a revisão do modelo exige novo manifesto e novo experimento. `METRIC_VERSION` passou a `motion-v2`:
+relatórios motion-v1 não são comparáveis com motion-v2 (a assinatura do avaliador muda).
+
+### Date
+2026-09-24

@@ -26,6 +26,15 @@
 - [ ] EXP-004: pose MediaPipe→OpenPose vs DWPose como entrada do VACE
 - [ ] Recalibrar thresholds de `select_profile` com medições reais
 
+- [x] Fixar revisão exata do modelo e versões das dependências (ADR-008, `requirements.lock.txt`)
+- [x] Verificar cache completo (17 arquivos, tamanho + hash) em vez de só `model_index.json`
+- [x] Pré-checagem de RAM/disco/VRAM antes de iniciar
+- [x] Retomar `benchmark generate` e `evaluate` interrompidos
+- [x] Medir trajetória global, escala, rotação da cabeça e yaw do tronco (motion-v2)
+- [x] Relatório visual por caso (vídeo lado a lado, métricas, alertas, review.csv)
+- [ ] Recalibrar estimativas de RAM/VRAM de `common/resources.py` com EXP-001
+- [ ] Calibrar limiares de alerta (`evaluation/review.py::REVIEW_HINTS`) com casos revisados
+
 ## Medium Priority
 
 - [ ] EXP-003: comparar representações (2D, 3D world, normalizada, velocidade, rot6d) — reconstrução/predição e jitter

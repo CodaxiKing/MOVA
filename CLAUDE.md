@@ -117,6 +117,14 @@ py -3.12 -m venv .venv
 
 `evaluation/video.py` implementa integridade de vídeo; motion/protocol/benchmark implementam métricas CPU, hashes e comparação (ADR-007). Identidade e qualidade perceptual continuam pendentes. Comandos em `benchmark/README.md`.
 
+## Reprodutibilidade (ADR-008)
+
+- Nunca remover `model.revision` do config nem o `local_files_only=True` do loader.
+- Mudou a revisão? Gere o manifesto (`check_model_size.py --revision <sha>`), versione-o e abra novo experimento.
+- `requirements.lock.txt` só muda após ambiente verificado; registre no CHANGELOG.
+- Benchmarks longos: `benchmark.py generate/evaluate --resume <run>`; revisão visual em `review/index.html`.
+- Métricas atuais: `motion-v2` (relatórios motion-v1 não são comparáveis).
+
 ## Próximos passos
 
 Ver `HANDOFF.md` → "Next Steps".

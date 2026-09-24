@@ -1,5 +1,24 @@
 # HANDOFF
 
+## Continuação — Claude Code, 2026-09-24 (reprodutibilidade e revisão)
+
+Pedido do usuário: fixar pesos/dependências, verificar cache completo, checar RAM/disco, retomar benchmarks,
+medir trajetória global e rotação da cabeça, e facilitar a revisão visual. Tudo implementado (ADR-008).
+
+Arquivos novos: `common/provenance.py`, `common/resources.py`, `evaluation/review.py`, `requirements.lock.txt`,
+`configs/model_manifests/Wan-AI--Wan2.1-VACE-1.3B-diffusers@ec4d2cb0….json`,
+`tests/test_reproducibility.py`, `tests/test_benchmark_resume_review.py`.
+Alterados: `common/{hf_utils,experiment}.py`, `configs/baseline.yaml`, `inference/baseline_vace.py`,
+`scripts/{inference_baseline,benchmark,check_model_size}.py`, `evaluation/{motion,benchmark}.py`, docs.
+
+Verificado: `pytest -q` → **64 passed** (CPU). `check_model_size.py` → revisão ec4d2cb0, 0/17 no cache.
+Gate do baseline para em "Missing 19.04 GB" sem baixar. Pré-checagem com números reais recusaria (disco 17.8 <
+22 GB; RAM 1.7 < 13 GB). E2E real com MediaPipe + página de revisão aberta no navegador.
+
+Não verificado: nada disso rodou com GPU/pesos reais. Estimativas de RAM/VRAM precisam de EXP-001.
+Não rode `--allow-download` nesta máquina (disco insuficiente e sem autorização do usuário).
+
+
 ## Sessão atual — benchmark e avaliação, 2026-09-24
 
 Objetivo autorizado: criar o ciclo de baseline real + benchmark + métricas.
