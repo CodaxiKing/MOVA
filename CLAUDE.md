@@ -21,10 +21,14 @@ Sistema próprio, open-source, de **Motion Control de personagens**: `reference 
 
 | Máquina | GPU | RAM | Disco livre | Uso |
 |---|---|---|---|---|
-| HP ProBook 640 G8 (atual) | **nenhuma NVIDIA** (Intel Iris Xe) | 16 GB | ~16.66 GB | pesquisa, docs, extração CPU, testes |
+| HP ProBook 640 G8 (i7-1165G7, AVX512) | **nenhuma NVIDIA** (Intel Iris Xe) | 16 GB | ~16.66 GB | pesquisa, docs, extração CPU, testes |
+| Desktop Gigabyte H510M (i5-10400F, AVX2) | **RTX 2060 SUPER 8 GB** (cc 7.5, Turing, driver CUDA 13.1) | 16 GB (~2–3 GB livres) | ~70 GB livres com o Wan no cache | primeira máquina com GPU (2026-09-24): testes CUDA, pesos do Wan no cache |
 | Máquina alvo | RTX 3060 **8 GB** | ? | ? | inferência/treino — **ainda não vista por nenhum agente** |
 
 Sempre rode `python scripts/check_env.py --cuda-test` no início da sessão para saber em qual máquina está.
+No desktop: Python 3.12.10 + `torch==2.14.0` do índice **cu130** (o cu128 só vai até 2.11). Turing não tem bf16
+nativo (o perfil ainda escolhe bf16; medir fp16). O hash bit-exato do tiny depende da CPU: ver
+`benchmark/baseline/reference.py`.
 
 ## Limitações de VRAM (regras)
 
@@ -129,11 +133,12 @@ mova infer --model wan --device cuda:0 --precision bf16 --reference … --motion
   passo 0 (inclusive no pipeline VACE). Não inicializar `out` com valores não nulos.
 - `datasets/registry.yaml` + `docs/research/licenses.md` — não usar fontes `blocked`; `research_only` só em
   manifestos de pesquisa.
-- `benchmark/baseline/tiny_vace_cpu.json` — referência bit-exata; se `tiny_vace_regression.py` falhar, a numérica mudou.
+- `benchmark/baseline/tiny_vace_cpu*.json` — referências bit-exatas, uma por capacidade de CPU (`reference.py`); se
+  `tiny_vace_regression.py` falhar numa CPU conhecida, a numérica mudou.
 
 ## Problemas conhecidos
 
-- Baseline nunca executado com pesos reais.
+- Baseline nunca executado com pesos reais (pesos baixados no desktop; faltam mídia de entrada e RAM livre p/ UMT5).
 - Mapeamento MediaPipe→OpenPose-18 é aproximado (EXP-004 pendente).
 - Máquina atual: ~1 GB de RAM livre durante a sessão (outros apps abertos) e 16.66 GB de disco — insuficiente para o download de 19 GB.
 - "Motion Mirror" (citado pelo usuário) não foi encontrado.

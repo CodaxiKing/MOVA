@@ -1,5 +1,22 @@
 # Project Status
 
+## Primeira máquina com GPU — setup, correção do caminho CUDA, pesos do Wan (2026-09-24, Claude Code, `main`)
+
+Máquina: desktop i5-10400F (AVX2) + **RTX 2060 SUPER 8 GB** (cc 7.5), 16 GB RAM (~2–3 GB livres), Python 3.12.10,
+torch 2.14.0+cu130, demais pacotes = `requirements.lock.txt`. Testes: **214 passed** (204 + 10 CUDA novos), 0 skipped.
+Nenhum vídeo real gerado.
+
+| Item | Status | Evidência |
+|---|---|---|
+| Caminho GPU (runtime place/offload, precisões, VRAM stats) com tiny | **PASS** | `tests/test_cuda.py`: fp32/bf16/fp16 × offload none/model/sequential; fp32 GPU = CPU (< 1e-3) |
+| Bug: embeddings de prompt ficavam na CPU com offload → `mat1 is on cpu` no transformer | **FIXED** | `inference/baseline_vace.py` move para `pipe._execution_device`; no-op em CPU (bit-exato mantido) |
+| Bug: `PyTorchRuntime.place` chamava `enable_model_cpu_offload` em não-pipelines | **FIXED** | `hasattr` antes do hook, senão `.to()` (como o docstring já dizia) |
+| Testes que assumiam `device=auto` → cpu | **FIXED** | testes de CPU fixam `runtime.device=cpu`; GPU em `tests/test_cuda.py` |
+| Regressão bit-exata no i5-10400F | **PASS** com referência AVX2 | o script congelado no commit 8284436 gera `d220ac…` aqui: diferença é de kernel SIMD, não de código (`benchmark/baseline/reference.py`) |
+| Pesos Wan2.1-VACE-1.3B @ ec4d2cb | **PASS** — COMPLETE, 17/17 arquivos, SHA-256 conferidos | `fetch_weights(verify_hashes=True)` → `COMPLETE (17/17 files; hashes checked: True)` |
+| EXP-001 (baseline real) | **BLOCKED** | sem `maya.png`/`dance.mp4`; UMT5 precisa de ~12 GB RAM livre |
+| bf16 em Turing | **UNVERIFIED** (risco) | cc 7.5 sem bf16 nativo; perfil escolhe bf16 |
+
 ## Qualidade do motion control em CPU (2026-09-24, Claude Code, branch `feat/motion-quality`)
 
 Tudo abaixo roda e foi testado em CPU, sem os 19 GB e sem GPU. **Nada foi treinado e nenhum vídeo real foi gerado**:

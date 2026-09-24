@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+### Fixed (2026-09-24, primeira máquina com GPU)
+- Caminho CUDA com offload: embeddings de prompt pré-computados agora vão para o dispositivo de execução do pipeline
+  (antes: `mat1 is on cpu` no transformer do Wan). Saída em CPU inalterada (bit-exata).
+- `PyTorchRuntime.place` só aplica hooks de offload em objetos que os suportam; o resto vai com `.to()`.
+
+### Added (2026-09-24)
+- `tests/test_cuda.py` (10 testes, pulados sem GPU): tiny e2e em CUDA por precisão × offload; GPU vs CPU.
+- Referência bit-exata por capacidade de CPU: `benchmark/baseline/reference.py` + `tiny_vace_cpu_avx2.json`.
+- Site estático do canvas: `web/` + `scripts/build_web.py` + `web/dc-runtime.js`.
+
+### Changed (2026-09-24)
+- Testes de CPU fixam `runtime.device=cpu` (não dependem da máquina); `test_real_backbone_is_never_downloaded`
+  simula cache vazio (continua válido com os pesos baixados).
+- `ModelSpec.verification` do tiny: `pytorch/cuda` VERIFIED (RTX 2060 SUPER). Wan continua UNVERIFIED.
+- Ambiente verificado no desktop: Python 3.12.10, torch 2.14.0+cu130; demais pacotes idênticos ao lock.
+
 ### Added
 - Métricas identity-v1 (geometria facial rígida, cor Lab rosto/torso, embedding opcional em cache) e temporal-v1
   (warp error por fluxo óptico, flicker, fluxo, razão contra o driver) no `benchmark evaluate`, `compare` e na

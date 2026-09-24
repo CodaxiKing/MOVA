@@ -2,7 +2,10 @@
 
 ## Critical
 
-- [ ] Usuário: autorizar download de `Wan-AI/Wan2.1-VACE-1.3B-diffusers` (19.04 GB, Apache 2.0) na máquina da RTX 3060
+- [x] Download de `Wan-AI/Wan2.1-VACE-1.3B-diffusers` (19.04 GB) autorizado e feito no desktop RTX 2060 SUPER (2026-09-24)
+- [ ] Usuário: fornecer `assets/reference/maya.png` (corpo inteiro) e `assets/motion/dance.mp4` (uma pessoa, câmera estável)
+- [ ] EXP-001 no desktop: liberar ~12 GB de RAM para o UMT5 (uma vez; depois o prompt fica em cache)
+- [ ] Medir bf16 vs fp16 no Wan em Turing (cc 7.5); decidir o padrão do perfil para GPUs sem bf16 nativo
 - [ ] Usuário: fornecer `assets/reference/maya.png` e `assets/motion/dance.mp4`
 - [ ] Na máquina RTX 3060: `check_env.py --cuda-test` e registrar VRAM/RAM/disco reais em `CLAUDE.md`
 - [ ] EXP-001: executar baseline 256px/17 frames, medir VRAM pico e tempo, registrar
@@ -29,8 +32,8 @@
 - [x] Interface de modelo, ModelSpec, registry, Wan VACE + modelo minúsculo de smoke test
 - [x] Core: config (`configs/runtime.yaml`), capabilities, serviço de inferência; CLI `mova`
 - [x] Regressão CPU bit-exata contra o baseline da Fase 0
-- [ ] Na RTX 3060: `mova info` (validar TorchDeviceProbe: nome, VRAM, cc, bf16), `mova infer --model tiny --device cuda`
-      (valida place/offload/VRAM stats na GPU), depois EXP-001 com `mova infer --model wan`
+- [x] Na GPU (RTX 2060 SUPER): TorchDeviceProbe, place/offload/VRAM stats com tiny — `tests/test_cuda.py`
+- [ ] EXP-001 com `mova infer --model wan` (pesos no cache; ver bloqueios em docs/experiments/EXP-001.md)
 - [ ] Medir VRAM antes/pico/depois e tempo por precisão (bf16/fp16) na GPU; atualizar `ModelSpec.verification`
 - [ ] Fase 11 API: decidir dependência (FastAPI + uvicorn: licenças MIT/BSD) e criar `api/` chamando `core.inference`
 - [ ] Fase 9: definir interfaces de encoders (identidade/rosto/mãos/temporal) junto da 1ª implementação real (Fase 3 do roadmap)

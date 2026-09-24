@@ -1,5 +1,25 @@
 # HANDOFF
 
+## Sessão atual — primeira máquina com GPU, 2026-09-24, Claude Code (branch `main`)
+
+Pedido: "inicie o projeto todo", depois "corrija e baixe o Wan". Máquina NOVA, fora dos docs até agora: desktop
+i5-10400F + RTX 2060 SUPER 8 GB (cc 7.5), 16 GB RAM com ~2–3 GB livres. Nada commitado.
+
+Feito:
+- `.venv` com Python 3.12.10 (winget, escopo de usuário) + torch 2.14.0+cu130 + lock exato; modelos MediaPipe.
+- Caminho GPU corrigido (embeddings de prompt no device de execução; `place` com offload só em pipelines) e
+  verificado com o tiny em `tests/test_cuda.py`. 214 testes passando, 0 skipped.
+- Bit-exato: referência por capacidade de CPU (`benchmark/baseline/reference.py`); prova: script congelado no
+  commit 8284436 reproduz `d220ac…` nesta CPU AVX2.
+- Pesos do Wan baixados via `WanVACEModel.fetch_weights(verify_hashes=True)` no cache HF do usuário.
+- Site do canvas em `web/` (`python scripts/build_web.py`; servir com `python -m http.server -d web`).
+
+Não feito / bloqueado: EXP-001. Faltam `assets/reference/maya.png` e `assets/motion/dance.mp4`, e ~12 GB de RAM
+livre para o UMT5 (uma vez; depois o prompt fica em `checkpoints/embeds`). Risco: bf16 em Turing.
+
+Próximo: mídias → fechar programas → `mova infer --model wan --device cuda:0 --reference … --motion … --output …`
+(bf16; se lento/instável, repetir com `--precision fp16`) → registrar VRAM/tempo no EXP-001 e na matriz.
+
 ## Sessão atual — qualidade do motion control em CPU, 2026-09-24, Claude Code
 
 Pedido: implementar tudo o que é testável em CPU e melhora o motion control (métricas, retargeting, sinal, Fase 3,
