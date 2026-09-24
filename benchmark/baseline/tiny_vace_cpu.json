@@ -1,0 +1,113 @@
+{
+  "kind": "tiny-vace-cpu-baseline",
+  "code_path": "inference.baseline_vace.generate (pre-refactor)",
+  "settings": {
+    "height": 32,
+    "width": 32,
+    "num_frames": 5,
+    "steps": 2,
+    "seed": 42,
+    "dtype": "float32"
+  },
+  "deterministic_across_repeats": true,
+  "runs": [
+    {
+      "build_s": 6.3252,
+      "total_s": 6.5193,
+      "generation_time_s": 0.2,
+      "vram_peak_gb": null,
+      "output": {
+        "shape": [
+          5,
+          32,
+          32,
+          3
+        ],
+        "sha256": "a3cbab52523b48c2db5069eb3b837530c564a451d3113e49dd3fa45f77945478",
+        "finite": true,
+        "min": 0.2810301184654236,
+        "max": 0.7084367275238037,
+        "mean": 0.4662061631679535
+      }
+    },
+    {
+      "build_s": 0.0193,
+      "total_s": 0.1201,
+      "generation_time_s": 0.1,
+      "vram_peak_gb": null,
+      "output": {
+        "shape": [
+          5,
+          32,
+          32,
+          3
+        ],
+        "sha256": "a3cbab52523b48c2db5069eb3b837530c564a451d3113e49dd3fa45f77945478",
+        "finite": true,
+        "min": 0.2810301184654236,
+        "max": 0.7084367275238037,
+        "mean": 0.4662061631679535
+      }
+    },
+    {
+      "build_s": 0.0199,
+      "total_s": 0.1219,
+      "generation_time_s": 0.1,
+      "vram_peak_gb": null,
+      "output": {
+        "shape": [
+          5,
+          32,
+          32,
+          3
+        ],
+        "sha256": "a3cbab52523b48c2db5069eb3b837530c564a451d3113e49dd3fa45f77945478",
+        "finite": true,
+        "min": 0.2810301184654236,
+        "max": 0.7084367275238037,
+        "mean": 0.4662061631679535
+      }
+    }
+  ],
+  "hardware": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch_version": "2.14.0+cpu",
+    "torch_cuda_build": null,
+    "cuda_available": false,
+    "device": "cpu",
+    "gpu_name": null,
+    "vram_total_gb": null,
+    "vram_free_gb": null,
+    "compute_capability": null,
+    "bf16_supported": false,
+    "ram_total_gb": 15.69,
+    "ram_available_gb": 1.98
+  },
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.14.0+cpu",
+      "diffusers": "0.40.0",
+      "transformers": "5.17.0",
+      "accelerate": "1.15.0",
+      "huggingface_hub": "1.33.0",
+      "safetensors": "0.8.0",
+      "sentencepiece": "0.2.2",
+      "mediapipe": "1.0.1",
+      "numpy": "2.5.3",
+      "opencv-python": "5.0.0.93",
+      "pillow": "12.3.0",
+      "imageio": "2.37.4",
+      "imageio-ffmpeg": "0.6.0",
+      "pyyaml": "6.0.3"
+    },
+    "lock_file": "requirements.lock.txt",
+    "lock_mismatches": {},
+    "git": {
+      "commit": "36b5a08405176a3be204d2b507b7bcd0494da941",
+      "dirty": false
+    }
+  }
+}
