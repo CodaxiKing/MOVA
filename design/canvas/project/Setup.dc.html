@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>MOVA Ambiente</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0a0a0b;font-family:'Geist',system-ui,sans-serif;color:#f4f4f5}
+a{color:#d2ff3c}a:hover{color:#e6ff8a}
+button{font-family:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid #d2ff3c;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0a0a0b; color: #f4f4f5; font-family: 'Geist', system-ui, sans-serif; display: flex; flex-direction: column">
+
+<header style="height: 64px; box-sizing: border-box; padding: 0 20px; display: flex; align-items: center; gap: 24px; border-bottom: 1px solid #1c1c1f">
+<a href="Home.dc.html" aria-label="MOVA início" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #f4f4f5">
+<span style="width: 32px; height: 32px; border-radius: 9px; background: #d2ff3c; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4.5" r="2"></circle><path d="M12 7.5l-2 6 4 3v5"></path><path d="M10 13.5l-4 7"></path><path d="M11.5 9l5 2.5 2-3"></path><path d="M11.5 9l-4.5 1-1.5 3"></path></svg>
+</span>
+<span style="font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 24px; letter-spacing: 0.02em">MOVA</span>
+</a>
+<nav aria-label="Principal" style="display: flex; gap: 4px; flex-grow: 1">
+<a href="Home.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Início</a>
+<a href="Main.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Estúdio</a>
+<a href="Motion.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Movimento</a>
+<a href="Result.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Resultados</a>
+<a href="Runs.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Experimentos</a>
+<a href="Setup.dc.html" aria-current="page" style="padding: 9px 16px; border-radius: 999px; background: #1c1c1f; color: #f4f4f5; text-decoration: none; font-size: 14px; font-weight: 500">Ambiente</a>
+</nav>
+<span style="padding: 8px 14px; border-radius: 999px; background: #141416; border: 1px solid #26262a; font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">mova info · check_env.py</span>
+</header>
+
+<div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 24px 24px; display: grid; grid-template-columns: 440px minmax(0, 1fr); gap: 20px">
+
+<section aria-labelledby="hw-h" style="border-radius: 22px; background: #141416; border: 1px solid #26262a; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+<h1 id="hw-h" style="margin: 0; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 44px; line-height: 1; text-transform: uppercase">Ambiente</h1>
+<div role="group" aria-label="Máquina" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 999px; background: #0a0a0b">
+<sc-for list="{{machines}}" as="m" hint-placeholder-count="2"><button type="button" onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="min-height: 40px; border: none; border-radius: 999px; background: {{m.bg}}; color: {{m.fg}}; font-size: 13px; font-weight: 500; cursor: pointer">{{m.label}}</button></sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 20px; font-weight: 600">{{hw.name}}</span>
+<span style="font-size: 13px; color: #a1a1aa">{{hw.use}}</span>
+</div>
+<dl style="margin: 0; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px 14px; font-size: 14px">
+<dt style="color: #8b8b93">GPU</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace; color: {{hw.gpuColor}}">{{hw.gpu}}</dd>
+<dt style="color: #8b8b93">RAM</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.ram}}</dd>
+<dt style="color: #8b8b93">Disco livre</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.disk}}</dd>
+<dt style="color: #8b8b93">Perfil</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.profile}}</dd>
+</dl>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8b8b93">O que roda aqui</span>
+<sc-for list="{{hw.can}}" as="c" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 10px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{c.dot}}"></span><span style="flex-grow: 1">{{c.label}}</span><span style="font-size: 12px; color: {{c.dot}}">{{c.state}}</span></div>
+</sc-for>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; color: #8b8b93">Rode no início de cada sessão</span>
+<pre style="margin: 0; padding: 12px 14px; border-radius: 14px; background: #0a0a0b; border: 1px solid #26262a; font-family: 'Geist Mono', monospace; font-size: 12px; line-height: 1.6; color: #d4d4d8; white-space: pre-wrap">python scripts/check_env.py --cuda-test
+mova info --model wan</pre>
+</div>
+</section>
+
+<div style="min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<article style="border-radius: 22px; background: #141416; border: 1px solid #26262a; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="width: 44px; height: 44px; border-radius: 12px; background: #1c1c1f; display: flex; align-items: center; justify-content: center; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 16px">T</span>
+<div style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-size: 17px; font-weight: 600">wan2.1-vace-tiny-random</span><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">alias tiny · sem download</span></div>
+<span style="padding: 3px 8px; border-radius: 999px; background: #1c1c1f; border: 1px solid #3a3a40; font-size: 10px; font-weight: 700; letter-spacing: 0.04em">SMOKE</span>
+</div>
+<span style="font-size: 13px; line-height: 1.5; color: #a1a1aa">Mesmo caminho de código do Wan com uma rede minúscula aleatória. A saída é ruído.</span>
+<dl style="margin: 0; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px 12px; font-size: 13px">
+<dt style="color: #8b8b93">pytorch/cpu</dt><dd style="margin: 0; color: #d2ff3c">VERIFIED · fp32 bit-exato</dd>
+<dt style="color: #8b8b93">pytorch/cuda</dt><dd style="margin: 0; color: #ffc2de">UNVERIFIED</dd>
+<dt style="color: #8b8b93">licença</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">Apache-2.0 (só código)</dd>
+</dl>
+</article>
+<article style="border-radius: 22px; background: #141416; border: 1.5px solid #ff4fa3; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="width: 44px; height: 44px; border-radius: 12px; background: #ff4fa3; color: #0a0a0b; display: flex; align-items: center; justify-content: center; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 16px">W</span>
+<div style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-size: 17px; font-weight: 600">wan2.1-vace-1.3b</span><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">alias wan · Diffusers</span></div>
+<span style="padding: 3px 8px; border-radius: 999px; background: #ff4fa3; color: #0a0a0b; font-size: 10px; font-weight: 700; letter-spacing: 0.04em">BASELINE</span>
+</div>
+<span style="font-size: 13px; line-height: 1.5; color: #a1a1aa">Referência + vídeo de controle de pose → vídeo. Nunca executado com os pesos reais.</span>
+<dl style="margin: 0; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px 12px; font-size: 13px">
+<dt style="color: #8b8b93">pytorch/cuda</dt><dd style="margin: 0; color: #ffc2de">UNVERIFIED · EXP-001</dd>
+<dt style="color: #8b8b93">pytorch/cpu</dt><dd style="margin: 0; color: #ffc2de">impraticável · --allow-cpu</dd>
+<dt style="color: #8b8b93">licença</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">Apache-2.0</dd>
+</dl>
+</article>
+</div>
+
+<section aria-labelledby="dl-h" style="flex-grow: 1; border-radius: 22px; background: #141416; border: 1px solid #26262a; padding: 22px; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 14px; min-width: 0">
+<h2 id="dl-h" style="margin: 0; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 32px; line-height: 1; text-transform: uppercase">Baixar pesos do Wan</h2>
+<span style="font-size: 14px; line-height: 1.5; color: #a1a1aa">Modelos grandes só são baixados com a sua autorização explícita. Confira antes:</span>
+<dl style="margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px 14px; font-size: 14px">
+<dt style="color: #8b8b93">Repositório</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">Wan-AI/Wan2.1-VACE-1.3B-diffusers</dd>
+<dt style="color: #8b8b93">Revisão fixada</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">ec4d2cb062b5</dd>
+<dt style="color: #8b8b93">Tamanho</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">19.04 GB</dd>
+<dt style="color: #8b8b93">Licença</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">Apache-2.0</dd>
+<dt style="color: #8b8b93">VRAM (perfil)</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">8 GB · 256 px · 17 quadros · bf16 · offload</dd>
+<dt style="color: #8b8b93">Texto (UMT5)</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">só em CPU, com cache de embeddings</dd>
+</dl>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #a1a1aa">Espaço em disco</span><span style="font-family: 'Geist Mono', monospace">{{disk.label}}</span></div>
+<div style="height: 10px; border-radius: 5px; background: #26262a; overflow: hidden"><div style="height: 10px; width: {{disk.pct}}; background: {{disk.color}}"></div></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="padding: 16px; border-radius: 16px; background: {{verdict.bg}}; border: 1px solid {{verdict.border}}; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 15px; font-weight: 600; color: {{verdict.fg}}">{{verdict.title}}</span>
+<span style="font-size: 13px; line-height: 1.5; color: {{verdict.sub}}">{{verdict.text}}</span>
+</div>
+<pre style="margin: 0; flex-grow: 1; padding: 12px 14px; border-radius: 14px; background: #0a0a0b; border: 1px solid #26262a; font-family: 'Geist Mono', monospace; font-size: 11.5px; line-height: 1.6; color: #d4d4d8; white-space: pre-wrap">python scripts/check_model_size.py \
+  Wan-AI/Wan2.1-VACE-1.3B-diffusers
+python scripts/inference_baseline.py \
+  --allow-download</pre>
+<button type="button" onClick="{{authorize}}" disabled="{{authDisabled}}" style="min-height: 52px; border-radius: 999px; border: none; background: {{authBg}}; color: {{authFg}}; font-size: 15px; font-weight: 600; cursor: pointer">{{authLabel}}</button>
+</div>
+</section>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+var HW = {
+  laptop: { label: 'Atual · HP ProBook', name: 'HP ProBook 640 G8', use: 'Pesquisa, docs, extração em CPU e testes.',
+    gpu: 'nenhuma NVIDIA (Intel Iris Xe)', gpuColor: '#ffc2de', ram: '16 GB', disk: '~16.66 GB', diskGb: 16.66, profile: 'CPU',
+    can: [['Extração MediaPipe', 'ok'], ['Smoke test tiny', 'ok'], ['Testes pytest', 'ok'], ['Wan 1.3B', 'não']] },
+  target: { label: 'Alvo · RTX 3060', name: 'Máquina alvo · RTX 3060', use: 'Inferência e treino. Ainda não vista por nenhum agente.',
+    gpu: 'RTX 3060 · 8 GB', gpuColor: '#d2ff3c', ram: '[desconhecida]', disk: '[desconhecido]', diskGb: null, profile: '8 GB · 256 px · 17 q',
+    can: [['Extração MediaPipe', 'ok'], ['Smoke test tiny', 'ok'], ['Testes pytest', 'ok'], ['Wan 1.3B', 'a verificar']] }
+};
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { machine: 'laptop', authorized: false }; }
+  renderVals() {
+    var s = this.state, self = this, h = HW[s.machine];
+    var need = 19.04, disk, verdict, canAuth = false;
+    if (h.diskGb === null) {
+      disk = { label: '19.04 GB necessários · livre desconhecido', pct: '0%', color: '#3a3a40' };
+      verdict = { title: 'Rode o check_env primeiro', text: 'Disco e RAM da máquina alvo ainda são desconhecidos. Confirme o espaço antes de baixar.',
+        bg: '#1c1c1f', border: '#3a3a40', fg: '#f4f4f5', sub: '#a1a1aa' };
+      canAuth = true;
+    } else {
+      var ok = h.diskGb >= need;
+      disk = { label: need + ' GB necessários · ' + h.diskGb + ' GB livres', pct: Math.min(100, Math.round(need / h.diskGb * 100)) + '%', color: ok ? '#d2ff3c' : '#ff4fa3' };
+      verdict = ok ? { title: 'Espaço suficiente', text: 'Pode autorizar o download.', bg: '#1c2410', border: '#4b6b12', fg: '#d2ff3c', sub: '#c6d99a' }
+        : { title: 'Bloqueado: disco insuficiente', text: 'Faltam ~' + (need - h.diskGb).toFixed(2) + ' GB. E sem GPU NVIDIA o Wan não roda aqui de forma prática.',
+            bg: '#2a1320', border: '#5c2442', fg: '#ff8cc4', sub: '#ffc2de' };
+      canAuth = ok;
+    }
+    return {
+      machines: Object.keys(HW).map(function (k) {
+        var on = s.machine === k;
+        return { label: HW[k].label, pressed: on ? 'true' : 'false', bg: on ? '#d2ff3c' : 'transparent', fg: on ? '#0a0a0b' : '#f4f4f5',
+          pick: function () { self.setState({ machine: k, authorized: false }); } };
+      }),
+      hw: { name: h.name, use: h.use, gpu: h.gpu, gpuColor: h.gpuColor, ram: h.ram, disk: h.disk, profile: h.profile,
+        can: h.can.map(function (c) { return { label: c[0], state: c[1], dot: c[1] === 'ok' ? '#d2ff3c' : c[1] === 'não' ? '#ff4fa3' : '#a1a1aa' }; }) },
+      disk: disk, verdict: verdict,
+      authDisabled: !canAuth,
+      authBg: !canAuth ? '#1c1c1f' : s.authorized ? '#1c1c1f' : '#d2ff3c',
+      authFg: !canAuth ? '#8b8b93' : s.authorized ? '#d2ff3c' : '#0a0a0b',
+      authLabel: !canAuth ? 'Download bloqueado' : s.authorized ? 'Autorizado nesta simulação' : 'Autorizar download (19.04 GB)',
+      authorize: function () { self.setState({ authorized: !self.state.authorized }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

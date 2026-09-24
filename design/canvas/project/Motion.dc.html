@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>MOVA Movimento</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0a0a0b;font-family:'Geist',system-ui,sans-serif;color:#f4f4f5}
+a{color:#d2ff3c}a:hover{color:#e6ff8a}
+button,input{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #d2ff3c;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0a0a0b; color: #f4f4f5; font-family: 'Geist', system-ui, sans-serif; display: flex; flex-direction: column">
+
+<header style="height: 64px; box-sizing: border-box; padding: 0 20px; display: flex; align-items: center; gap: 24px; border-bottom: 1px solid #1c1c1f">
+<a href="Home.dc.html" aria-label="MOVA início" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #f4f4f5">
+<span style="width: 32px; height: 32px; border-radius: 9px; background: #d2ff3c; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4.5" r="2"></circle><path d="M12 7.5l-2 6 4 3v5"></path><path d="M10 13.5l-4 7"></path><path d="M11.5 9l5 2.5 2-3"></path><path d="M11.5 9l-4.5 1-1.5 3"></path></svg>
+</span>
+<span style="font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 24px; letter-spacing: 0.02em">MOVA</span>
+</a>
+<nav aria-label="Principal" style="display: flex; gap: 4px; flex-grow: 1">
+<a href="Home.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Início</a>
+<a href="Main.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Estúdio</a>
+<a href="Motion.dc.html" aria-current="page" style="padding: 9px 16px; border-radius: 999px; background: #1c1c1f; color: #f4f4f5; text-decoration: none; font-size: 14px; font-weight: 500">Movimento</a>
+<a href="Result.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Resultados</a>
+<a href="Runs.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Experimentos</a>
+<a href="Setup.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Ambiente</a>
+</nav>
+<span style="padding: 8px 14px; border-radius: 999px; background: #141416; border: 1px solid #26262a; font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">outputs/motion/dance · FORMAT_VERSION 1</span>
+</header>
+
+<div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 24px 24px; display: grid; grid-template-columns: 520px minmax(0, 1fr); gap: 20px">
+
+<section aria-labelledby="v-h" style="background: #141416; border: 1px solid #26262a; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h1 id="v-h" style="margin: 0; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 38px; line-height: 1; text-transform: uppercase">Extração de movimento</h1>
+<span style="font-size: 12px; color: #a1a1aa">MediaPipe · CPU</span>
+</div>
+<div style="height: 560px; border-radius: 16px; background: #0a0a0b; overflow: hidden">
+<svg viewBox="0 0 200 300" style="width: 100%; height: 100%; display: block" role="img" aria-label="Quadro do vídeo com camadas extraídas">
+<rect x="0" y="0" width="200" height="300" fill="#111113"></rect>
+<rect x="0" y="262" width="200" height="38" fill="#18181b"></rect>
+<sc-if value="{{showBody}}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{sk.lines}}" as="l" hint-placeholder-count="12"><line x1="{{l.x1}}" y1="{{l.y1}}" x2="{{l.x2}}" y2="{{l.y2}}" stroke="#d2ff3c" stroke-width="2.4" stroke-linecap="round"></line></sc-for>
+<sc-for list="{{sk.dots}}" as="d" hint-placeholder-count="13"><circle cx="{{d.x}}" cy="{{d.y}}" r="2.6" fill="#0a0a0b" stroke="#d2ff3c" stroke-width="1.2"></circle></sc-for>
+</sc-if>
+<sc-if value="{{showFace}}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{face}}" as="p" hint-placeholder-count="40"><circle cx="{{p.x}}" cy="{{p.y}}" r="0.9" fill="#7fd4ff"></circle></sc-for>
+</sc-if>
+<sc-if value="{{showHands}}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{hands}}" as="h" hint-placeholder-count="10"><line x1="{{h.x1}}" y1="{{h.y1}}" x2="{{h.x2}}" y2="{{h.y2}}" stroke="#ff4fa3" stroke-width="1.4" stroke-linecap="round"></line></sc-for>
+</sc-if>
+</svg>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<label for="mscrub" style="font-size: 13px; color: #a1a1aa">Quadro</label>
+<input id="mscrub" type="range" min="0" max="16" step="1" value="{{frame}}" onChange="{{onScrub}}" style="flex-grow: 1; accent-color: #d2ff3c; height: 44px">
+<span style="font-family: 'Geist Mono', monospace; font-size: 13px; color: #a1a1aa">{{frameNum}} / 17</span>
+</div>
+<div role="group" aria-label="Camadas" style="display: flex; gap: 8px">
+<sc-for list="{{layers}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.toggle}}" aria-pressed="{{o.pressed}}" style="flex-grow: 1; min-height: 44px; border-radius: 999px; border: 1px solid {{o.border}}; background: {{o.bg}}; color: #f4f4f5; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px">
+<span style="width: 10px; height: 10px; border-radius: 50%; background: {{o.color}}; opacity: {{o.op}}"></span>{{o.label}}</button>
+</sc-for>
+</div>
+</section>
+
+<div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+<article style="background: #141416; border: 1px solid #26262a; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #d2ff3c"></span><h2 style="margin: 0; font-size: 18px; font-weight: 600">Corpo</h2></div>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #a1a1aa">MediaPipe Pose: 33 pontos em 2D e 3D, com visibilidade por ponto e features de movimento.</p>
+<dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px">
+<dt style="color: #a1a1aa">pontos</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">33 × [x, y, z, vis]</dd>
+<dt style="color: #a1a1aa">arquivo</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">body_motion.pt</dd>
+</dl>
+</article>
+<article style="background: #141416; border: 1px solid #26262a; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #7fd4ff"></span><h2 style="margin: 0; font-size: 18px; font-weight: 600">Rosto</h2></div>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #a1a1aa">Malha facial densa, expressão por blendshapes e pose da cabeça.</p>
+<dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px">
+<dt style="color: #a1a1aa">pontos</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">478 · 52 blendshapes</dd>
+<dt style="color: #a1a1aa">arquivo</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">face_motion.pt</dd>
+</dl>
+</article>
+<article style="background: #141416; border: 1px solid #26262a; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #ff4fa3"></span><h2 style="margin: 0; font-size: 18px; font-weight: 600">Mãos</h2></div>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #a1a1aa">Duas mãos em 2D e 3D; o lado é atribuído pelo punho mais próximo.</p>
+<dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px">
+<dt style="color: #a1a1aa">pontos</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">2 × 21</dd>
+<dt style="color: #a1a1aa">arquivo</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">hand_motion.pt</dd>
+</dl>
+</article>
+</div>
+
+<section aria-labelledby="strip-h" style="background: #141416; border: 1px solid #26262a; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 id="strip-h" style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a1a1aa">Controle · pose_openpose.mp4</h2>
+<span style="font-size: 12px; color: #ffc2de">Mapeamento MediaPipe → OpenPose-18 aproximado (EXP-004 pendente)</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{strip}}" as="f" hint-placeholder-count="9">
+<button type="button" onClick="{{f.pick}}" aria-label="{{f.aria}}" style="padding: 0; border-radius: 12px; border: 2px solid {{f.border}}; background: #000000; height: 150px; overflow: hidden; cursor: pointer">
+<svg viewBox="0 0 200 300" style="width: 100%; height: 100%; display: block" aria-hidden="true">
+<sc-for list="{{f.lines}}" as="l" hint-placeholder-count="12"><line x1="{{l.x1}}" y1="{{l.y1}}" x2="{{l.x2}}" y2="{{l.y2}}" stroke="{{l.c}}" stroke-width="7" stroke-linecap="round"></line></sc-for>
+</svg>
+</button>
+</sc-for>
+</div>
+</section>
+
+<section aria-labelledby="cmd-h" style="flex-grow: 1; background: #141416; border: 1px solid #26262a; border-radius: 22px; padding: 18px; display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+<h2 id="cmd-h" style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a1a1aa">Rodar localmente</h2>
+<pre style="margin: 0; padding: 12px 14px; border-radius: 12px; background: #0a0a0b; border: 1px solid #26262a; font-family: 'Geist Mono', monospace; font-size: 12.5px; line-height: 1.6; color: #d4d4d8; white-space: pre-wrap">mova preprocess --video assets/motion/dance.mp4 \
+  --out outputs/motion/dance</pre>
+<p style="margin: 0; font-size: 13px; line-height: 1.5; color: #a1a1aa">Roda em CPU. Mudou o formato dos .pt? Incremente FORMAT_VERSION e documente em docs/pipeline.md.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; justify-content: center">
+<a href="Main.dc.html" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: #d2ff3c; color: #0a0a0b; text-decoration: none; font-size: 14px; font-weight: 600">Usar no Estúdio</a>
+<a href="Result.dc.html" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 999px; border: 1px solid #3a3a40; color: #f4f4f5; text-decoration: none; font-size: 14px">Ver resultado</a>
+</div>
+</section>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+function buildJoints(p) {
+  var b = p.bob, J = {};
+  J.head = { x: 100, y: 62 + b }; J.neck = { x: 100, y: 96 + b }; J.hip = { x: 100, y: 170 + b };
+  J.lSh = { x: 78, y: 100 + b }; J.rSh = { x: 122, y: 100 + b };
+  J.lHip = { x: 89, y: 170 + b }; J.rHip = { x: 111, y: 170 + b };
+  function P(o, len, a, s) { return { x: o.x + s * len * Math.sin(a), y: o.y + len * Math.cos(a) }; }
+  J.lEl = P(J.lSh, 34, p.la1, -1); J.lWr = P(J.lEl, 30, p.la2, -1);
+  J.rEl = P(J.rSh, 34, p.ra1, 1); J.rWr = P(J.rEl, 30, p.ra2, 1);
+  J.lKn = P(J.lHip, 46, p.ll1, -1); J.lAn = P(J.lKn, 46, p.ll2, -1);
+  J.rKn = P(J.rHip, 46, p.rl1, 1); J.rAn = P(J.rKn, 46, p.rl2, 1);
+  J._p = p;
+  return J;
+}
+function danceParams(f, n) {
+  var t = f / n * 2 * Math.PI, s = 0.5 + 0.5 * Math.sin(t), s2 = 0.5 - 0.5 * Math.sin(t), c = Math.cos(t);
+  var up = Math.max(0, Math.sin(t)), dn = Math.max(0, -Math.sin(t));
+  return { la1: 0.5 + 1.6 * s, la2: 0.9 + 1.6 * s + 0.6 * c, ra1: 0.5 + 1.6 * s2, ra2: 0.9 + 1.6 * s2 - 0.6 * c,
+    ll1: 0.1 + 0.45 * up, ll2: 0.1 - 0.15 * up, rl1: 0.1 + 0.45 * dn, rl2: 0.1 - 0.15 * dn, bob: 3 * Math.sin(2 * t) };
+}
+var SEGS = [
+  ['head', 'neck', '#ff0055'], ['neck', 'hip', '#ff5500'], ['lSh', 'rSh', '#ff5500'], ['lHip', 'rHip', '#ff7a00'],
+  ['lSh', 'lEl', '#00ff55'], ['lEl', 'lWr', '#00ffaa'], ['rSh', 'rEl', '#ffaa00'], ['rEl', 'rWr', '#ffff00'],
+  ['lHip', 'lKn', '#aa00ff'], ['lKn', 'lAn', '#ff00ff'], ['rHip', 'rKn', '#00aaff'], ['rKn', 'rAn', '#0055ff']
+];
+var KEYS = ['head', 'neck', 'hip', 'lSh', 'rSh', 'lHip', 'rHip', 'lEl', 'lWr', 'rEl', 'rWr', 'lKn', 'lAn', 'rKn', 'rAn'];
+function r1(v) { return Math.round(v * 10) / 10; }
+function lines(J) { return SEGS.map(function (s) { return { x1: r1(J[s[0]].x), y1: r1(J[s[0]].y), x2: r1(J[s[1]].x), y2: r1(J[s[1]].y), c: s[2] }; }); }
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { frame: 4, body: true, face: true, hands: true }; }
+  renderVals() {
+    var s = this.state, self = this;
+    var J = buildJoints(danceParams(s.frame, 17));
+    var face = [];
+    for (var i = 0; i < 40; i++) {
+      var a = i / 40 * 2 * Math.PI, ring = i % 3;
+      var rx = [13, 8.5, 4][ring], ry = [16, 10, 5][ring];
+      face.push({ x: r1(J.head.x + rx * Math.cos(a)), y: r1(J.head.y - 4 + ry * Math.sin(a)) });
+    }
+    var hands = [];
+    [['lEl', 'lWr', -1], ['rEl', 'rWr', 1]].forEach(function (h) {
+      var e = J[h[0]], w = J[h[1]], base = Math.atan2(w.y - e.y, w.x - e.x);
+      for (var k = 0; k < 5; k++) {
+        var ang = base + (k - 2) * 0.35;
+        hands.push({ x1: r1(w.x), y1: r1(w.y), x2: r1(w.x + 9 * Math.cos(ang)), y2: r1(w.y + 9 * Math.sin(ang)) });
+      }
+    });
+    var layerDefs = [{ k: 'body', label: 'Corpo', color: '#d2ff3c' }, { k: 'face', label: 'Rosto', color: '#7fd4ff' }, { k: 'hands', label: 'Mãos', color: '#ff4fa3' }];
+    var strip = [];
+    for (var f = 0; f < 17; f += 2) (function (f) {
+      var on = f === s.frame;
+      strip.push({ lines: lines(buildJoints(danceParams(f, 17))), aria: 'Ir para o quadro ' + (f + 1),
+        border: on ? '#d2ff3c' : '#26262a', pick: function () { self.setState({ frame: f }); } });
+    })(f);
+    return {
+      frame: s.frame, frameNum: s.frame + 1,
+      onScrub: function (e) { self.setState({ frame: parseInt(e.target.value, 10) || 0 }); },
+      sk: { lines: lines(J), dots: KEYS.map(function (k) { return { x: r1(J[k].x), y: r1(J[k].y) }; }) },
+      face: face, hands: hands, strip: strip,
+      showBody: s.body, showFace: s.face, showHands: s.hands,
+      layers: layerDefs.map(function (d) {
+        var on = s[d.k];
+        return { label: d.label, color: d.color, op: on ? 1 : 0.3, pressed: on ? 'true' : 'false',
+          bg: on ? '#1c1c1f' : 'transparent', border: on ? '#3a3a40' : '#26262a',
+          toggle: function () { var u = {}; u[d.k] = !self.state[d.k]; self.setState(u); } };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
