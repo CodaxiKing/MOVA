@@ -3,12 +3,8 @@
 <img src="docs/assets/banner.svg" alt="MOVA — Character Motion Control" width="100%">
 
 <br>
-<br>
 
-<h1>MOVA</h1>
-
-<h3>Character Motion Control</h3>
-<h3>Motion Control de Personagens</h3>
+<h3>Motion Control de Personagens · open-source · low-VRAM</h3>
 
 <br>
 
