@@ -59,6 +59,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", required=True)
     p.add_argument("--config", default="configs/extraction.yaml")
     p.add_argument("--set", action="append", default=[], metavar="KEY=VALUE")
+    p.add_argument("--retarget-to", default=None, metavar="REFERENCE_IMAGE",
+                   help="also write <out>/retargeted/: motion with this character's body proportions")
 
     # Listed for --help only; main() forwards them before parsing (arguments go to the underlying tool).
     sub.add_parser("benchmark", help="benchmark workflow (scripts/benchmark.py ...)")
@@ -112,7 +114,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "preprocess":
             from core.preprocess import run_extraction
 
-            _, record = run_extraction(args.video, args.out, args.config, args.set)
+            _, record = run_extraction(args.video, args.out, args.config, args.set, retarget_to=args.retarget_to)
             print(f"Run record: {record}")
             return 0
 

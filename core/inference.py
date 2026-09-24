@@ -21,7 +21,7 @@ from PIL import Image
 
 from common.config import resolve_path
 from common.env import detect_hardware, select_profile, summarize
-from common.errors import InvalidInputError, ModelWeightsMissingError
+from common.errors import ConfigError, InvalidInputError, ModelWeightsMissingError
 from common.experiment import RUNS_DIR, ExperimentRun
 from common.logging_utils import get_logger
 from common.video_io import read_video, write_video
@@ -90,16 +90,30 @@ def plan_inference(req: InferenceRequest) -> InferencePlan:
     return InferencePlan(name, cfg, rt, ctx)
 
 
-def build_control(cfg: dict, run_dir: Path) -> list[np.ndarray]:
+def build_control(cfg: dict, run_dir: Path, reference_rgb: np.ndarray | None = None) -> list[np.ndarray]:
+    """Pose control frames. With inputs.retarget, the driver skeleton gets the reference character's proportions
+    and is drawn in the reference image frame (preprocessing/retarget.py)."""
     inp = cfg["inputs"]
     motion = resolve_path(inp["motion"])
+    retarget = bool(inp.get("retarget", False))
     if inp.get("motion_is_control"):
+        if retarget:
+            raise ConfigError("inputs.retarget needs a raw motion video (motion_is_control must be false)")
         return read_video(motion, target_fps=inp.get("motion_fps"))
     from preprocessing.pipeline import ExtractionConfig, extract_motion
 
     ext_dir = run_dir / "motion"
     extract_motion(motion, ext_dir, ExtractionConfig(target_fps=inp.get("motion_fps"), write_previews=False))
-    return read_video(ext_dir / "pose_openpose.mp4")
+    if not retarget:
+        return read_video(ext_dir / "pose_openpose.mp4")
+    from preprocessing.retarget import retarget_directory
+
+    try:
+        retarget_directory(ext_dir, reference_rgb, run_dir / "motion_retargeted")
+    except ValueError as e:
+        raise InvalidInputError(f"Retargeting failed: {e}",
+                                hint="The reference and the driver need a visible torso; or set inputs.retarget=false.") from e
+    return read_video(run_dir / "motion_retargeted" / "pose_openpose.mp4")
 
 
 def side_by_side(*videos: list[np.ndarray]) -> list[np.ndarray]:
@@ -170,7 +184,7 @@ def run_inference(req: InferenceRequest, echo: Callable[[str], None] = print) ->
     log.info("Settings: %s", model.settings_dict())
 
     try:
-        control_np = build_control(cfg, out)
+        control_np = build_control(cfg, out, np.asarray(reference_raw))
         control = prepare_control_frames(control_np, s.width, s.height, s.num_frames,
                                          stride=int(cfg["inputs"].get("frame_stride", 1)))
         reference = letterbox(reference_raw, s.width, s.height)
