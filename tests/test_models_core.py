@@ -357,9 +357,9 @@ def test_cli_forwards_leading_flags(monkeypatch):
     assert seen[1][-2:] == ["evaluate", "--help"] and seen[1][-3].endswith("benchmark.py")
 
 
-def test_cli_train_is_honest(capsys):
-    assert cli(["train"]) == 2
-    assert "not implemented" in capsys.readouterr().err
+def test_cli_train_without_dataset_is_a_clear_error(capsys):
+    assert cli(["train", "--set", "dataset=datasets/manifests/missing.json", "--set", "forbid_identities_from=null"]) == 2
+    assert "ERROR [invalid_config]: Training manifest not found" in capsys.readouterr().err
 
 
 def _mp_models_present() -> bool:

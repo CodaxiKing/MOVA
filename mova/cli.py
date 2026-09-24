@@ -6,7 +6,7 @@
   mova benchmark <check|prepare|freeze|generate|evaluate|compare> ...   (scripts/benchmark.py)
   mova evaluate ...                                                     (= mova benchmark evaluate ...)
   mova test [pytest args]
-  mova train                                                            (not implemented yet)
+  mova train [--smoke] [--config configs/train_adapter.yaml] [--steps N] [--resume ckpt]
 """
 
 from __future__ import annotations
@@ -66,7 +66,15 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("benchmark", help="benchmark workflow (scripts/benchmark.py ...)")
     sub.add_parser("evaluate", help="evaluate benchmark outputs (= scripts/benchmark.py evaluate ...)")
     sub.add_parser("test", help="run the test suite (pytest ...)")
-    sub.add_parser("train", help="training (not implemented yet)")
+    p = sub.add_parser("train", help="train the MOVA adapter on a frozen backbone (--smoke: tiny CPU run)")
+    p.add_argument("--config", default="configs/train_adapter.yaml")
+    p.add_argument("--smoke", action="store_true", help="tiny random backbone + synthetic data; proves the loop")
+    p.add_argument("--steps", type=int, default=None)
+    p.add_argument("--resume", default=None, help="adapter checkpoint to continue from")
+    p.add_argument("--runtime", default=None)
+    p.add_argument("--device", default=None)
+    p.add_argument("--precision", default=None)
+    p.add_argument("--set", action="append", default=[], metavar="KEY=VALUE")
     return ap
 
 
@@ -119,8 +127,13 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         if args.command == "train":
-            print("mova train: training is not implemented yet (Phase 5, see TODO.md).", file=sys.stderr)
-            return 2
+            from core.train import TrainRequest, run_training
+
+            result = run_training(TrainRequest(config=args.config, smoke=args.smoke, steps=args.steps,
+                                               resume=args.resume, runtime=args.runtime, device=args.device,
+                                               precision=args.precision, overrides=args.set))
+            print(json.dumps(result, indent=2))
+            return 0
     except MovaError as e:
         print(f"ERROR [{e.code}]: {e}", file=sys.stderr)
         return e.exit_code

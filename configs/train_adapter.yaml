@@ -1,0 +1,33 @@
+# Phase 3 adapter training (docs/training.md). `mova train --config configs/train_adapter.yaml`
+# Real training is UNVERIFIED: needs precomputed latents (training/precompute.py), the pinned VACE snapshot and a GPU.
+backbone: wan2.1-vace-1.3b        # tiny | tiny-vace | wan2.1-vace-1.3b (training/backbone.py)
+dataset: datasets/manifests/train.json   # training/dataset.py manifest (schema_version 1)
+split: train
+forbid_identities_from: benchmark/v1.draft.yaml   # benchmark identities may never be trained on
+steps: 2000
+batch_size: 1
+save_every: 250
+output_dir: checkpoints/adapters/run
+reference_size: 224
+max_references: 4
+conditioning:                     # models/adapters/stack.py::ConditioningConfig
+  cond_dim: 256
+  adapter_dim: 128
+  heads: 4
+  body_tokens: 4
+  face_tokens: 2
+  identity_tokens: 8
+  identity_patch: 16
+  streams: [body, face, hands]
+  use_identity: true
+  use_dense_pose: false
+  blocks: null                    # null = every DiT block
+train:                            # training/trainer.py::TrainConfig
+  lr: 1.0e-4
+  weight_decay: 0.0
+  grad_accum: 8
+  max_grad_norm: 1.0
+  flow_shift: 3.0
+  face_weight: 2.0
+  hand_weight: 2.0
+  seed: 0
