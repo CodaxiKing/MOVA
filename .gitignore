@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Pesos / checkpoints (nunca versionar)
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+*.bin
+*.onnx
+*.gguf
+*.task
+
+# Mídia (nunca versionar)
+*.mp4
+*.mov
+*.avi
+*.webm
+*.gif
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Diretórios de dados/saídas
+checkpoints/*
+!checkpoints/.gitkeep
+outputs/*
+!outputs/.gitkeep
+assets/**/*
+!assets/**/
+!assets/**/.gitkeep
+!assets/README.md
+datasets/raw/
+datasets/processed/
+experiments/runs/
+.cache/
+hf_cache/
+
+# SO / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
