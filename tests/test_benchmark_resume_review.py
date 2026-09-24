@@ -99,8 +99,9 @@ def test_evaluate_resumes_and_reuses_identical_cases(tmp_path, monkeypatch):
 
     manifest, lock = two_case_lock(tmp_path)
     monkeypatch.setattr(bench, "ExperimentRun", partial(ExperimentRun, runs_dir=tmp_path / "runs"))
-    monkeypatch.setattr(bench, "evaluator_signature", lambda protocol: "sig")
+    monkeypatch.setattr(bench, "evaluator_signature", lambda protocol, *_: "sig")
     monkeypatch.setattr(bench, "load_tracks", lambda folder: tracks())
+    monkeypatch.setattr(bench, "frame_metrics", lambda *a, **k: {})  # identity/temporal: tested elsewhere
     extracted = []
 
     def fake_extract(video, out, cfg):

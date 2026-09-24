@@ -190,8 +190,18 @@ def main():
             ap.add_argument("--contract", required=True, help="JSON with matching generation conditions")
             ap.add_argument("--generation-index", help="Optional generation.json produced by generate")
             ap.add_argument("--resume", help="outputs/evaluation/<run> of an interrupted evaluate")
+            ap.add_argument("--identity-embedder", default=None,
+                            help="optional cached embedding model, e.g. hf:facebook/dinov2-small (never downloaded)")
     ap = sub.add_parser("review", help="(re)build the visual review page of an evaluation report")
     ap.add_argument("--report", required=True)
+    ap = sub.add_parser("gsb", help="build a blind pairwise GSB rating session from two evaluation reports")
+    ap.add_argument("--baseline", required=True)
+    ap.add_argument("--candidate", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--seed", type=int, default=0)
+    ap = sub.add_parser("gsb-score", help="score a filled ratings.csv against its key.json")
+    ap.add_argument("--ratings", required=True)
+    ap.add_argument("--key", required=True)
     ap = sub.add_parser("compare")
     ap.add_argument("--baseline", required=True)
     ap.add_argument("--candidate", required=True)
@@ -215,6 +225,19 @@ def main():
 
         print(build_review(resolve_path(args.report)))
         return 0
+    if args.command == "gsb":
+        from evaluation.gsb import build_gsb_session
+
+        paths = build_gsb_session(resolve_path(args.baseline), resolve_path(args.candidate), resolve_path(args.out),
+                                  seed=args.seed)
+        print(json.dumps({k: str(v) for k, v in paths.items()}, indent=2))
+        print("Give raters index.html + ratings.csv only; keep key.json hidden until scoring.")
+        return 0
+    if args.command == "gsb-score":
+        from evaluation.gsb import score_gsb
+
+        print(json.dumps(score_gsb(resolve_path(args.ratings), resolve_path(args.key)), indent=2))
+        return 0
     if args.command == "compare":
         from evaluation.benchmark import compare_reports
 
@@ -229,7 +252,8 @@ def main():
         path, report = evaluate_benchmark(args.lock, args.outputs, label=args.label,
                                          generation_contract=json.loads(resolve_path(args.contract).read_text()),
                                          generation_index=json.loads(resolve_path(args.generation_index).read_text())
-                                         if args.generation_index else None, resume_from=args.resume)
+                                         if args.generation_index else None, resume_from=args.resume,
+                                         identity_embedder=args.identity_embedder)
         print(path)
         return 0 if report["status"] == "complete" else 2
     locked = verify_lock(args.lock)

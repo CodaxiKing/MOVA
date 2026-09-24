@@ -29,7 +29,23 @@ REVIEW_HINTS = {
     "max_head_relative_error_deg": 15.0,
     "max_yaw_relative_error_deg": 20.0,
     "max_blendshape_mae": 0.15,
+    # identity-v1 / temporal-v1: first guesses from synthetic fixtures (same person 0.009, face 29 % wider 0.055;
+    # recoloured face ΔE 35 vs 1.5). NOT calibrated on generated videos yet.
+    "max_face_geometry_error": 0.035,
+    "max_face_color_delta_e": 10.0,
+    "max_torso_color_delta_e": 12.0,
+    "max_warp_error_ratio": 2.0,       # generated texture changes 2x more than the real driver video
+    "min_flow_ratio": 0.3,             # generated moves < 30 % of the driver: frozen / under-animated
 }
+
+
+def _get(metrics: dict, group: str, field: str):
+    node = metrics.get(group, {})
+    for part in field.split("."):
+        if not isinstance(node, dict):
+            return None
+        node = node.get(part)
+    return node if isinstance(node, (int, float)) and not isinstance(node, bool) else None
 BODY_EDGES = [(11, 12), (11, 13), (13, 15), (12, 14), (14, 16), (11, 23), (12, 24), (23, 24),
               (23, 25), (25, 27), (24, 26), (26, 28), (0, 11), (0, 12)]
 DRIVER_COLOR, GENERATED_COLOR = (0, 220, 255), (255, 60, 200)
@@ -47,6 +63,9 @@ def case_flags(item: dict, hints: dict = REVIEW_HINTS) -> list[dict]:
         add("error", f"Not evaluated: {item.get('error', 'unknown error')}")
         return flags
     m = item.get("metrics", {})
+    ident = m.get("identity", {})
+    if ident.get("metric_version") and not ident.get("reference_face_detected"):
+        add("info", "identity: no face detected in the reference image, face identity metrics are null")
     for group in ("body", "hands", "face", "trajectory", "head_rotation", "body_orientation"):
         g = m.get(group, {})
         if g.get("status") == "UNAVAILABLE":
@@ -67,9 +86,14 @@ def case_flags(item: dict, hints: dict = REVIEW_HINTS) -> list[dict]:
         ("body_orientation", "relative_yaw_error_deg", "max_yaw_relative_error_deg",
          "torso turning differs by {v:.1f}°"),
         ("face", "blendshape_mae_paired", "max_blendshape_mae", "expression MAE {v:.3f}"),
+        ("identity", "face_geometry_error.mean", "max_face_geometry_error", "face proportions drift ({v:.3f} log-ratio)"),
+        ("identity", "face_color_delta_e.mean", "max_face_color_delta_e", "face colour drift ΔE {v:.1f}"),
+        ("identity", "torso_color_delta_e.mean", "max_torso_color_delta_e", "outfit colour drift ΔE {v:.1f}"),
+        ("temporal", "warp_error_ratio", "max_warp_error_ratio", "texture flicker {v:.1f}x the driver's (warp error)"),
+        ("temporal", "mean_flow_px_ratio", "min_flow_ratio", "moves only {v:.0%} as much as the driver (frozen?)"),
     ]
     for group, field, key, text in checks:
-        v = m.get(group, {}).get(field)
+        v = _get(m, group, field)
         if v is None:
             continue
         bad = v < hints[key] if key.startswith("min") else v > hints[key]
@@ -158,6 +182,12 @@ METRIC_TABLE = {
                                         "reference_rotation_range_deg", "paired_coverage"]),
     "Body orientation": ("body_orientation", ["yaw_error_deg", "relative_yaw_error_deg",
                                               "reference_yaw_range_deg", "paired_coverage"]),
+    "Identity": ("identity", ["face_coverage", "face_geometry_error.mean", "face_color_delta_e.mean",
+                              "face_color_hist_intersection.mean", "torso_coverage", "torso_color_delta_e.mean",
+                              "embedding.mean"]),
+    "Temporal (dynamic quality)": ("temporal", ["generated.warp_error", "warp_error_ratio", "generated.static_flicker",
+                                                "generated.luma_flicker", "generated.mean_flow_px",
+                                                "mean_flow_px_ratio"]),
 }
 
 CSS = """
@@ -201,11 +231,14 @@ def build_review(report_path: str | Path, hints: dict = REVIEW_HINTS) -> Path:
         body = item.get("metrics", {}).get("body", {})
         traj = item.get("metrics", {}).get("trajectory", {})
         head = item.get("metrics", {}).get("head_rotation", {})
+        ident_geo = _get(item.get("metrics", {}), "identity", "face_geometry_error.mean")
+        warp_ratio = _get(item.get("metrics", {}), "temporal", "warp_error_ratio")
         rows.append(f"<tr><td><a href='#{html.escape(cid)}'>{html.escape(cid)}</a></td>"
                     f"<td>{html.escape(str(item.get('category', '')))}</td><td>{html.escape(item['status'])}</td>"
                     f"<td>{state} {len([f for f in flags if f['level'] != 'info'])}</td>"
                     f"<td class='num'>{_fmt(body.get('pck'))}</td><td class='num'>{_fmt(traj.get('trajectory_error'))}</td>"
-                    f"<td class='num'>{_fmt(head.get('relative_geodesic_error_deg'))}</td></tr>")
+                    f"<td class='num'>{_fmt(head.get('relative_geodesic_error_deg'))}</td>"
+                    f"<td class='num'>{_fmt(ident_geo)}</td><td class='num'>{_fmt(warp_ratio)}</td></tr>")
         flag_html = "".join(f"<span class='badge {f['level']}'>{html.escape(f['message'])}</span>" for f in flags) \
             or "<span class='badge ok'>no flags</span>"
         tables = []
@@ -216,7 +249,8 @@ def build_review(report_path: str | Path, hints: dict = REVIEW_HINTS) -> Path:
             if g.get("status") == "UNAVAILABLE":
                 tables.append(f"<div><b>{title}</b><p class='muted'>unavailable: {html.escape(str(g.get('reason')))}</p></div>")
                 continue
-            trs = "".join(f"<tr><td>{f}</td><td class='num'>{_fmt(g.get(f))}</td></tr>" for f in fields)
+            trs = "".join(f"<tr><td>{f}</td><td class='num'>{_fmt(_get(item['metrics'], group, f))}</td></tr>"
+                          for f in fields)
             tables.append(f"<div><b>{title}</b><table>{trs}</table></div>")
         gen = item.get("generation") or {}
         integ = item.get("integrity") or {}
@@ -244,7 +278,7 @@ evaluator {html.escape(report['evaluator_sha256'][:12])} · quality status {html
 (driver skeleton in cyan, generated in magenta). Flags are hints for where to look, not verdicts; <span class='null'>null</span>
 means the metric could not be computed and is never treated as zero. Record your judgement in <code>review.csv</code>.</div>
 <div class="card scroll"><table><tr><th>case</th><th>category</th><th>status</th><th>flags</th><th>body PCK</th>
-<th>trajectory err</th><th>head rel. err °</th></tr>{''.join(rows)}</table></div>
+<th>trajectory err</th><th>head rel. err °</th><th>face geometry err</th><th>warp ratio</th></tr>{''.join(rows)}</table></div>
 {''.join(sections)}
 </main></body></html>"""
     index = out / "index.html"

@@ -204,6 +204,10 @@ def test_real_benchmark_evaluation(tmp_path, monkeypatch, person):
                                       artifacts_root=tmp_path / 'artifacts')
     assert report['status'] == 'complete'
     metrics = report['cases'][0]['metrics']
+    assert metrics['identity']['metric_version'] == 'identity-v1'
+    assert metrics['temporal']['metric_version'] == 'temporal-v1' and metrics['temporal']['generated']['pairs'] == 4
+    review = (path.parent / 'review' / 'index.html').read_text(encoding='utf-8')
+    assert 'Identity' in review and 'Temporal (dynamic quality)' in review
     if person:
         # The portrait lacks visible hip anchors: do not weaken the metric to score it.
         assert metrics['body']['pck'] is None
@@ -214,6 +218,7 @@ def test_real_benchmark_evaluation(tmp_path, monkeypatch, person):
                                           artifacts_root=tmp_path / 'artifacts')
         compared = compare_reports(report, repeated)
         assert compared['cases'][0]['candidate_minus_baseline']['face.blendshape_mae_paired'] == pytest.approx(0)
+        assert compared['cases'][0]['candidate_minus_baseline']['temporal.generated.warp_error'] == pytest.approx(0)
     else:
         assert metrics['body']['pck'] is None
     assert json.loads(path.read_text())['quality_status'] == 'NOT_ESTABLISHED'
