@@ -1,0 +1,12 @@
+# Phase 2 motion extraction (CPU-friendly). See docs/pipeline.md.
+body: true
+face: true
+hands: true
+target_fps: null          # null = source fps
+max_frames: null
+min_confidence: 0.5
+pose_model: pose_landmarker_full   # or pose_landmarker_heavy (more accurate, slower)
+mirrored_input: false     # true only for selfie/mirrored footage (affects hand side fallback)
+write_previews: true
+write_openpose: true
+smooth_alpha: 1.0         # EMA on derived features only; raw tracks are always kept
