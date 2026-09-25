@@ -7,12 +7,30 @@
 # Nothing here is downloaded by MOVA code. `download` only prints a plan unless explicitly authorised.
 sources:
   humanvid:
+    # The REAL part: 19 262 direct Pexels file URLs (pexels-{horizontal,vertical}-urls-new.txt, Google Drive).
     kind: dataset
     url: https://github.com/zhenzhiwang/HumanVid
-    license: CC-BY-4.0 (annotations/repo); real videos from Pexels keep per-video Pexels license, not redistributed
-    status: per_item
-    content: human videos with DWPose 2D whole-body keypoints and camera parameters (real Pexels + Unreal synthetic)
-    notes: videos must be fetched from their original URLs; record each clip's source URL and license
+    license: URL lists/annotations CC-BY-4.0; videos = Pexels License + Pexels Terms of Service
+    status: blocked
+    content: real human videos (Pexels) with camera parameters; videos not redistributed, only URLs
+    notes: >-
+      Re-audited 2026-09-24 (https://www.pexels.com/terms-of-service/): "scraping and the use of programs or robots
+      for automatic data collection ... strictly prohibited for all unauthorised purposes, including without
+      limitation for machine learning purposes" and "Bulk, large-scale or systematic copying of Content is strictly
+      prohibited unless explicit permission has been granted by us". The per-video Pexels License allows use and
+      modification, but script-downloading the URL lists for training needs written permission from Pexels.
+  humanvid_synthetic:
+    kind: dataset
+    url: https://huggingface.co/datasets/zhenzhiwang/HumanVid
+    revision: 12ecc587e7601be0795b6d853ce15866be057266
+    license: HF dataset card license:apache-2.0; GitHub README footer CC-BY-4.0 (both permissive; discrepancy noted)
+    status: allowed
+    content: >-
+      Unreal Engine renders of digital humans, 20 folders (3d_video_1..10, generated_video_1..10), ~50 000 mp4 clips,
+      201.7 GB total (~6 MB per clip); no per-clip poses (2d_keypoints.zip is a single 10.4 GB file)
+    notes: >-
+      Distributed by the authors on the Hub (not scraped). The licenses of the underlying 3D characters/assets are
+      not documented (UNKNOWN). Synthetic faces: expect a domain gap for identity on real photos.
   aistpp:
     kind: dataset
     url: https://google.github.io/aistplusplus_dataset/

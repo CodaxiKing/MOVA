@@ -98,11 +98,15 @@ def validate_sources(manifest: str | Path, *, registry: dict | None = None, min_
     return {"manifest": str(path), "clips": len(clips), "intended_use": use, "ok": not problems, "problems": problems}
 
 
-def build_training_manifest(sources: str | Path, out_dir: str | Path, *, num_frames: int, size: int,
+def build_training_manifest(sources: str | Path, out_dir: str | Path, *, num_frames: int, size: int | None = None,
                             vae, encode_prompt: Callable[[str], Any], prompt: str = "a person moving",
                             fps: float = 16.0, stride: int | None = None, validate: bool = True,
-                            forbid_identities: set[str] | None = None) -> Path:
-    """Extract motion, cut windows of `num_frames` (4k+1), encode latents at size x size, write manifest.json."""
+                            forbid_identities: set[str] | None = None, height: int | None = None,
+                            width: int | None = None, min_body_detection: float = 0.0,
+                            log: Callable[[str], None] | None = None) -> Path:
+    """Extract motion, cut windows of `num_frames` (4k+1), encode latents at height x width (default size x size),
+    write manifest.json. Clips whose body detection rate is below `min_body_detection` are skipped and listed in
+    the manifest under `skipped` (nothing is dropped silently)."""
     import torch
     from PIL import Image
 
@@ -112,8 +116,11 @@ def build_training_manifest(sources: str | Path, out_dir: str | Path, *, num_fra
 
     from .precompute import encode_latents
 
-    if (num_frames - 1) % 4 or size % 16:
-        raise ValueError("num_frames must be 4k+1 and size a multiple of 16")
+    height, width = height or size, width or size
+    if not height or not width:
+        raise ValueError("give size, or height and width")
+    if (num_frames - 1) % 4 or height % 16 or width % 16:
+        raise ValueError("num_frames must be 4k+1 and height/width multiples of 16")
     src_path = resolve_path(sources)
     if validate:
         report = validate_sources(src_path, min_frames=num_frames, forbid_identities=forbid_identities)
@@ -125,13 +132,20 @@ def build_training_manifest(sources: str | Path, out_dir: str | Path, *, num_fra
     embeds = out / "prompt.pt"
     torch.save(torch.as_tensor(encode_prompt(prompt)).float().cpu(), embeds)
     stride = stride or num_frames
-    samples = []
-    for c in data["clips"]:
+    samples, skipped = [], []
+    for i, c in enumerate(data["clips"]):
         clip_dir = out / c["id"]
         motion_dir = clip_dir / "motion"
         video = src_path.parent / c["motion"]
-        extract_motion(video, motion_dir, ExtractionConfig(target_fps=fps, write_previews=False, write_openpose=False))
-        frames = [np.asarray(letterbox(Image.fromarray(f), size, size, fill=(0, 0, 0)))
+        summary = extract_motion(video, motion_dir, ExtractionConfig(target_fps=fps, write_previews=False,
+                                                                     write_openpose=False))
+        rate = float(((summary or {}).get("body") or {}).get("detection_rate", 1.0))
+        if rate < min_body_detection:
+            skipped.append({"id": c["id"], "reason": f"body detection {rate:.2f} < {min_body_detection}"})
+            if log:
+                log(f"[{i + 1}/{len(data['clips'])}] skip {c['id']}: body detection {rate:.2f}")
+            continue
+        frames = [np.asarray(letterbox(Image.fromarray(f), width, height, fill=(0, 0, 0)))
                   for f in read_video(video, target_fps=fps)]
         refs = []
         for j, r in enumerate(c["references"]):
@@ -147,8 +161,10 @@ def build_training_manifest(sources: str | Path, out_dir: str | Path, *, num_fra
                             "motion_dir": motion_dir.relative_to(out).as_posix(), "start_frame": start,
                             "references": refs, "source": c["source"], "license": c["license"],
                             "source_url": c.get("source_url")})
+        if log:
+            log(f"[{i + 1}/{len(data['clips'])}] {c['id']}: body {rate:.2f}, {len(samples)} windows total")
     manifest = out / "manifest.json"
-    manifest.write_text(json.dumps({"schema_version": 1, "num_frames": num_frames, "height": size, "width": size,
+    manifest.write_text(json.dumps({"schema_version": 1, "num_frames": num_frames, "height": height, "width": width,
                                     "fps": fps, "prompt": prompt, "built_from": str(src_path),
-                                    "samples": samples}, indent=2), encoding="utf-8")
+                                    "samples": samples, "skipped": skipped}, indent=2), encoding="utf-8")
     return manifest

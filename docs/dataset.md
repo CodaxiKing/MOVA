@@ -11,7 +11,7 @@ entre splits depende do futuro manifesto de treinamento.
 
 | Dataset | Origem | Licença | Tamanho | Resolução | Conteúdo | Treino legal? |
 |---|---|---|---|---|---|---|
-| **HumanVid** | https://github.com/zhenzhiwang/HumanVid | CC-BY-4.0 (código + sintéticos UE); vídeos reais seguem termos do Pexels | real (Pexels) + sintético; tamanho exato não confirmado | variada (vertical/horizontal) | humanos em movimento com parâmetros de câmera | **Sim** para sintéticos (atribuição); Pexels permite uso livre — reverificar termos atuais |
+| **HumanVid** | https://github.com/zhenzhiwang/HumanVid | CC-BY-4.0 (código + sintéticos UE); vídeos reais seguem termos do Pexels | real (Pexels) + sintético; tamanho exato não confirmado | variada (vertical/horizontal) | humanos em movimento com parâmetros de câmera | **Sim** só para os sintéticos (Hub). **Não** para os reais: os Termos do Pexels proíbem download automatizado para ML (reauditado 2026-09-24) |
 | **TikTok Dataset** (Jafarian & Park, CVPR 2021) | https://www.kaggle.com/datasets/yasaminjafarian/tiktokdataset | **UNKNOWN** (conteúdo de terceiros) | 340 clipes, 10–15 s, 30 fps, >100K frames | ~1080×604 (INFERENCE) | dança, 1 pessoa | Só pesquisa/avaliação; **não** para modelo distribuído |
 | **AIST++** | https://google.github.io/aistplusplus_dataset/ | anotações CC BY 4.0; vídeos AIST Dance DB (termos próprios) — reverificar | ~1 400 sequências, 10 gêneros de dança, multi-view (INFERENCE, a confirmar) | 1920×1080 | dança com 3D keypoints/SMPL | Anotações sim; vídeos: verificar termos |
 | **OpenHumanVid** | https://arxiv.org/abs/2412.00115 | a verificar | grande | alta | vídeos humanos com legendas | a verificar |
