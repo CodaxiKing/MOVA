@@ -1,5 +1,9 @@
 # HANDOFF
 
+## Site: Ambiente, Experimentos e vídeos — 2026-09-24
+
+`127.0.0.1:8000` era `python -m http.server`, portanto `/api/info` retornava 404. O processo estático foi substituído por `web/server.py` na mesma porta. A API agora informa perfil de hardware e estado real do cache Wan. `design/canvas/project/Setup.dc.html` + `web/canvas-live.js` mostram precisões, VRAM, runtime e perfil atuais. Experimentos escolhe o vídeo real mais recente, oferece prévia no detalhe e mostra precisão, offload, GPU e VRAM pico. Resultados mostra esses metadados junto dos vídeos. `scripts/build_web.py` regenerou os HTMLs. Navegador: Ambiente carregou RTX 2060 SUPER/fp16/17 de 17 pesos; Experimentos mostrou 18 runs e a prévia do run `20260924-223727-baseline`; o link abriu Resultados com referência, controle e saída. `.venv/Scripts/python -m pytest -q --tb=line` fora do sandbox: **217 passed, 3 skipped**. Mudanças paralelas de treino/dataset existem na árvore e não pertencem a este trabalho.
+
 ## Home visual — 2026-09-24
 
 Canvas fonte `design/canvas/project/Home.dc.html` redesenhado visualmente; `scripts/build_web.py` ajustado para o hero com classes novas e `web/index.html` regenerado. A tela no servidor local (`127.0.0.1:8000`) renderizou título neon, palco com halo, grade e cartões; navegação das seis abas presente no navegador. Animações CSS respeitam movimento reduzido. Textos do hero removem a promessa de preservação garantida e o perfil obsoleto de 256 px. Teste geral no sandbox: 123 passed, 97 setup errors por permissão no temp do pytest. Há outras mudanças de treino/dataset preexistentes na árvore de trabalho; não incluí-las no commit desta tela.

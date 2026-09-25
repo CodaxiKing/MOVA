@@ -1,5 +1,9 @@
 # Project Status
 
+## Painéis locais com API ativa (2026-09-24)
+
+O servidor estático que ocupava `127.0.0.1:8000` foi substituído por `web/server.py`; `/api/info` e `/api/runs` respondem nessa porta. Ambiente mostra RTX 2060 SUPER, `cuda-8gb`, `float16`, bf16 indisponível, VRAM/RAM livres e cache Wan completo (17/17). Experimentos lista 18 runs e abre por padrão o vídeo real `20260924-223727-baseline`; Resultados mostra referência, controle e saída com metadados de precisão/offload/VRAM. Verificado no navegador. Suíte completa fora do sandbox: **217 passed, 3 skipped**.
+
 ## Diagnóstico de fidelidade (2026-09-24)
 
 O run `20260924-223727-baseline` concluiu com 49 quadros em 464×832, 1628,9 s, saída válida. O prompt específico preservou blusa branca e saia bege visivelmente melhor que o prompt de estúdio do run `20260924-220453-baseline`; a semelhança facial ainda não foi medida por avaliação cega. Em `dance3`, 0/165 quadros têm os dois tornozelos detectados dentro da imagem. O core agora registra `motion_quality` e avisa sobre esse corte; o prompt padrão pede fidelidade à referência, e o Estúdio permite descrição específica. **A nova configuração ainda não foi validada em uma geração Wan.** `test_motion_quality.py` passou; a suíte completa nesta sessão ficou impedida por `PermissionError` no diretório temporário do pytest (123 testes passaram, 95 erros de setup).

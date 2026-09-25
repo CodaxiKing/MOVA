@@ -139,11 +139,21 @@ class Handler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/api/info":
             from core.info import model_info, system_info
+            from common.env import detect_hardware, select_profile
+            from core.config import resolve_run_config
+            from models.registry import create_model
             from shutil import disk_usage
 
             info = system_info()
             info["model_details"] = {name: model_info(name) for name in ("tiny", "wan")}
             info["disk_free_gb"] = round(disk_usage(ROOT).free / 1e9, 2)
+            info["profile"] = select_profile(detect_hardware()).to_dict()
+            try:
+                _, config = resolve_run_config(model="wan")
+                cache = create_model("wan", config).weights_status()
+                info["wan_weights"] = {"complete": cache.complete, "summary": cache.summary()}
+            except Exception as exc:
+                info["wan_weights"] = {"complete": False, "summary": str(exc)}
             return self.json(info)
         if path == "/api/runs":
             return self.json(runs())

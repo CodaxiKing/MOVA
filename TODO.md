@@ -2,6 +2,8 @@
 
 ## Critical
 
+- [x] Servir o site com a API em `127.0.0.1:8000` e ligar Ambiente, Experimentos e Resultados aos registros e mídias reais (2026-09-24).
+
 - [x] Redesenhar a tela Início com identidade neon, animações leves e links do canvas preservados (2026-09-24).
 
 - [ ] Validar uma nova geração Wan com o prompt padrão atualizado e driver de corpo inteiro; comparar rosto, roupa e movimento por revisão visual e métricas.

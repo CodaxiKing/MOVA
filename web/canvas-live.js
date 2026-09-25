@@ -68,25 +68,33 @@
     instance.renderVals = function () {
       var v = original();
       if (!info) {
-        v.hw = { name: 'Detectando máquina…', use: 'Lendo core.info', gpu: '—', gpuColor: '#a1a1aa', ram: '—', disk: '—', profile: '—', can: [] };
+        v.hw = { name: 'Detectando máquina…', use: 'Lendo core.info', gpu: '—', gpuColor: '#a1a1aa', ram: '—', disk: '—', profile: '—', precisions: '—', vram: '—', runtime: '—', can: [] };
         v.machines = [{ label: 'Máquina atual', pressed: 'true', bg: '#d2ff3c', fg: '#0a0a0b', pick: function () {} }];
+        v.profileSummary = 'Carregando perfil…';
         v.authDisabled = true; v.authLabel = 'Verificando pesos'; return v;
       }
       var gpu = info.devices.find(function (d) { return d.type !== 'cpu'; });
       var cpu = info.devices.find(function (d) { return d.type === 'cpu'; }) || {};
       var memory = cpu.memory || {};
       var disk = info.disk_free_gb;
+      var profile = info.profile || {};
+      var weights = info.wan_weights || {};
+      var realRuns = runs.filter(function (r) { return r.kind === 'baseline' && r.status === 'success' && r.media && r.media['output.mp4'] && String(r.model).indexOf('tiny') < 0; });
       v.machines = [{ label: 'Máquina atual', pressed: 'true', bg: '#d2ff3c', fg: '#0a0a0b', pick: function () {} }];
       v.hw = { name: gpu ? gpu.name : cpu.name || info.os, use: 'Ambiente detectado agora pelo MOVA.',
         gpu: gpu ? gpu.name + ' · ' + gpu.id : 'Sem GPU suportada detectada', gpuColor: gpu ? '#d2ff3c' : '#ff8cc4',
         ram: memory.free_gb + ' / ' + memory.total_gb + ' GB livres / total', disk: disk + ' GB livres',
-        profile: gpu ? 'GPU · ' + (gpu.total_memory_gb || '?') + ' GB' : 'CPU',
+        profile: profile.name || '—',
+        precisions: gpu ? 'fp32 · ' + (gpu.fp16 ? 'fp16' : 'sem fp16') + ' · ' + (gpu.bf16 ? 'bf16' : 'bf16 indisponível') : 'fp32 (CPU)',
+        vram: gpu && gpu.memory ? gpu.memory.free_gb + ' / ' + gpu.memory.total_gb + ' GB livres / total' : 'sem GPU',
+        runtime: (info.runtimes || []).filter(function (r) { return r.status === 'available'; }).map(function (r) { return r.name + ' ' + (r.version || ''); }).join(', ') || 'indisponível',
         can: [['Extração MediaPipe', 'disponível'], ['Smoke test tiny', 'disponível'],
-          ['Wan 1.3B', gpu ? 'verificar recursos' : 'sem GPU']].map(function (c) { return { label: c[0], state: c[1], dot: c[1] === 'sem GPU' ? '#ff4fa3' : '#d2ff3c' }; }) };
-      v.disk = { label: disk + ' GB livres', pct: Math.min(100, Math.round(19.04 / Math.max(disk, 1) * 100)) + '%', color: disk >= 19.04 ? '#d2ff3c' : '#ff4fa3' };
-      v.verdict = { title: 'Pesos: consulte o cache local', text: 'A interface não inicia downloads. O Estúdio usa apenas pesos já presentes e faz a checagem de recursos antes de inferir.',
-        bg: '#1c1c1f', border: '#3a3a40', fg: '#f4f4f5', sub: '#a1a1aa' };
-      v.authDisabled = true; v.authLabel = 'Download somente pela CLI'; v.authorize = function () {};
+          ['Wan 1.3B', gpu && weights.complete ? 'disponível' : 'verificar recursos']].map(function (c) { return { label: c[0], state: c[1], dot: c[1] === 'disponível' ? '#d2ff3c' : '#ff4fa3' }; }) };
+      v.profileSummary = (profile.width || '—') + '×' + (profile.height || '—') + ' · ' + (profile.num_frames || '—') + ' quadros · ' + (profile.dtype || '—') + ' · ' + (profile.offload || '—');
+      v.disk = { label: disk + ' GB livres', pct: weights.complete ? '100%' : Math.min(100, Math.round(19.04 / Math.max(disk, 1) * 100)) + '%', color: weights.complete || disk >= 19.04 ? '#d2ff3c' : '#ff4fa3' };
+      v.verdict = { title: weights.complete ? 'Pesos completos no cache' : 'Pesos ainda não confirmados', text: (weights.summary || 'Estado indisponível') + ' · ' + realRuns.length + ' vídeo(s) real(is) concluído(s).',
+        bg: weights.complete ? '#1c2410' : '#1c1c1f', border: weights.complete ? '#4b6b12' : '#3a3a40', fg: weights.complete ? '#d2ff3c' : '#f4f4f5', sub: '#a1a1aa' };
+      v.authDisabled = true; v.authLabel = weights.complete ? 'Pesos já disponíveis' : 'Download somente pela CLI'; v.authorize = function () {};
       return v;
     };
     instance.componentDidMount = function () {
@@ -98,7 +106,8 @@
     instance.renderVals = function () {
       var self = this, s = this.state;
       var filtered = runs.filter(function (r) { return s.filter === 'all' || r.kind === s.filter; });
-      var current = runs.find(function (r) { return r.run_id === s.selected; }) || filtered[0] || null;
+      var current = filtered.find(function (r) { return r.run_id === s.selected; }) ||
+        (s.filter === 'all' ? filtered.find(function (r) { return r.status === 'success' && r.media && r.media['output.mp4']; }) : null) || filtered[0] || null;
       function color(kind) { return kind === 'baseline' ? '#d2ff3c' : kind === 'train' ? '#ff4fa3' : '#f4f4f5'; }
       return {
         totalRuns:runs.length, extractRuns:runs.filter(function(r){return r.kind==='extract';}).length,
@@ -119,7 +128,9 @@
           summary:current.error||('Status: '+current.status), link:current.media && current.media['output.mp4'] ? 'resultados.html?run='+encodeURIComponent(current.run_id) : current.record_url,
           cta:current.media && current.media['output.mp4'] ? 'Ver resultado' : 'Abrir run.json',
           fields:[['modelo',current.model],['status',current.status],['resolução',current.resolution],['quadros',current.frames],
-            ['tempo',current.wall_time_s == null ? null : current.wall_time_s+' s'],['início',current.started_at]].map(function (f) { return {k:f[0],v:f[1]||'—'}; }),
+            ['precisão',current.runtime && current.runtime.precision],['offload',current.runtime && current.runtime.offload],
+            ['GPU',current.runtime && current.runtime.device_name],['VRAM pico',current.stats && current.stats.vram_peak_gb != null ? current.stats.vram_peak_gb+' GB' : null],
+            ['tempo',current.wall_time_s == null ? null : Math.round(current.wall_time_s)+' s'],['início',current.started_at]].map(function (f) { return {k:f[0],v:f[1]||'—'}; }),
           path:'experiments/runs/'+current.run_id+'/run.json' } : { id:'Nenhum run', kind:'—', kindBg:'#1c1c1f', kindFg:'#f4f4f5',
             summary:'Nenhum registro local disponível.', link:'#', cta:'Sem registro', fields:[], path:'experiments/runs/' }
       };
@@ -182,12 +193,22 @@
   }
   function afterRender(instance, root) {
     if (page === 'experimentos.html') {
+      var filteredRuns = runs.filter(function(r){return instance.state.filter==='all'||r.kind===instance.state.filter;});
+      var currentRun = filteredRuns.find(function(r){return r.run_id===instance.state.selected;}) ||
+        (instance.state.filter==='all' ? filteredRuns.find(function(r){return r.status==='success'&&r.media&&r.media['output.mp4'];}) : null) || filteredRuns[0];
       var cards = root.querySelectorAll('[aria-labelledby="runs-h"] > div:nth-child(2) > div');
       var counts=[runs.length,runs.filter(function(r){return r.kind==='extract'}).length,
         runs.filter(function(r){return r.kind==='baseline'&&String(r.model).indexOf('tiny')>=0;}).length,
         runs.filter(function(r){return r.kind==='baseline'&&String(r.model).indexOf('tiny')<0&&r.status==='success'}).length];
       cards.forEach(function(card,i){var first=card.querySelector('span');if(first)first.textContent=counts[i];});
       root.querySelectorAll('[role="row"] [role="cell"]:last-child').forEach(function(cell,i){var r=runs.filter(function(x){return instance.state.filter==='all'||x.kind===instance.state.filter;})[i];if(r)cell.textContent=r.status;});
+      var runMedia=root.querySelector('#mova-run-media');
+      if(runMedia){runMedia.replaceChildren();
+        if(currentRun&&currentRun.media&&(currentRun.media['output.mp4']||currentRun.media['pose_openpose.mp4'])){
+          var preview=document.createElement('video');preview.className='mova-live-video';preview.controls=true;preview.preload='metadata';
+          preview.src=currentRun.media['output.mp4']||currentRun.media['pose_openpose.mp4'];runMedia.appendChild(preview);
+        }else{runMedia.textContent='Este run não possui vídeo registrado.';}
+      }
     }
     if (page === 'ambiente.html') {
       var models = root.querySelectorAll('article');
@@ -241,6 +262,10 @@
         var picker=ensure(panel,'mova-result-picker','<select id="mova-result-picker" aria-label="Escolher resultado" style="background:#1c1c1f;color:#f4f4f5;border:1px solid #3a3a40;border-radius:12px;padding:8px"></select>');
         if(picker){picker.innerHTML=available.map(function(r){return '<option value="'+r.run_id+'">'+r.run_id+'</option>';}).join('');if(selected)picker.value=selected.run_id;
           picker.onchange=function(){location.href='resultados.html?run='+encodeURIComponent(picker.value);};}
+        var details=ensure(panel,'mova-result-details','<div id="mova-result-details" class="mova-live-status"></div>');
+        if(details)details.textContent=selected ? [selected.resolution||'—',selected.frames+' quadros',
+          (selected.runtime&&selected.runtime.precision)||'precisão —',(selected.runtime&&selected.runtime.offload)||'offload —',
+          selected.stats&&selected.stats.vram_peak_gb!=null?selected.stats.vram_peak_gb+' GB VRAM pico':'VRAM —'].join(' · ') : 'Nenhuma geração concluída.';
         var figures=panel.querySelectorAll('figure > div');
         if(figures.length===3){
           figures[0].innerHTML=selected&&selected.input_media&&selected.input_media.reference?'<img class="mova-live-video" src="'+selected.input_media.reference+'" alt="Referência usada na execução">':'<div class="mova-live-empty">Referência indisponível</div>';

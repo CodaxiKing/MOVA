@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Painéis locais
+- Ambiente usa perfil e cache do Wan medidos no momento, com precisões, VRAM, RAM e runtime.
+- Experimentos mostra a prévia e detalhes da geração selecionada; Resultados mostra precisão, offload e VRAM pico com os vídeos.
+- A instância local na porta 8000 agora serve a API do MOVA junto do site.
+
 ### Tela Início
 - Visual neon no canvas: grade, halo, cartões com movimento e hover, brilho nas chamadas e suporte a movimento reduzido.
 - Texto do hero atualizado para refletir o funcionamento e o perfil local atuais.

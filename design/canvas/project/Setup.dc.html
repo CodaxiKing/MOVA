@@ -52,6 +52,9 @@ button:focus-visible,a:focus-visible{outline:2px solid #d2ff3c;outline-offset:2p
 <dt style="color: #8b8b93">RAM</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.ram}}</dd>
 <dt style="color: #8b8b93">Disco livre</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.disk}}</dd>
 <dt style="color: #8b8b93">Perfil</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.profile}}</dd>
+<dt style="color: #8b8b93">Precisões GPU</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.precisions}}</dd>
+<dt style="color: #8b8b93">VRAM livre</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.vram}}</dd>
+<dt style="color: #8b8b93">Runtime</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{hw.runtime}}</dd>
 </dl>
 <div style="display: flex; flex-direction: column; gap: 8px">
 <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8b8b93">O que roda aqui</span>
@@ -98,14 +101,14 @@ mova info --model wan</pre>
 
 <section aria-labelledby="dl-h" style="flex-grow: 1; border-radius: 22px; background: #141416; border: 1px solid #26262a; padding: 22px; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px">
 <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0">
-<h2 id="dl-h" style="margin: 0; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 32px; line-height: 1; text-transform: uppercase">Baixar pesos do Wan</h2>
-<span style="font-size: 14px; line-height: 1.5; color: #a1a1aa">Modelos grandes só são baixados com a sua autorização explícita. Confira antes:</span>
+<h2 id="dl-h" style="margin: 0; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 32px; line-height: 1; text-transform: uppercase">Pesos do Wan</h2>
+<span style="font-size: 14px; line-height: 1.5; color: #a1a1aa">Estado do cache local e perfil recomendado para esta máquina:</span>
 <dl style="margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px 14px; font-size: 14px">
 <dt style="color: #8b8b93">Repositório</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">Wan-AI/Wan2.1-VACE-1.3B-diffusers</dd>
 <dt style="color: #8b8b93">Revisão fixada</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">ec4d2cb062b5</dd>
 <dt style="color: #8b8b93">Tamanho</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">19.04 GB</dd>
 <dt style="color: #8b8b93">Licença</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">Apache-2.0</dd>
-<dt style="color: #8b8b93">VRAM (perfil)</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">8 GB · 256 px · 17 quadros · bf16 · offload</dd>
+<dt style="color: #8b8b93">Perfil</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">{{profileSummary}}</dd>
 <dt style="color: #8b8b93">Texto (UMT5)</dt><dd style="margin: 0; font-family: 'Geist Mono', monospace">só em CPU, com cache de embeddings</dd>
 </dl>
 <div style="display: flex; flex-direction: column; gap: 8px">

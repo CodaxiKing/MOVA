@@ -5,6 +5,7 @@ O site usa `web/server.py` para consultar o core Python e iniciar extração/inf
 A identidade visual e as animações da tela Início ficam no canvas fonte `design/canvas/project/Home.dc.html`; o HTML em `web/index.html` é gerado pelo build.
 
 - Iniciar na raiz do projeto: `.venv/Scripts/python web/server.py` e abrir `http://127.0.0.1:8000`.
+- Se a página mostrar “Detectando máquina…” permanentemente, confirme que `/api/info` responde JSON. Um servidor estático como `python -m http.server` não fornece a API.
 - Páginas: `index.html` (Início), `estudio.html`, `movimento.html`, `resultados.html`, `experimentos.html`, `ambiente.html`.
 - Ambiente lê `core.info`; Experimentos lê os `run.json`; Movimento chama `core.preprocess`; Estúdio chama `core.inference`; Resultados exibe os MP4 gerados e registrados.
 - O servidor escuta somente em `127.0.0.1`. Uploads ficam em `assets/web_uploads/` e saídas em `outputs/`; ambos são ignorados pelo Git. Arquivos têm limite de 200 MB. Apenas uma execução pesada por vez.
