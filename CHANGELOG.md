@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Tela Início
+- Visual neon no canvas: grade, halo, cartões com movimento e hover, brilho nas chamadas e suporte a movimento reduzido.
+- Texto do hero atualizado para refletir o funcionamento e o perfil local atuais.
+
 ### Fidelidade de geração
 - Prompt padrão passa a pedir a mesma pessoa, roupa e ambiente da referência; Estúdio permite descrição específica.
 - Run de inferência registra cobertura de corpo inteiro do vídeo de movimento e avisa quando os tornozelos estão cortados.

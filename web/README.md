@@ -2,6 +2,8 @@
 
 O site usa `web/server.py` para consultar o core Python e iniciar extração/inferência local. As seis telas preservam o layout do canvas em `design/canvas/project/`; `dc-runtime.js` renderiza o canvas e `canvas-live.js` conecta seus componentes à API. O CSS adicional fica em `canvas-live.css`.
 
+A identidade visual e as animações da tela Início ficam no canvas fonte `design/canvas/project/Home.dc.html`; o HTML em `web/index.html` é gerado pelo build.
+
 - Iniciar na raiz do projeto: `.venv/Scripts/python web/server.py` e abrir `http://127.0.0.1:8000`.
 - Páginas: `index.html` (Início), `estudio.html`, `movimento.html`, `resultados.html`, `experimentos.html`, `ambiente.html`.
 - Ambiente lê `core.info`; Experimentos lê os `run.json`; Movimento chama `core.preprocess`; Estúdio chama `core.inference`; Resultados exibe os MP4 gerados e registrados.

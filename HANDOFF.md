@@ -1,5 +1,9 @@
 # HANDOFF
 
+## Home visual — 2026-09-24
+
+Canvas fonte `design/canvas/project/Home.dc.html` redesenhado visualmente; `scripts/build_web.py` ajustado para o hero com classes novas e `web/index.html` regenerado. A tela no servidor local (`127.0.0.1:8000`) renderizou título neon, palco com halo, grade e cartões; navegação das seis abas presente no navegador. Animações CSS respeitam movimento reduzido. Textos do hero removem a promessa de preservação garantida e o perfil obsoleto de 256 px. Teste geral no sandbox: 123 passed, 97 setup errors por permissão no temp do pytest. Há outras mudanças de treino/dataset preexistentes na árvore de trabalho; não incluí-las no commit desta tela.
+
 ## Fidelidade do vídeo — 2026-09-24
 
 Run real `20260924-223727-baseline`: 49 quadros, 464×832, 1628,9 s, saída válida. O prompt específico melhorou visualmente a roupa frente ao run anterior; sem medição cega de identidade facial. `outputs/motion/dance3/body_motion.pt` indica 0/165 quadros com ambos os tornozelos visíveis. Criado `core/motion_quality.py`; `core.inference` avisa e registra cobertura antes da geração. `configs/baseline.yaml` usa prompt de fidelidade à referência. O Estúdio (`design/canvas/project/Main.dc.html` e `web/estudio.html`) tem campo de descrição enviado por `web/canvas-live.js` a `web/server.py`. Teste novo passou. A suíte completa falhou nesta execução por permissão do diretório temporário do pytest: 123 passed, 95 setup errors; tentar fora do sandbox. A nova configuração não foi gerada no Wan. Próximo: obter driver de corpo inteiro, liberar RAM, gerar e comparar com avaliação cega/identidade.

@@ -2,6 +2,8 @@
 
 ## Critical
 
+- [x] Redesenhar a tela Início com identidade neon, animações leves e links do canvas preservados (2026-09-24).
+
 - [ ] Validar uma nova geração Wan com o prompt padrão atualizado e driver de corpo inteiro; comparar rosto, roupa e movimento por revisão visual e métricas.
 - [ ] Obter vídeo de movimento com pés/pernas visíveis durante toda a sequência; `dance3` teve 0/165 quadros com ambos os tornozelos em cena.
 

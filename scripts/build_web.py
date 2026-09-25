@@ -37,8 +37,8 @@ TITLES = {
 # mudar nada visualmente além de remover a sobreposição.
 PATCHES = {
     "Home.dc.html": [
-        ('<div style="width: 1440px; height: 1760px;', '<div style="width: 1440px; min-height: 1760px;'),
-        ('<section aria-labelledby="hero-h" style="height: 760px;', '<section aria-labelledby="hero-h" style="min-height: 760px;'),
+        ('<div class="mova-home" style="width: 1440px; height: 1760px;', '<div class="mova-home" style="width: 1440px; min-height: 1760px;'),
+        ('<section class="home-hero" aria-labelledby="hero-h" style="height: 760px;', '<section class="home-hero" aria-labelledby="hero-h" style="min-height: 760px;'),
     ],
 }
 
