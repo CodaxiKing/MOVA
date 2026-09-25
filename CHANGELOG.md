@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Site local (2026-09-24)
+- Servidor HTTP local conecta as seis abas aos serviços reais de info, extração, inferência e registros de experimentos.
+- A interface mostra saídas registradas e não autoriza download de pesos do Wan.
+
 ### Fixed (2026-09-24, primeira máquina com GPU)
 - Caminho CUDA com offload: embeddings de prompt pré-computados agora vão para o dispositivo de execução do pipeline
   (antes: `mat1 is on cpu` no transformer do Wan). Saída em CPU inalterada (bit-exata).

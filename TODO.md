@@ -2,6 +2,9 @@
 
 ## Critical
 
+- [x] Site local ligado ao core: Ambiente, Experimentos, Movimento, Estúdio e Resultados (2026-09-24)
+- [ ] Validar inferência Wan via site com mídia real e RAM/VRAM disponíveis (EXP-001)
+
 - [x] Download de `Wan-AI/Wan2.1-VACE-1.3B-diffusers` (19.04 GB) autorizado e feito no desktop RTX 2060 SUPER (2026-09-24)
 - [ ] Usuário: fornecer `assets/reference/maya.png` (corpo inteiro) e `assets/motion/dance.mp4` (uma pessoa, câmera estável)
 - [ ] EXP-001 no desktop: liberar ~12 GB de RAM para o UMT5 (uma vez; depois o prompt fica em cache)

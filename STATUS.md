@@ -1,5 +1,9 @@
 # Project Status
 
+## Site local ligado ao core (2026-09-24)
+
+`web/server.py` serve as seis abas em `127.0.0.1:8000`. Ambiente consulta `core.info`, Experimentos lê `run.json`, Movimento chama `core.preprocess.run_extraction`, Estúdio chama `core.inference.run_inference`, e Resultados exibe MP4 registrado. Wan não baixa pesos pela interface. Rotas da home, `/api/info`, `/api/runs` e mídia responderam 200 em teste local; job inválido foi registrado como failed. Upload + extração via API passaram e criaram `20260924-213136-extract`. `pytest -q --tb=line`: **215 passed** fora do sandbox; a execução restrita teve PermissionError no diretório temporário do pytest. Inferência real pelo navegador ainda não foi executada. Ver `web/README.md`.
+
 ## Primeira máquina com GPU — setup, correção do caminho CUDA, pesos do Wan (2026-09-24, Claude Code, `main`)
 
 Máquina: desktop i5-10400F (AVX2) + **RTX 2060 SUPER 8 GB** (cc 7.5), 16 GB RAM (~2–3 GB livres), Python 3.12.10,

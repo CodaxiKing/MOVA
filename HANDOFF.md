@@ -1,5 +1,11 @@
 # HANDOFF
 
+## Site funcional local — 2026-09-24
+
+Foi criado `web/server.py` (stdlib, sem dependência FastAPI) e `web/app.js`/`app.css`; `scripts/build_web.py` injeta a interface ativa nas seis páginas. Rodar `.venv/Scripts/python web/server.py` e abrir `http://127.0.0.1:8000`. Ambiente, Experimentos, Movimento, Estúdio e Resultados consultam/chamam o core real. O backend recusa download de pesos e serve apenas em localhost. API info e runs verificadas por HTTP; fluxo de geração com mídia real ainda pendente. Há alterações preexistentes em `inference/baseline_vace.py` e `tests/test_wan_weights.py`, não relacionadas a este trabalho.
+
+O primeiro `pytest -q` desta sessão teve 121 passed, 94 errors porque o diretório temporário recebeu `PermissionError`; a repetição com `--basetemp=.pytest_tmp` teve o mesmo problema. A suíte fora do sandbox passou: **215 passed**. Upload de `control.mp4` pela API + extração passou e criou `20260924-213136-extract`. Próximo: validar inferência via navegador e EXP-001 conforme RAM/VRAM disponível.
+
 ## Sessão atual — primeira máquina com GPU, 2026-09-24, Claude Code (branch `main`)
 
 Pedido: "inicie o projeto todo", depois "corrija e baixe o Wan". Máquina NOVA, fora dos docs até agora: desktop
