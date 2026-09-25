@@ -206,7 +206,7 @@
     }
     if (page === 'estudio.html') {
       var motionFigure=root.querySelector('main figure:nth-of-type(2)');
-      if(motionFigure&&instance.state.motionUrl){var svg=motionFigure.querySelector('svg');if(svg)svg.outerHTML='<video class="mova-live-video" autoplay loop muted playsinline src="'+instance.state.motionUrl+'"></video>';}
+      if(motionFigure&&instance.state.motionUrl){var svg=motionFigure.querySelector('svg');if(svg)svg.outerHTML='<video class="mova-live-video" preload="auto" muted playsinline src="'+instance.state.motionUrl+'"></video>';}
       var extras=root.querySelectorAll('input[aria-label^="Imagem extra de identidade"]');
       extras.forEach(function(input){input.disabled=true;input.title='Identidade multi-imagem ainda não integrada ao core';var label=input.closest('label');if(label)label.style.opacity='.45';});
     }

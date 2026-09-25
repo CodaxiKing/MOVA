@@ -1,5 +1,9 @@
 # HANDOFF
 
+## Ajuste de prévia do Estúdio — 2026-09-24
+
+Em `design/canvas/project/Main.dc.html` e `web/canvas-live.js`, as duas prévias do movimento perderam `autoplay`/`loop`. `scripts/build_web.py` regenerou `web/estudio.html`. Com "Usar exemplos" no navegador, ambas as tags `<video>` mostraram `paused=true` e `autoplay=false`. O arquivo continua selecionado para a geração. `pytest -q --tb=line`: **215 passed**. Mudança apenas visual, sem alteração do core.
+
 ## Correção do site pelo layout do canvas — 2026-09-24
 
 O site genérico da sessão anterior foi substituído pelo layout original de `design/canvas/project`. `scripts/build_web.py` gera as seis telas e carrega `canvas-live.js` antes de `dc-runtime.js`; o runtime chama os hooks de ligação. `web/server.py` fornece runs, mídia de entrada/saída, exemplos locais, jobs e revisão visual por run (`web_review.json`). Páginas inspecionadas no navegador local: Início, Estúdio, Movimento, Resultados, Experimentos e Ambiente; console sem erros. `web/app.js`/`app.css` antigos foram removidos. `pytest -q --tb=line` fora do sandbox: **215 passed**. Reiniciar o servidor após mudanças em `web/server.py`. A inferência Wan via Estúdio ainda depende de validação com mídia/recursos; não foi repetida só para testar layout.

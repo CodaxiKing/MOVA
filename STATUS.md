@@ -2,6 +2,8 @@
 
 ## Site local ligado ao core (2026-09-24)
 
+A prévia do vídeo de movimento no Estúdio fica pausada ao escolher um arquivo ou usar exemplos; as duas instâncias de vídeo da tela foram verificadas no navegador com `paused=true` e `autoplay=false`. Após a mudança, `pytest -q --tb=line`: **215 passed**.
+
 Correção visual posterior: as seis telas voltaram a usar a composição original do canvas. `web/canvas-live.js` injeta dados do backend nos componentes do canvas; `web/app.js`/`app.css` genéricos foram retirados. Início, Estúdio, Movimento, Resultados, Experimentos e Ambiente foram inspecionados no navegador local, sem erros de JavaScript no console. Em Resultados, referência, controle e vídeo da geração registrada aparecem nos três painéis; integridade usa `stats.output_validation`. Em Movimento, prévias e taxas de detecção vêm dos runs de extração. A revisão visual é salva em `web_review.json` no run. A API retornou 200 para exemplo local e mídia de entrada; revisão inválida retornou 400. Suíte: **215 passed** fora do sandbox.
 
 `web/server.py` serve as seis abas em `127.0.0.1:8000`. Ambiente consulta `core.info`, Experimentos lê `run.json`, Movimento chama `core.preprocess.run_extraction`, Estúdio chama `core.inference.run_inference`, e Resultados exibe MP4 registrado. Wan não baixa pesos pela interface. Rotas da home, `/api/info`, `/api/runs` e mídia responderam 200 em teste local; job inválido foi registrado como failed. Upload + extração via API passaram e criaram `20260924-213136-extract`. `pytest -q --tb=line`: **215 passed** fora do sandbox; a execução restrita teve PermissionError no diretório temporário do pytest. Inferência real pelo navegador ainda não foi executada. Ver `web/README.md`.
