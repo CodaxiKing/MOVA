@@ -2,6 +2,8 @@
 
 ## Site local ligado ao core (2026-09-24)
 
+Correção visual posterior: as seis telas voltaram a usar a composição original do canvas. `web/canvas-live.js` injeta dados do backend nos componentes do canvas; `web/app.js`/`app.css` genéricos foram retirados. Início, Estúdio, Movimento, Resultados, Experimentos e Ambiente foram inspecionados no navegador local, sem erros de JavaScript no console. Em Resultados, referência, controle e vídeo da geração registrada aparecem nos três painéis; integridade usa `stats.output_validation`. Em Movimento, prévias e taxas de detecção vêm dos runs de extração. A revisão visual é salva em `web_review.json` no run. A API retornou 200 para exemplo local e mídia de entrada; revisão inválida retornou 400. Suíte: **215 passed** fora do sandbox.
+
 `web/server.py` serve as seis abas em `127.0.0.1:8000`. Ambiente consulta `core.info`, Experimentos lê `run.json`, Movimento chama `core.preprocess.run_extraction`, Estúdio chama `core.inference.run_inference`, e Resultados exibe MP4 registrado. Wan não baixa pesos pela interface. Rotas da home, `/api/info`, `/api/runs` e mídia responderam 200 em teste local; job inválido foi registrado como failed. Upload + extração via API passaram e criaram `20260924-213136-extract`. `pytest -q --tb=line`: **215 passed** fora do sandbox; a execução restrita teve PermissionError no diretório temporário do pytest. Inferência real pelo navegador ainda não foi executada. Ver `web/README.md`.
 
 ## Primeira máquina com GPU — setup, correção do caminho CUDA, pesos do Wan (2026-09-24, Claude Code, `main`)
@@ -18,8 +20,8 @@ Nenhum vídeo real gerado.
 | Testes que assumiam `device=auto` → cpu | **FIXED** | testes de CPU fixam `runtime.device=cpu`; GPU em `tests/test_cuda.py` |
 | Regressão bit-exata no i5-10400F | **PASS** com referência AVX2 | o script congelado no commit 8284436 gera `d220ac…` aqui: diferença é de kernel SIMD, não de código (`benchmark/baseline/reference.py`) |
 | Pesos Wan2.1-VACE-1.3B @ ec4d2cb | **PASS** — COMPLETE, 17/17 arquivos, SHA-256 conferidos | `fetch_weights(verify_hashes=True)` → `COMPLETE (17/17 files; hashes checked: True)` |
-| EXP-001 (baseline real) | **BLOCKED** | sem `maya.png`/`dance.mp4`; UMT5 precisa de ~12 GB RAM livre |
-| bf16 em Turing | **UNVERIFIED** (risco) | cc 7.5 sem bf16 nativo; perfil escolhe bf16 |
+| EXP-001 (baseline real) | **PARTIAL** — 1º vídeo real gerado (464×832, fp16, 284 s, 5.48 GB); perfil 256² gera lixo | `docs/experiments/EXP-001.md`, run 20260924-214644 |
+| bf16 em Turing | **MEASURED**: funciona, 3× mais lento que fp16 | 130 s vs 44.7 s (192×336) |
 
 ## Qualidade do motion control em CPU (2026-09-24, Claude Code, branch `feat/motion-quality`)
 

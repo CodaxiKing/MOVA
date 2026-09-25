@@ -27,10 +27,26 @@ def runs() -> list[dict]:
             record["record_url"] = f"/api/runs/{path.parent.name}"
             artifacts = Path(record.get("artifacts_dir") or path.parent).resolve()
             if artifacts.is_relative_to(ROOT / "outputs"):
-                for name in ("output.mp4", "pose_openpose.mp4", "side_by_side.mp4"):
+                for name in ("output.mp4", "control.mp4", "pose_openpose.mp4", "side_by_side.mp4"):
                     if (artifacts / name).is_file():
                         record.setdefault("media", {})[name] = f"/api/media/{artifacts.relative_to(ROOT).as_posix()}/{name}"
+            extraction = Path(record.get("output_dir") or path.parent).resolve()
+            if extraction.is_relative_to(ROOT / "outputs"):
+                for name in ("pose_openpose.mp4", "body_preview.mp4", "face_preview.mp4", "hands_preview.mp4"):
+                    if (extraction / name).is_file():
+                        record.setdefault("media", {})[name] = f"/api/media/{extraction.relative_to(ROOT).as_posix()}/{name}"
             result.append(record)
+            review = path.parent / "web_review.json"
+            if review.is_file():
+                try:
+                    record["web_review"] = json.loads(review.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    pass
+            inputs = record.get("inputs") or {}
+            for kind in ("reference", "motion"):
+                source = (ROOT / str(inputs.get(kind, ""))).resolve()
+                if source.is_file() and (source.is_relative_to(ROOT / "assets") or source.is_relative_to(ROOT / "outputs")):
+                    record.setdefault("input_media", {})[kind] = f"/api/input/{path.parent.name}/{kind}"
         except (OSError, ValueError, TypeError):
             continue
     return result
@@ -76,8 +92,20 @@ def execute(job_id: str, data: dict) -> None:
             if frames < 5 or frames > 33 or (frames - 1) % 4 or steps < 1 or steps > 50:
                 raise ValueError("Quadros ou passos fora do intervalo permitido")
             overrides = [f"generation.num_frames={frames}", f"generation.num_inference_steps={steps}"]
+            for field, config_key, minimum, maximum in (
+                ("guidance", "guidance_scale", 1, 10), ("conditioning", "conditioning_scale", 0, 2),
+                ("seed", "seed", 0, 2147483647)):
+                if field in data:
+                    value = float(data[field]) if field != "seed" else int(data[field])
+                    if not minimum <= value <= maximum:
+                        raise ValueError(f"{field} fora do intervalo permitido")
+                    overrides.append(f"generation.{config_key}={value}")
+            device = data.get("device", "auto")
+            precision = data.get("precision", "auto")
+            if device not in {"auto", "cpu", "cuda:0"} or precision not in {"auto", "fp32", "fp16", "bf16"}:
+                raise ValueError("Dispositivo ou precisão inválida")
             result = run_inference(InferenceRequest(reference=str(reference), motion=str(motion), model=model,
-                overrides=overrides, allow_download=False, allow_cpu=model == "tiny"),
+                overrides=overrides, device=device, precision=precision, allow_download=False, allow_cpu=model == "tiny"),
                 echo=lambda line: job["log"].append(str(line)))
             job.update(status="success", run_id=result.run_id, output=f"/api/media/{result.output.resolve().relative_to(ROOT).as_posix()}")
         else:
@@ -121,21 +149,57 @@ class Handler(SimpleHTTPRequestHandler):
             return self.json({"error": "Registro não encontrado"}, 404)
         if path.startswith("/api/jobs/"):
             return self.json(JOBS.get(path.rsplit("/", 1)[-1], {"error": "Job não encontrado"}))
+        if path.startswith("/api/sample/"):
+            samples = {"reference": ROOT / "assets/reference/maya.png", "motion": ROOT / "assets/motion/dance.mp4.mp4"}
+            target = samples.get(path.rsplit("/", 1)[-1])
+            if not target or not target.is_file():
+                return self.json({"error": "Exemplo indisponível"}, 404)
+            return self.file(target)
+        if path.startswith("/api/input/"):
+            parts = path.split("/")
+            if len(parts) != 5 or not re.fullmatch(r"[A-Za-z0-9_-]+", parts[3]) or parts[4] not in {"reference", "motion"}:
+                return self.json({"error": "Entrada inválida"}, 404)
+            record = RUNS / parts[3] / "run.json"
+            if not record.is_file():
+                return self.json({"error": "Registro não encontrado"}, 404)
+            source = (ROOT / str((json.loads(record.read_text(encoding="utf-8")).get("inputs") or {}).get(parts[4], ""))).resolve()
+            if not source.is_file() or not (source.is_relative_to(ROOT / "assets") or source.is_relative_to(ROOT / "outputs")):
+                return self.json({"error": "Entrada indisponível"}, 404)
+            return self.file(source)
         if path.startswith("/api/media/"):
             target = (ROOT / unquote(path.removeprefix("/api/media/"))).resolve()
             if not target.is_relative_to(ROOT / "outputs") or not target.is_file() or target.suffix.lower() != ".mp4":
                 return self.json({"error": "Mídia não encontrada"}, 404)
-            content = target.read_bytes()
-            self.send_response(200)
-            self.send_header("Content-Type", mimetypes.guess_type(target.name)[0] or "video/mp4")
-            self.send_header("Content-Length", str(len(content)))
-            self.end_headers()
-            self.wfile.write(content)
-            return
+            return self.file(target)
         return super().do_GET()
 
+    def file(self, target: Path):
+        content = target.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", mimetypes.guess_type(target.name)[0] or "application/octet-stream")
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
+
     def do_POST(self):
-        if urlparse(self.path).path != "/api/jobs":
+        path = urlparse(self.path).path
+        if path.startswith("/api/runs/") and path.endswith("/review"):
+            run_id = path.split("/")[3]
+            if not re.fullmatch(r"[A-Za-z0-9_-]+", run_id) or not (RUNS / run_id / "run.json").is_file():
+                return self.json({"error": "Registro não encontrado"}, 404)
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length < 1 or length > 8192:
+                    return self.json({"error": "Revisão muito grande"}, 413)
+                data = json.loads(self.rfile.read(length))
+                if data.get("verdict") not in {"ok", "bad", None} or not isinstance(data.get("notes"), str) or len(data["notes"]) > 4000:
+                    return self.json({"error": "Revisão inválida"}, 400)
+                target = RUNS / run_id / "web_review.json"
+                target.write_text(json.dumps({"verdict": data.get("verdict"), "notes": data["notes"]}, ensure_ascii=False, indent=2), encoding="utf-8")
+                return self.json({"saved": True})
+            except (ValueError, TypeError):
+                return self.json({"error": "JSON inválido"}, 400)
+        if path != "/api/jobs":
             return self.json({"error": "Rota não encontrada"}, 404)
         length = int(self.headers.get("Content-Length", "0"))
         if length < 1 or length > 275 * 1024 * 1024:

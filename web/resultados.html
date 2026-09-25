@@ -14,8 +14,9 @@ button,textarea{font-family:inherit}
 button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid #d2ff3c;outline-offset:2px}
 </style>
 <style>html,body{background:#0a0a0b}#dc-root>div{margin:0 auto}input[type=range]{cursor:pointer}</style>
-<link rel="stylesheet" href="app.css">
-<script src="app.js" defer></script>
+<link rel="stylesheet" href="canvas-live.css">
+<script src="canvas-live.js" defer></script>
+<script src="dc-runtime.js" defer></script>
 </head>
 <body>
 <div id="dc-root"></div>
@@ -45,7 +46,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid #d
 <section aria-labelledby="cmp-h" style="background: #141416; border: 1px solid #26262a; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
 <div style="display: flex; justify-content: space-between; align-items: baseline">
 <h1 id="cmp-h" style="margin: 0; font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 38px; line-height: 1; text-transform: uppercase">Lado a lado</h1>
-<span style="font-size: 12px; color: #a1a1aa">save_side_by_side · prévia simulada</span>
+<span style="font-size: 12px; color: #a1a1aa">Execução registrada · {{runLabel}}</span>
 </div>
 <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
 <figure style="margin: 0; display: flex; flex-direction: column; gap: 8px">

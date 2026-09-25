@@ -63,6 +63,26 @@ def convert(src: Path, out_name: str) -> str:
         text = text.replace(old, new)
     for old, new in PAGES.items():
         text = text.replace(old, new)
+    text = text.replace('Simulação · nenhum modelo roda no canvas', 'Conectado ao MOVA local')
+    if src.name == 'Runs.dc.html':
+        text = text.replace('background: #d2ff3c"></span>success</span>', 'background: {{r.statusColor}}"></span>{{r.status}}</span>')
+        text = text.replace('font-size: 13px; color: #d2ff3c"><span style="width: 7px;', 'font-size: 13px; color: {{r.statusColor}}"><span style="width: 7px;')
+        text = text.replace('>5</span><span style="font-size: 13px; color: #a1a1aa">runs registrados', '>{{totalRuns}}</span><span style="font-size: 13px; color: #a1a1aa">runs registrados')
+        text = text.replace('>3</span><span style="font-size: 13px; color: #a1a1aa">extrações MediaPipe', '>{{extractRuns}}</span><span style="font-size: 13px; color: #a1a1aa">extrações MediaPipe')
+        text = text.replace('>2</span><span style="font-size: 13px; color: #a1a1aa">smoke tests (tiny)', '>{{tinyRuns}}</span><span style="font-size: 13px; color: #a1a1aa">smoke tests (tiny)')
+        text = text.replace('>0</span><span style="font-size: 13px; color: #ffc2de">com pesos reais', '>{{realRuns}}</span><span style="font-size: 13px; color: #ffc2de">com pesos reais')
+    if src.name == 'Main.dc.html':
+        text = text.replace('<sc-if value="{{outFigure}}"', '<sc-if value="{{liveOutput}}"><video src="{{liveOutput}}" controls="" style="width:100%;height:100%;object-fit:contain"></video></sc-if>\n<sc-if value="{{outFigure}}"', 1)
+    if src.name == 'Result.dc.html':
+        text = text.replace('save_side_by_side · prévia simulada', 'Execução registrada · {{runLabel}}')
+    if src.name == 'Motion.dc.html':
+        text = text.replace('outputs/motion/dance · FORMAT_VERSION 1', 'runs locais · FORMAT_VERSION 2')
+        text = text.replace('assets/motion/dance.mp4', '&lt;arquivo de vídeo&gt;')
+    if src.name == 'Home.dc.html':
+        text = text.replace('código pronto, sem pesos reais', 'execuções locais registradas')
+        text = text.replace('não iniciados', 'protótipos em CPU')
+    if src.name == 'Setup.dc.html':
+        text = text.replace('Nunca executado com os pesos reais.', 'Consulte os runs reais em Experimentos.')
     helmet = one(r"<helmet>(.*?)</helmet>", text, src.name).group(1).strip()
     body = one(r"</helmet>(.*?)</x-dc>", text, src.name).group(1).strip()
     script = one(r'(<script type="text/x-dc".*?</script>)', text, src.name).group(1)
@@ -77,8 +97,9 @@ def convert(src: Path, out_name: str) -> str:
         f"<!-- Gerado por scripts/build_web.py a partir de design/canvas/project/{src.name}. Não editar à mão. -->",
         helmet,
         PAGE_CSS,
-        '<link rel="stylesheet" href="app.css">',
-        '<script src="app.js" defer></script>',
+        '<link rel="stylesheet" href="canvas-live.css">',
+        '<script src="canvas-live.js" defer></script>',
+        '<script src="dc-runtime.js" defer></script>',
         "</head>",
         "<body>",
         '<div id="dc-root"></div>',

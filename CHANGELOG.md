@@ -5,6 +5,7 @@
 ### Site local (2026-09-24)
 - Servidor HTTP local conecta as seis abas aos serviços reais de info, extração, inferência e registros de experimentos.
 - A interface mostra saídas registradas e não autoriza download de pesos do Wan.
+- Layout original do canvas restaurado nas seis páginas; componentes recebem dados da API, mídias registradas e revisão por run.
 
 ### Fixed (2026-09-24, primeira máquina com GPU)
 - Caminho CUDA com offload: embeddings de prompt pré-computados agora vão para o dispositivo de execução do pipeline

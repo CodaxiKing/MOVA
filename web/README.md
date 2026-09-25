@@ -1,6 +1,6 @@
 # Site MOVA (local)
 
-O site usa `web/server.py` para consultar o core Python e iniciar extração/inferência local. A interface ativa está em `app.js`/`app.css`; as telas do canvas permanecem como fonte visual em `design/canvas/project/`.
+O site usa `web/server.py` para consultar o core Python e iniciar extração/inferência local. As seis telas preservam o layout do canvas em `design/canvas/project/`; `dc-runtime.js` renderiza o canvas e `canvas-live.js` conecta seus componentes à API. O CSS adicional fica em `canvas-live.css`.
 
 - Iniciar na raiz do projeto: `.venv/Scripts/python web/server.py` e abrir `http://127.0.0.1:8000`.
 - Páginas: `index.html` (Início), `estudio.html`, `movimento.html`, `resultados.html`, `experimentos.html`, `ambiente.html`.
@@ -13,4 +13,4 @@ O site usa `web/server.py` para consultar o core Python e iniciar extração/inf
 python scripts/build_web.py
 ```
 
-`scripts/build_web.py` ainda gera o HTML do canvas e injeta a interface funcional. Não abra os HTMLs com `file://` nem com `python -m http.server`: essas opções não fornecem a API.
+`scripts/build_web.py` gera o HTML do canvas e injeta a conexão com a API. Não abra os HTMLs com `file://` nem com `python -m http.server`: essas opções não fornecem a API. Após alterar o servidor, reinicie-o.

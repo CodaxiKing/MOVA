@@ -1,5 +1,9 @@
 # HANDOFF
 
+## Correção do site pelo layout do canvas — 2026-09-24
+
+O site genérico da sessão anterior foi substituído pelo layout original de `design/canvas/project`. `scripts/build_web.py` gera as seis telas e carrega `canvas-live.js` antes de `dc-runtime.js`; o runtime chama os hooks de ligação. `web/server.py` fornece runs, mídia de entrada/saída, exemplos locais, jobs e revisão visual por run (`web_review.json`). Páginas inspecionadas no navegador local: Início, Estúdio, Movimento, Resultados, Experimentos e Ambiente; console sem erros. `web/app.js`/`app.css` antigos foram removidos. `pytest -q --tb=line` fora do sandbox: **215 passed**. Reiniciar o servidor após mudanças em `web/server.py`. A inferência Wan via Estúdio ainda depende de validação com mídia/recursos; não foi repetida só para testar layout.
+
 ## Site funcional local — 2026-09-24
 
 Foi criado `web/server.py` (stdlib, sem dependência FastAPI) e `web/app.js`/`app.css`; `scripts/build_web.py` injeta a interface ativa nas seis páginas. Rodar `.venv/Scripts/python web/server.py` e abrir `http://127.0.0.1:8000`. Ambiente, Experimentos, Movimento, Estúdio e Resultados consultam/chamam o core real. O backend recusa download de pesos e serve apenas em localhost. API info e runs verificadas por HTTP; fluxo de geração com mídia real ainda pendente. Há alterações preexistentes em `inference/baseline_vace.py` e `tests/test_wan_weights.py`, não relacionadas a este trabalho.

@@ -151,6 +151,7 @@
     var vals = instance.renderVals() || {};
     var scope = Object.assign(Object.create(null), vals);
     morphChildren(root, renderNodes(templateNodes, scope, []));
+    if (window.MOVALive && window.MOVALive.afterRender) window.MOVALive.afterRender(instance, root);
   }
 
   function schedule() {
@@ -177,6 +178,7 @@
     try { props = JSON.parse(src.getAttribute('data-props') || '{}'); } catch (e) {}
     var Component = new Function('DCLogic', src.textContent + '\nreturn Component;')(DCLogic);
     instance = new Component(props);
+    if (window.MOVALive && window.MOVALive.attach) window.MOVALive.attach(instance, root);
     render();
     fit();
     window.addEventListener('resize', fit);

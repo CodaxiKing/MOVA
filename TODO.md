@@ -3,6 +3,7 @@
 ## Critical
 
 - [x] Site local ligado ao core: Ambiente, Experimentos, Movimento, Estúdio e Resultados (2026-09-24)
+- [x] Restaurar o layout original do canvas nas seis telas e ligar seus componentes à API
 - [ ] Validar inferência Wan via site com mídia real e RAM/VRAM disponíveis (EXP-001)
 
 - [x] Download de `Wan-AI/Wan2.1-VACE-1.3B-diffusers` (19.04 GB) autorizado e feito no desktop RTX 2060 SUPER (2026-09-24)

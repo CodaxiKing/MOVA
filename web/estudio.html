@@ -15,8 +15,9 @@ button,input{font-family:inherit}
 button:focus-visible,a:focus-visible,input:focus-visible,label:focus-within{outline:2px solid #d2ff3c;outline-offset:2px}
 </style>
 <style>html,body{background:#0a0a0b}#dc-root>div{margin:0 auto}input[type=range]{cursor:pointer}</style>
-<link rel="stylesheet" href="app.css">
-<script src="app.js" defer></script>
+<link rel="stylesheet" href="canvas-live.css">
+<script src="canvas-live.js" defer></script>
+<script src="dc-runtime.js" defer></script>
 </head>
 <body>
 <div id="dc-root"></div>
@@ -38,7 +39,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,label:focus-within{outl
 <a href="experimentos.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Experimentos</a>
 <a href="ambiente.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Ambiente</a>
 </nav>
-<span style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #141416; border: 1px solid #26262a; font-size: 12px; color: #a1a1aa"><span style="width: 7px; height: 7px; border-radius: 50%; background: #ff4fa3"></span>Simulação · nenhum modelo roda no canvas</span>
+<span style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #141416; border: 1px solid #26262a; font-size: 12px; color: #a1a1aa"><span style="width: 7px; height: 7px; border-radius: 50%; background: #ff4fa3"></span>Conectado ao MOVA local</span>
 </header>
 
 <div style="flex-grow: 1; min-height: 0; display: grid; grid-template-columns: 404px minmax(0, 1fr)">
@@ -180,6 +181,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,label:focus-within{outl
 <div style="position: relative; height: 560px; flex-shrink: 0; border-radius: 24px; background: #111113; border: 1px solid #1c1c1f; overflow: hidden">
 
 <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{liveOutput}}"><video src="{{liveOutput}}" controls="" style="width:100%;height:100%;object-fit:contain"></video></sc-if>
 <sc-if value="{{outFigure}}" hint-placeholder-val="{{ false }}">
 <svg viewBox="0 0 200 300" style="height: 100%; display: block" role="img" aria-label="Quadro gerado simulado">
 <ellipse cx="100" cy="266" rx="46" ry="5" fill="#000000" opacity="0.6"></ellipse>
