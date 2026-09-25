@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fidelidade de geração
+- Prompt padrão passa a pedir a mesma pessoa, roupa e ambiente da referência; Estúdio permite descrição específica.
+- Run de inferência registra cobertura de corpo inteiro do vídeo de movimento e avisa quando os tornozelos estão cortados.
+
 ### Site local (2026-09-24)
 - Servidor HTTP local conecta as seis abas aos serviços reais de info, extração, inferência e registros de experimentos.
 - A interface mostra saídas registradas e não autoriza download de pesos do Wan.

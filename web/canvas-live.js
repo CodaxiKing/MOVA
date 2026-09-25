@@ -40,6 +40,7 @@
         body.guidance = instance.state.guidance;
         body.conditioning = instance.state.cond;
         body.seed = instance.state.seed;
+        body.prompt = instance.state.prompt;
       }
       return api('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     }).then(function (job) { poll(instance, job.id); }).catch(function (error) {

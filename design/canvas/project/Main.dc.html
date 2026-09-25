@@ -120,6 +120,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,label:focus-within{outl
 <button type="button" onClick="{{toggleAdv}}" aria-expanded="{{advExpanded}}" style="width: 100%; min-height: 48px; padding: 0 16px; border: none; background: transparent; color: #f4f4f5; font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; cursor: pointer">Configurações avançadas<span style="color: #a1a1aa; font-size: 18px" aria-hidden="true">{{advIcon}}</span></button>
 <sc-if value="{{advOpen}}" hint-placeholder-val="{{ false }}">
 <div style="padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+<label for="identity-prompt" style="font-size: 12px; color: #a1a1aa">Descrição da pessoa, roupa e cenário</label>
+<textarea id="identity-prompt" rows="3" maxlength="1000" onChange="{{onPrompt}}" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 1px solid #26262a; background: #0a0a0b; color: #f4f4f5; font: inherit; font-size: 12px">{{prompt}}</textarea>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
 <div style="display: flex; flex-direction: column; gap: 6px">
 <span id="lbl-dev" style="font-size: 12px; color: #a1a1aa">Dispositivo</span>
@@ -331,6 +333,7 @@ class Component extends DCLogic {
     this.state = { refUrl: null, refName: null, refSample: false, extras: [null, null, null],
       motionUrl: null, motionName: null, motionSample: false, frame: 0, playing: false, adv: false, copied: false,
       model: 'tiny', device: 'auto', precision: 'auto', frames: 17, steps: 30, guidance: 5, cond: 1, seed: 42,
+      prompt: '',
       phase: 'idle', progress: 0, history: [] };
   }
   componentWillUnmount() { clearInterval(this.playT); clearInterval(this.genT); }
@@ -436,6 +439,7 @@ class Component extends DCLogic {
       cond: s.cond, condLabel: s.cond.toFixed(1),
       onCond: function (e) { self.setState({ cond: parseFloat(e.target.value) }); },
       seed: s.seed, onSeed: function (e) { self.setState({ seed: parseInt(e.target.value, 10) || 0 }); },
+      prompt: s.prompt, onPrompt: function (e) { self.setState({ prompt: e.target.value }); },
       warnings: warnings, hasWarnings: warnings.length > 0, command: cmd,
       copyLabel: s.copied ? 'Copiado' : 'Copiar',
       copyCmd: function () {

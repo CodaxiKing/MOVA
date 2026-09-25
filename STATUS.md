@@ -1,5 +1,9 @@
 # Project Status
 
+## Diagnóstico de fidelidade (2026-09-24)
+
+O run `20260924-223727-baseline` concluiu com 49 quadros em 464×832, 1628,9 s, saída válida. O prompt específico preservou blusa branca e saia bege visivelmente melhor que o prompt de estúdio do run `20260924-220453-baseline`; a semelhança facial ainda não foi medida por avaliação cega. Em `dance3`, 0/165 quadros têm os dois tornozelos detectados dentro da imagem. O core agora registra `motion_quality` e avisa sobre esse corte; o prompt padrão pede fidelidade à referência, e o Estúdio permite descrição específica. **A nova configuração ainda não foi validada em uma geração Wan.** `test_motion_quality.py` passou; a suíte completa nesta sessão ficou impedida por `PermissionError` no diretório temporário do pytest (123 testes passaram, 95 erros de setup).
+
 ## Site local ligado ao core (2026-09-24)
 
 A prévia do vídeo de movimento no Estúdio fica pausada ao escolher um arquivo ou usar exemplos; as duas instâncias de vídeo da tela foram verificadas no navegador com `paused=true` e `autoplay=false`. Após a mudança, `pytest -q --tb=line`: **215 passed**.

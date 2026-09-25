@@ -1,5 +1,9 @@
 # HANDOFF
 
+## Fidelidade do vídeo — 2026-09-24
+
+Run real `20260924-223727-baseline`: 49 quadros, 464×832, 1628,9 s, saída válida. O prompt específico melhorou visualmente a roupa frente ao run anterior; sem medição cega de identidade facial. `outputs/motion/dance3/body_motion.pt` indica 0/165 quadros com ambos os tornozelos visíveis. Criado `core/motion_quality.py`; `core.inference` avisa e registra cobertura antes da geração. `configs/baseline.yaml` usa prompt de fidelidade à referência. O Estúdio (`design/canvas/project/Main.dc.html` e `web/estudio.html`) tem campo de descrição enviado por `web/canvas-live.js` a `web/server.py`. Teste novo passou. A suíte completa falhou nesta execução por permissão do diretório temporário do pytest: 123 passed, 95 setup errors; tentar fora do sandbox. A nova configuração não foi gerada no Wan. Próximo: obter driver de corpo inteiro, liberar RAM, gerar e comparar com avaliação cega/identidade.
+
 ## Ajuste de prévia do Estúdio — 2026-09-24
 
 Em `design/canvas/project/Main.dc.html` e `web/canvas-live.js`, as duas prévias do movimento perderam `autoplay`/`loop`. `scripts/build_web.py` regenerou `web/estudio.html`. Com "Usar exemplos" no navegador, ambas as tags `<video>` mostraram `paused=true` e `autoplay=false`. O arquivo continua selecionado para a geração. `pytest -q --tb=line`: **215 passed**. Mudança apenas visual, sem alteração do core.

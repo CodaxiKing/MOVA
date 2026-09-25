@@ -92,6 +92,12 @@ def execute(job_id: str, data: dict) -> None:
             if frames < 5 or frames > 33 or (frames - 1) % 4 or steps < 1 or steps > 50:
                 raise ValueError("Quadros ou passos fora do intervalo permitido")
             overrides = [f"generation.num_frames={frames}", f"generation.num_inference_steps={steps}"]
+            prompt = data.get("prompt")
+            if prompt is not None:
+                if not isinstance(prompt, str) or len(prompt) > 1000:
+                    raise ValueError("Descrição inválida")
+                if prompt.strip():
+                    overrides.append("generation.prompt=" + json.dumps(prompt.strip()))
             for field, config_key, minimum, maximum in (
                 ("guidance", "guidance_scale", 1, 10), ("conditioning", "conditioning_scale", 0, 2),
                 ("seed", "seed", 0, 2147483647)):

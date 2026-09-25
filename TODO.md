@@ -2,6 +2,9 @@
 
 ## Critical
 
+- [ ] Validar uma nova geração Wan com o prompt padrão atualizado e driver de corpo inteiro; comparar rosto, roupa e movimento por revisão visual e métricas.
+- [ ] Obter vídeo de movimento com pés/pernas visíveis durante toda a sequência; `dance3` teve 0/165 quadros com ambos os tornozelos em cena.
+
 - [x] Site local ligado ao core: Ambiente, Experimentos, Movimento, Estúdio e Resultados (2026-09-24)
 - [x] Restaurar o layout original do canvas nas seis telas e ligar seus componentes à API
 - [x] Deixar a prévia de movimento do Estúdio estática, sem reprodução automática
