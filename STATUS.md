@@ -4,6 +4,10 @@
 
 O servidor estático que ocupava `127.0.0.1:8000` foi substituído por `web/server.py`; `/api/info` e `/api/runs` respondem nessa porta. Ambiente mostra RTX 2060 SUPER, `cuda-8gb`, `float16`, bf16 indisponível, VRAM/RAM livres e cache Wan completo (17/17). Experimentos lista 18 runs e abre por padrão o vídeo real `20260924-223727-baseline`; Resultados mostra referência, controle e saída com metadados de precisão/offload/VRAM. Verificado no navegador. Suíte completa fora do sandbox: **217 passed, 3 skipped**.
 
+## Tela Início neon (2026-09-24)
+
+O canvas `Home.dc.html` recebeu identidade visual própria com grade, brilho, halo, cartões flutuantes, interações de hover e respeito a `prefers-reduced-motion`. `scripts/build_web.py` regenerou `web/index.html`; a tela foi aberta no navegador local e os links das seis abas apareceram corretamente. O teste geral no sandbox terminou com 123 passed e 97 erros de setup por `PermissionError` no diretório temporário do pytest; não há evidência de falha funcional nesses testes.
+
 ## Diagnóstico de fidelidade (2026-09-24)
 
 O run `20260924-223727-baseline` concluiu com 49 quadros em 464×832, 1628,9 s, saída válida. O prompt específico preservou blusa branca e saia bege visivelmente melhor que o prompt de estúdio do run `20260924-220453-baseline`; a semelhança facial ainda não foi medida por avaliação cega. Em `dance3`, 0/165 quadros têm os dois tornozelos detectados dentro da imagem. O core agora registra `motion_quality` e avisa sobre esse corte; o prompt padrão pede fidelidade à referência, e o Estúdio permite descrição específica. **A nova configuração ainda não foi validada em uma geração Wan.** `test_motion_quality.py` passou; a suíte completa nesta sessão ficou impedida por `PermissionError` no diretório temporário do pytest (123 testes passaram, 95 erros de setup).
@@ -32,6 +36,9 @@ Nenhum vídeo real gerado.
 | Pesos Wan2.1-VACE-1.3B @ ec4d2cb | **PASS** — COMPLETE, 17/17 arquivos, SHA-256 conferidos | `fetch_weights(verify_hashes=True)` → `COMPLETE (17/17 files; hashes checked: True)` |
 | EXP-001 (baseline real) | **PARTIAL** — vídeos reais em 464×832 fp16 (~280 s, 5.48 GB); identidade de roupa ainda falha | `docs/experiments/EXP-001.md`, runs 20260924-214644 e -220453 |
 | Perfil 8 GB → área 480×832; bf16 só nativo (Turing → fp16) | **PASS** | 256² gerava lixo; `mova infer --model wan` sem flags gerou vídeo coerente; `tests/test_core.py`, `tests/test_cuda.py` |
+| Treino do adapter no Wan 1.3B real (EXP-007) | **PASS (viabilidade)** — 464×832×17: 5.68 GB, 8.5 s/passo; overfit −99 % | dados sintéticos; falta dataset licenciado |
+| One-to-All 1.3B (Apache-2.0) vs VACE (EXP-008) | **PARTIAL** — modo pose: corpo sup. 0.79 (VACE 0.81), rosto 100 % (73 %), roupa/cenário da foto; mãos < 0.1 em ambos | `scripts/one_to_all_infer.py`, venv isolado `.venv-o2a`, `third_party/` (ignorados) |
+| Dados: Pexels (HumanVid real) | **BLOCKED** pelos Termos do Pexels (download automatizado p/ ML); HumanVid sintético permitido, 400 clipes baixados | `datasets/registry.yaml`, `docs/research/licenses.md` |
 | bf16 em Turing | **MEASURED**: funciona, 3× mais lento que fp16 | 130 s vs 44.7 s (192×336) |
 
 ## Qualidade do motion control em CPU (2026-09-24, Claude Code, branch `feat/motion-quality`)
