@@ -22,7 +22,8 @@ Nenhum vídeo real gerado.
 | Testes que assumiam `device=auto` → cpu | **FIXED** | testes de CPU fixam `runtime.device=cpu`; GPU em `tests/test_cuda.py` |
 | Regressão bit-exata no i5-10400F | **PASS** com referência AVX2 | o script congelado no commit 8284436 gera `d220ac…` aqui: diferença é de kernel SIMD, não de código (`benchmark/baseline/reference.py`) |
 | Pesos Wan2.1-VACE-1.3B @ ec4d2cb | **PASS** — COMPLETE, 17/17 arquivos, SHA-256 conferidos | `fetch_weights(verify_hashes=True)` → `COMPLETE (17/17 files; hashes checked: True)` |
-| EXP-001 (baseline real) | **PARTIAL** — 1º vídeo real gerado (464×832, fp16, 284 s, 5.48 GB); perfil 256² gera lixo | `docs/experiments/EXP-001.md`, run 20260924-214644 |
+| EXP-001 (baseline real) | **PARTIAL** — vídeos reais em 464×832 fp16 (~280 s, 5.48 GB); identidade de roupa ainda falha | `docs/experiments/EXP-001.md`, runs 20260924-214644 e -220453 |
+| Perfil 8 GB → área 480×832; bf16 só nativo (Turing → fp16) | **PASS** | 256² gerava lixo; `mova infer --model wan` sem flags gerou vídeo coerente; `tests/test_core.py`, `tests/test_cuda.py` |
 | bf16 em Turing | **MEASURED**: funciona, 3× mais lento que fp16 | 130 s vs 44.7 s (192×336) |
 
 ## Qualidade do motion control em CPU (2026-09-24, Claude Code, branch `feat/motion-quality`)

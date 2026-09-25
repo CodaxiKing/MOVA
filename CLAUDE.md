@@ -33,7 +33,7 @@ nativo (o perfil ainda escolhe bf16; medir fp16). O hash bit-exato do tiny depen
 ## Limitações de VRAM (regras)
 
 - Nunca treinar o backbone inteiro. Nunca tentar 14B+ em treino.
-- Perfil 8 GB: 256px, 17 frames, batch 1, bf16, model offload, VAE tiling.
+- Perfil 8 GB: área 480×832 (256px gera lixo, EXP-001), 17 frames, batch 1, bf16 só se nativo (Ampere+; senão fp16), model offload, VAE tiling.
 - UMT5 só em CPU e com cache de embeddings (ADR-004).
 - Falta de VRAM é falta de VRAM: registrar como blocker, não "consertar" código.
 
