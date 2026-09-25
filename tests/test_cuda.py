@@ -95,3 +95,27 @@ def test_bf16_rejected_without_native_and_auto_is_fp16():
     assert rt.context(device=CUDA[0]).precision.value == "fp16"
     with pytest.raises(PrecisionNotSupportedError):
         rt.context(device=CUDA[0], precision="bf16")
+
+
+def test_fp16_adapter_training_uses_loss_scaling_on_gpu(tmp_path):
+    """fp16 needs a GradScaler: the zero-initialised adapter's small gradients would underflow otherwise."""
+    from models.adapters.stack import ConditioningConfig, MovaConditioning
+    from training.backbone import load_backbone
+    from training.dataset import MotionClipDataset, collate
+    from training.smoke import make_synthetic_dataset
+    from training.trainer import AdapterTrainer, TrainConfig
+
+    rt = get_runtime("pytorch")
+    ctx = rt.context(device=CUDA[0], precision="fp16", offload="none")
+    tr, extra = load_backbone("tiny-vace", torch.float16)
+    cond = MovaConditioning.for_transformer(tr, ConditioningConfig(cond_dim=32, adapter_dim=16, heads=4, identity_patch=8))
+    t = AdapterTrainer(tr, cond, TrainConfig(lr=1e-3, gradient_checkpointing=True), runtime=rt, ctx=ctx,
+                       forward_extra=extra)
+    ds = MotionClipDataset(make_synthetic_dataset(tmp_path, 2), reference_size=32, max_references=2)
+    batch = collate([ds[0], ds[1]])
+    sigma = torch.full((2,), 0.5)
+    noise = torch.randn(batch["latents"].shape, generator=torch.Generator().manual_seed(1))
+    losses = [t.train_step(batch, sigma=sigma, noise=noise) for _ in range(20)]
+    assert t.scaler is not None and all("loss_scale" in r for r in losses)
+    assert all(p.dtype == torch.float32 for p in t.params)  # optimizer state stays fp32
+    assert losses[-1]["loss"] < losses[0]["loss"]

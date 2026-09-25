@@ -110,13 +110,27 @@ def test_dataset_rejects_wrong_latent_shape(tmp_path):
 
 # --- trainer ------------------------------------------------------------------------------------
 
-def _trainer(tmp_path, backbone="tiny", lr=3e-3):
+def _trainer(tmp_path, backbone="tiny", lr=3e-3, **train):
     from training.backbone import load_backbone
 
     tr, extra = load_backbone(backbone)
     cond = MovaConditioning.for_transformer(tr, SMALL)
     ds = MotionClipDataset(make_synthetic_dataset(tmp_path, 2), reference_size=32, max_references=2)
-    return AdapterTrainer(tr, cond, TrainConfig(lr=lr, seed=0), forward_extra=extra), collate([ds[0], ds[1]])
+    return AdapterTrainer(tr, cond, TrainConfig(lr=lr, seed=0, **train), forward_extra=extra), collate([ds[0], ds[1]])
+
+
+def test_gradient_checkpointing_matches_plain_backward(tmp_path):
+    """Checkpointing recomputes blocks during backward: the adapter hooks must still be live then (else torch
+    raises 'different number of tensors saved'), and the gradients must equal the plain ones."""
+    sigma = torch.full((2,), 0.5)
+    grads = []
+    for ckpt in (False, True):
+        t, batch = _trainer(tmp_path / str(ckpt), backbone="tiny-vace", gradient_checkpointing=ckpt, grad_accum=2)
+        noise = torch.randn(batch["latents"].shape, generator=torch.Generator().manual_seed(1))
+        t.train_step(batch, sigma=sigma, noise=noise)  # accumulates, no optimizer step yet
+        grads.append(torch.cat([p.grad.flatten() for p in t.params if p.grad is not None]))
+    assert grads[0].abs().sum() > 0
+    assert torch.allclose(grads[0], grads[1], atol=1e-6, rtol=1e-4)
 
 
 def test_overfits_a_fixed_batch_and_never_touches_the_backbone(tmp_path):

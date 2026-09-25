@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 import time
-from contextlib import nullcontext
+from contextlib import ExitStack, nullcontext
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -33,6 +33,7 @@ class TrainConfig:
     face_weight: float = 2.0
     hand_weight: float = 2.0
     seed: int = 0
+    gradient_checkpointing: bool = False  # recompute backbone activations in backward (needed on 8 GB GPUs)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -55,8 +56,16 @@ class AdapterTrainer:
             p.requires_grad_(False)
         self.cond = conditioning.to(self.device).train()
         self.cond.adapter.attach(self.transformer)
+        if self.cfg.gradient_checkpointing:
+            if not hasattr(self.transformer, "enable_gradient_checkpointing"):
+                raise ValueError("gradient_checkpointing needs a Diffusers backbone")
+            self.transformer.enable_gradient_checkpointing()
         self.params = [p for p in self.cond.parameters() if p.requires_grad]
         self.opt = torch.optim.AdamW(self.params, lr=self.cfg.lr, weight_decay=self.cfg.weight_decay)
+        # fp16 has a narrow exponent: without loss scaling the small gradients of a zero-initialised adapter
+        # underflow to 0. bf16/fp32 do not need it.
+        fp16 = ctx is not None and ctx.precision.value == "fp16"
+        self.scaler = torch.amp.GradScaler(self.device.type) if fp16 else None
         self.step_count = 0
         self._micro = 0
         self.generator = torch.Generator().manual_seed(self.cfg.seed)
@@ -67,7 +76,9 @@ class AdapterTrainer:
         return torch.autocast(self.device.type, dtype=self.runtime.dtype(self.ctx))
 
     def loss(self, batch: dict[str, torch.Tensor], *, sigma: torch.Tensor | None = None,
-             noise: torch.Tensor | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+             noise: torch.Tensor | None = None, scope: ExitStack | None = None) -> tuple[torch.Tensor, dict[str, Any]]:
+        """scope: keep the conditioning active in the caller's ExitStack (train_step does, so that gradient
+        checkpointing recomputes blocks with the adapter hooks live during backward)."""
         batch = _to(batch, self.device)
         x0 = batch["latents"]
         b, _, f, hl, wl = x0.shape
@@ -82,7 +93,9 @@ class AdapterTrainer:
                 m = keypoint_region_mask(batch[key].cpu(), batch[f"{key}_mask"].cpu(), (hl, wl), f)
                 regions.append((m, w))
         weights = region_weights(tuple(x0.shape), regions).to(self.device) if regions else None
-        with self._autocast(), self.cond.conditioned(batch, num_frames, height, width):
+        with ExitStack() as local:
+            local.enter_context(self._autocast())
+            (scope or local).enter_context(self.cond.conditioned(batch, num_frames, height, width))
             extra = self.forward_extra(xt) if self.forward_extra else {}
             pred = self.transformer(hidden_states=xt, timestep=sigma * NUM_TRAIN_TIMESTEPS,
                                     encoder_hidden_states=batch["prompt_embeds"], return_dict=False, **extra)[0]
@@ -90,13 +103,22 @@ class AdapterTrainer:
         return loss, {"sigma_mean": float(sigma.mean())}
 
     def train_step(self, batch: dict[str, torch.Tensor], **kw) -> dict[str, float]:
-        loss, info = self.loss(batch, **kw)
-        (loss / self.cfg.grad_accum).backward()
+        with ExitStack() as scope:
+            loss, info = self.loss(batch, scope=scope, **kw)
+            scaled = loss / self.cfg.grad_accum
+            (self.scaler.scale(scaled) if self.scaler else scaled).backward()
         self._micro += 1
         out = {"loss": float(loss.detach()), **info, "updated": False}
         if self._micro % self.cfg.grad_accum == 0:
+            if self.scaler:
+                self.scaler.unscale_(self.opt)
             out["grad_norm"] = float(torch.nn.utils.clip_grad_norm_(self.params, self.cfg.max_grad_norm))
-            self.opt.step()
+            if self.scaler:
+                self.scaler.step(self.opt)  # skipped (and the scale lowered) if grads are inf/nan
+                self.scaler.update()
+                out["loss_scale"] = float(self.scaler.get_scale())
+            else:
+                self.opt.step()
             self.opt.zero_grad(set_to_none=True)
             self.step_count += 1
             out["updated"] = True
@@ -134,7 +156,8 @@ class AdapterTrainer:
         tmp = path.with_suffix(path.suffix + ".tmp")
         torch.save({"format": "mova-adapter-v1", "step": self.step_count, "train_config": self.cfg.to_dict(),
                     "conditioning_config": self.cond.cfg.to_dict(), "conditioning": self.trainable_state(),
-                    "optimizer": self.opt.state_dict(), "generator": self.generator.get_state()}, tmp)
+                    "optimizer": self.opt.state_dict(), "generator": self.generator.get_state(),
+                    **({"scaler": self.scaler.state_dict()} if self.scaler else {})}, tmp)
         tmp.replace(path)
         return path
 
@@ -148,6 +171,8 @@ class AdapterTrainer:
         self.opt.load_state_dict(ck["optimizer"])
         self.step_count = ck["step"]
         self.generator.set_state(ck["generator"])
+        if self.scaler and "scaler" in ck:
+            self.scaler.load_state_dict(ck["scaler"])
 
 
 def conditioning_config_from(d: dict | None) -> ConditioningConfig:

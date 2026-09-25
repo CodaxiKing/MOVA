@@ -77,7 +77,10 @@ def run_training(req: TrainRequest, echo: Callable[[str], None] = print) -> dict
                           hint="Build it with scripts/datasets.py and training/precompute.py (docs/training.md).")
     ds = MotionClipDataset(manifest, cfg.get("split", "train"), max_references=int(cfg["max_references"]),
                            reference_size=int(cfg["reference_size"]), forbid_identities=forbid)
-    transformer, extra = load_backbone(cfg["backbone"], torch.float32)
+    # The frozen backbone is stored in the run precision on accelerators (1.3B in fp32 alone is ~5.3 GB); the
+    # trainable conditioning stays fp32 for the optimizer. CPU and fp32 runs keep fp32 (bit-exact tests).
+    half = ctx.device.is_accelerator and ctx.precision.value != "fp32"
+    transformer, extra = load_backbone(cfg["backbone"], rt.dtype(ctx) if half else torch.float32)
     from models.adapters.stack import MovaConditioning
 
     cond = MovaConditioning.for_transformer(transformer, conditioning_config_from(cfg.get("conditioning")))
