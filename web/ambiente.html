@@ -2,12 +2,10 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>MOVA Ambiente</title>
-<script src="./support.js"></script>
-</head>
-<body>
-<x-dc>
-<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0a0b">
+<title>Ambiente · MOVA</title>
+<!-- Gerado por scripts/build_web.py a partir de design/canvas/project/Setup.dc.html. Não editar à mão. -->
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
 <style>
 body{margin:0;background:#0a0a0b;font-family:'Geist',system-ui,sans-serif;color:#f4f4f5}
@@ -15,23 +13,30 @@ a{color:#d2ff3c}a:hover{color:#e6ff8a}
 button{font-family:inherit}
 button:focus-visible,a:focus-visible{outline:2px solid #d2ff3c;outline-offset:2px}
 </style>
-</helmet>
+<style>html,body{background:#0a0a0b}#dc-root>div{margin:0 auto}input[type=range]{cursor:pointer}</style>
+<link rel="stylesheet" href="canvas-live.css">
+<script src="canvas-live.js" defer></script>
+<script src="dc-runtime.js" defer></script>
+</head>
+<body>
+<div id="dc-root"></div>
+<template id="dc-template">
 <div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0a0a0b; color: #f4f4f5; font-family: 'Geist', system-ui, sans-serif; display: flex; flex-direction: column">
 
 <header style="height: 64px; box-sizing: border-box; padding: 0 20px; display: flex; align-items: center; gap: 24px; border-bottom: 1px solid #1c1c1f">
-<a href="Home.dc.html" aria-label="MOVA início" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #f4f4f5">
+<a href="index.html" aria-label="MOVA início" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #f4f4f5">
 <span style="width: 32px; height: 32px; border-radius: 9px; background: #d2ff3c; display: flex; align-items: center; justify-content: center">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4.5" r="2"></circle><path d="M12 7.5l-2 6 4 3v5"></path><path d="M10 13.5l-4 7"></path><path d="M11.5 9l5 2.5 2-3"></path><path d="M11.5 9l-4.5 1-1.5 3"></path></svg>
 </span>
 <span style="font-family: 'Archivo', sans-serif; font-stretch: 68%; font-weight: 800; font-size: 24px; letter-spacing: 0.02em">MOVA</span>
 </a>
 <nav aria-label="Principal" style="display: flex; gap: 4px; flex-grow: 1">
-<a href="Home.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Início</a>
-<a href="Main.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Estúdio</a>
-<a href="Motion.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Movimento</a>
-<a href="Result.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Resultados</a>
-<a href="Runs.dc.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Experimentos</a>
-<a href="Setup.dc.html" aria-current="page" style="padding: 9px 16px; border-radius: 999px; background: #1c1c1f; color: #f4f4f5; text-decoration: none; font-size: 14px; font-weight: 500">Ambiente</a>
+<a href="index.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Início</a>
+<a href="estudio.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Estúdio</a>
+<a href="movimento.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Movimento</a>
+<a href="resultados.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Resultados</a>
+<a href="experimentos.html" style="padding: 9px 16px; border-radius: 999px; color: #a1a1aa; text-decoration: none; font-size: 14px">Experimentos</a>
+<a href="ambiente.html" aria-current="page" style="padding: 9px 16px; border-radius: 999px; background: #1c1c1f; color: #f4f4f5; text-decoration: none; font-size: 14px; font-weight: 500">Ambiente</a>
 </nav>
 <span style="padding: 8px 14px; border-radius: 999px; background: #141416; border: 1px solid #26262a; font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">mova info · check_env.py</span>
 </header>
@@ -90,7 +95,7 @@ mova info --model wan</pre>
 <div style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-size: 17px; font-weight: 600">wan2.1-vace-1.3b</span><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #a1a1aa">alias wan · Diffusers</span></div>
 <span style="padding: 3px 8px; border-radius: 999px; background: #ff4fa3; color: #0a0a0b; font-size: 10px; font-weight: 700; letter-spacing: 0.04em">BASELINE</span>
 </div>
-<span style="font-size: 13px; line-height: 1.5; color: #a1a1aa">Referência + vídeo de controle de pose → vídeo. Nunca executado com os pesos reais.</span>
+<span style="font-size: 13px; line-height: 1.5; color: #a1a1aa">Referência + vídeo de controle de pose → vídeo. Consulte os runs reais em Experimentos.</span>
 <dl style="margin: 0; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px 12px; font-size: 13px">
 <dt style="color: #8b8b93">pytorch/cuda</dt><dd style="margin: 0; color: #ffc2de">UNVERIFIED · EXP-001</dd>
 <dt style="color: #8b8b93">pytorch/cpu</dt><dd style="margin: 0; color: #ffc2de">impraticável · --allow-cpu</dd>
@@ -131,7 +136,7 @@ python scripts/inference_baseline.py \
 </div>
 </div>
 </div>
-</x-dc>
+</template>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 var HW = {
   laptop: { label: 'Atual · HP ProBook', name: 'HP ProBook 640 G8', use: 'Pesquisa, docs, extração em CPU e testes.',

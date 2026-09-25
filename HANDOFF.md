@@ -1,5 +1,51 @@
 # HANDOFF
 
+## Site: Ambiente, Experimentos e vídeos — 2026-09-24
+
+`127.0.0.1:8000` era `python -m http.server`, portanto `/api/info` retornava 404. O processo estático foi substituído por `web/server.py` na mesma porta. A API agora informa perfil de hardware e estado real do cache Wan. `design/canvas/project/Setup.dc.html` + `web/canvas-live.js` mostram precisões, VRAM, runtime e perfil atuais. Experimentos escolhe o vídeo real mais recente, oferece prévia no detalhe e mostra precisão, offload, GPU e VRAM pico. Resultados mostra esses metadados junto dos vídeos. `scripts/build_web.py` regenerou os HTMLs. Navegador: Ambiente carregou RTX 2060 SUPER/fp16/17 de 17 pesos; Experimentos mostrou 18 runs e a prévia do run `20260924-223727-baseline`; o link abriu Resultados com referência, controle e saída. `.venv/Scripts/python -m pytest -q --tb=line` fora do sandbox: **217 passed, 3 skipped**. Mudanças paralelas de treino/dataset existem na árvore e não pertencem a este trabalho.
+
+## Home visual — 2026-09-24
+
+Canvas fonte `design/canvas/project/Home.dc.html` redesenhado visualmente; `scripts/build_web.py` ajustado para o hero com classes novas e `web/index.html` regenerado. A tela no servidor local (`127.0.0.1:8000`) renderizou título neon, palco com halo, grade e cartões; navegação das seis abas presente no navegador. Animações CSS respeitam movimento reduzido. Textos do hero removem a promessa de preservação garantida e o perfil obsoleto de 256 px. Teste geral no sandbox: 123 passed, 97 setup errors por permissão no temp do pytest. Há outras mudanças de treino/dataset preexistentes na árvore de trabalho; não incluí-las no commit desta tela.
+
+## Fidelidade do vídeo — 2026-09-24
+
+Run real `20260924-223727-baseline`: 49 quadros, 464×832, 1628,9 s, saída válida. O prompt específico melhorou visualmente a roupa frente ao run anterior; sem medição cega de identidade facial. `outputs/motion/dance3/body_motion.pt` indica 0/165 quadros com ambos os tornozelos visíveis. Criado `core/motion_quality.py`; `core.inference` avisa e registra cobertura antes da geração. `configs/baseline.yaml` usa prompt de fidelidade à referência. O Estúdio (`design/canvas/project/Main.dc.html` e `web/estudio.html`) tem campo de descrição enviado por `web/canvas-live.js` a `web/server.py`. Teste novo passou. A suíte completa falhou nesta execução por permissão do diretório temporário do pytest: 123 passed, 95 setup errors; tentar fora do sandbox. A nova configuração não foi gerada no Wan. Próximo: obter driver de corpo inteiro, liberar RAM, gerar e comparar com avaliação cega/identidade.
+
+## Ajuste de prévia do Estúdio — 2026-09-24
+
+Em `design/canvas/project/Main.dc.html` e `web/canvas-live.js`, as duas prévias do movimento perderam `autoplay`/`loop`. `scripts/build_web.py` regenerou `web/estudio.html`. Com "Usar exemplos" no navegador, ambas as tags `<video>` mostraram `paused=true` e `autoplay=false`. O arquivo continua selecionado para a geração. `pytest -q --tb=line`: **215 passed**. Mudança apenas visual, sem alteração do core.
+
+## Correção do site pelo layout do canvas — 2026-09-24
+
+O site genérico da sessão anterior foi substituído pelo layout original de `design/canvas/project`. `scripts/build_web.py` gera as seis telas e carrega `canvas-live.js` antes de `dc-runtime.js`; o runtime chama os hooks de ligação. `web/server.py` fornece runs, mídia de entrada/saída, exemplos locais, jobs e revisão visual por run (`web_review.json`). Páginas inspecionadas no navegador local: Início, Estúdio, Movimento, Resultados, Experimentos e Ambiente; console sem erros. `web/app.js`/`app.css` antigos foram removidos. `pytest -q --tb=line` fora do sandbox: **215 passed**. Reiniciar o servidor após mudanças em `web/server.py`. A inferência Wan via Estúdio ainda depende de validação com mídia/recursos; não foi repetida só para testar layout.
+
+## Site funcional local — 2026-09-24
+
+Foi criado `web/server.py` (stdlib, sem dependência FastAPI) e `web/app.js`/`app.css`; `scripts/build_web.py` injeta a interface ativa nas seis páginas. Rodar `.venv/Scripts/python web/server.py` e abrir `http://127.0.0.1:8000`. Ambiente, Experimentos, Movimento, Estúdio e Resultados consultam/chamam o core real. O backend recusa download de pesos e serve apenas em localhost. API info e runs verificadas por HTTP; fluxo de geração com mídia real ainda pendente. Há alterações preexistentes em `inference/baseline_vace.py` e `tests/test_wan_weights.py`, não relacionadas a este trabalho.
+
+O primeiro `pytest -q` desta sessão teve 121 passed, 94 errors porque o diretório temporário recebeu `PermissionError`; a repetição com `--basetemp=.pytest_tmp` teve o mesmo problema. A suíte fora do sandbox passou: **215 passed**. Upload de `control.mp4` pela API + extração passou e criou `20260924-213136-extract`. Próximo: validar inferência via navegador e EXP-001 conforme RAM/VRAM disponível.
+
+## Sessão atual — primeira máquina com GPU, 2026-09-24, Claude Code (branch `main`)
+
+Pedido: "inicie o projeto todo", depois "corrija e baixe o Wan". Máquina NOVA, fora dos docs até agora: desktop
+i5-10400F + RTX 2060 SUPER 8 GB (cc 7.5), 16 GB RAM com ~2–3 GB livres. Nada commitado.
+
+Feito:
+- `.venv` com Python 3.12.10 (winget, escopo de usuário) + torch 2.14.0+cu130 + lock exato; modelos MediaPipe.
+- Caminho GPU corrigido (embeddings de prompt no device de execução; `place` com offload só em pipelines) e
+  verificado com o tiny em `tests/test_cuda.py`. 214 testes passando, 0 skipped.
+- Bit-exato: referência por capacidade de CPU (`benchmark/baseline/reference.py`); prova: script congelado no
+  commit 8284436 reproduz `d220ac…` nesta CPU AVX2.
+- Pesos do Wan baixados via `WanVACEModel.fetch_weights(verify_hashes=True)` no cache HF do usuário.
+- Site do canvas em `web/` (`python scripts/build_web.py`; servir com `python -m http.server -d web`).
+
+Não feito / bloqueado: EXP-001. Faltam `assets/reference/maya.png` e `assets/motion/dance.mp4`, e ~12 GB de RAM
+livre para o UMT5 (uma vez; depois o prompt fica em `checkpoints/embeds`). Risco: bf16 em Turing.
+
+Próximo: mídias → fechar programas → `mova infer --model wan --device cuda:0 --reference … --motion … --output …`
+(bf16; se lento/instável, repetir com `--precision fp16`) → registrar VRAM/tempo no EXP-001 e na matriz.
+
 ## Sessão atual — qualidade do motion control em CPU, 2026-09-24, Claude Code
 
 Pedido: implementar tudo o que é testável em CPU e melhora o motion control (métricas, retargeting, sinal, Fase 3,

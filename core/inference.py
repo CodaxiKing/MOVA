@@ -185,6 +185,12 @@ def run_inference(req: InferenceRequest, echo: Callable[[str], None] = print) ->
 
     try:
         control_np = build_control(cfg, out, np.asarray(reference_raw))
+        from .motion_quality import inspect_motion_track
+
+        motion_quality = inspect_motion_track(out / "motion")
+        if motion_quality is not None and motion_quality["full_body_fraction"] < 0.8:
+            echo("Aviso: o vídeo de movimento não mostra os dois tornozelos na maior parte dos quadros. "
+                 "O modelo pode inventar pernas e alterar o enquadramento; use um vídeo com o corpo inteiro visível.")
         control = prepare_control_frames(control_np, s.width, s.height, s.num_frames,
                                          stride=int(cfg["inputs"].get("frame_stride", 1)))
         reference = letterbox(reference_raw, s.width, s.height)
@@ -196,6 +202,8 @@ def run_inference(req: InferenceRequest, echo: Callable[[str], None] = print) ->
             frames, stats = model.generate(reference, control)
         finally:
             model.unload()
+        if motion_quality is not None:
+            stats["motion_quality"] = motion_quality
         frames_u8 = prepare_generated_frames(frames, count=s.num_frames, width=s.width, height=s.height)
         write_video(out / "output.mp4", frames_u8, s.fps)
         stats["output_validation"] = validate_video(

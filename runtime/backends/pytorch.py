@@ -44,9 +44,9 @@ class PyTorchRuntime(Runtime):
 
     def place(self, obj: Any, ctx: ExecutionContext) -> Any:
         """Diffusers pipelines get CPU offload hooks bound to ctx.device; anything else is moved with .to()."""
-        if ctx.offload == "model":
+        if ctx.offload == "model" and hasattr(obj, "enable_model_cpu_offload"):
             obj.enable_model_cpu_offload(device=ctx.device.id)
-        elif ctx.offload == "sequential":
+        elif ctx.offload == "sequential" and hasattr(obj, "enable_sequential_cpu_offload"):
             obj.enable_sequential_cpu_offload(device=ctx.device.id)
         else:
             obj = obj.to(ctx.device.id) or obj  # DiffusionPipeline.to returns self; nn.Module.to too

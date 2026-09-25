@@ -101,6 +101,13 @@ def test_build_manifest_feeds_the_training_dataset(tmp_path):
     ds = MotionClipDataset(manifest, reference_size=32, max_references=1)
     item = ds[0]
     assert item["latents"].shape == (16, 3, 4, 4) and item["body"].shape == (9, 33, 6)
+    rect = build_training_manifest(src, tmp_path / "rect", num_frames=9, height=32, width=48, vae=vae,
+                                   encode_prompt=lambda p: torch.zeros(8, 32), stride=8)
+    assert MotionClipDataset(rect, reference_size=32, max_references=1)[0]["latents"].shape == (16, 3, 4, 6)
+    none = json.loads(build_training_manifest(src, tmp_path / "skip", num_frames=9, size=32, vae=vae,
+                                              encode_prompt=lambda p: torch.zeros(8, 32),
+                                              min_body_detection=1.01).read_text())
+    assert none["samples"] == [] and [s["id"] for s in none["skipped"]] == ["a", "b"]   # listed, never silent
     (tmp_path / "x").mkdir()
     bad = _sources(tmp_path / "x", [_clip(tmp_path / "x", "c", "p3", source="liveportrait", source_url="u")])
     with pytest.raises(ValueError, match="invalid"):

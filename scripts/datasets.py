@@ -59,6 +59,9 @@ def main() -> int:
     p.add_argument("--out", required=True)
     p.add_argument("--frames", type=int, default=17)
     p.add_argument("--size", type=int, default=256)
+    p.add_argument("--height", type=int, default=None, help="overrides --size (with --width)")
+    p.add_argument("--width", type=int, default=None)
+    p.add_argument("--min-body-detection", type=float, default=0.0, help="skip clips below this body detection rate")
     p.add_argument("--fps", type=float, default=16.0)
     p.add_argument("--vae", choices=["tiny", "wan"], default="wan")
     p.add_argument("--prompt-embeds", default=None, help=".pt with cached prompt embeddings (UMT5 is not run here)")
@@ -87,17 +90,22 @@ def main() -> int:
 
     from training.data_sources import build_training_manifest
 
+    prompt = "a person moving"
     if args.prompt_embeds:
         embeds = torch.load(resolve_path(args.prompt_embeds), map_location="cpu", weights_only=True)
-        embeds = embeds["prompt_embeds"][0] if isinstance(embeds, dict) else embeds
+        if isinstance(embeds, dict):
+            prompt = embeds.get("prompt") or prompt  # record the text the embeddings really encode
+            embeds = embeds["prompt_embeds"][0]
     elif args.vae == "tiny":
         embeds = torch.zeros(8, 32)
     else:
         print("--prompt-embeds is required with --vae wan (encode once with the baseline's UMT5 cache)", file=sys.stderr)
         return 2
     path = build_training_manifest(args.sources, resolve_path(args.out), num_frames=args.frames, size=args.size,
-                                   vae=_vae(args.vae), encode_prompt=lambda _: embeds, fps=args.fps,
-                                   forbid_identities=_benchmark_ids(args.benchmark))
+                                   height=args.height, width=args.width, vae=_vae(args.vae),
+                                   encode_prompt=lambda _: embeds, prompt=prompt, fps=args.fps,
+                                   forbid_identities=_benchmark_ids(args.benchmark),
+                                   min_body_detection=args.min_body_detection, log=lambda m: print(m, flush=True))
     print(path)
     return 0
 

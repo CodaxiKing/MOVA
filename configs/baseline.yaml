@@ -17,9 +17,9 @@ model:
   vae_tiling: auto
 
 generation:
-  prompt: "A person dancing, full body shot, clean studio background, high quality, detailed face and hands"
+  prompt: "The same person as in the reference image, with the same face, hairstyle and clothing, dancing naturally in the same environment as the reference image, realistic details and consistent appearance"
   negative_prompt: null                # null -> default negative prompt
-  height: auto                         # auto -> profile (256 on 8 GB)
+  height: auto                         # auto -> profile (area 480x832 on 8 GB; 256x256 gave noise, EXP-001)
   width: auto
   keep_reference_aspect: true          # choose WxH from the reference aspect ratio within height*width area
   num_frames: auto                     # auto -> profile (17 on 8 GB); always rounded to 4k+1

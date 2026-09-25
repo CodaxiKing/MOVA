@@ -20,8 +20,9 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "benchmark/baseline"))
 
 from capture_tiny_vace import FRAMES, H, SEED, STEPS, W, frames_digest, synthetic_inputs  # noqa: E402
+from reference import baseline_file  # noqa: E402
 
-BASELINE = ROOT / "benchmark/baseline/tiny_vace_cpu.json"
+BASELINE = baseline_file()  # per CPU instruction set, see benchmark/baseline/reference.py
 
 
 def run_once(precision: str) -> dict:

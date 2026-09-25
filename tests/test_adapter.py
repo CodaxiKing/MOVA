@@ -222,9 +222,11 @@ def test_zero_init_adapter_in_the_vace_pipeline_reproduces_the_phase0_baseline()
     sys.path.insert(0, str(root / "benchmark/baseline"))
     from capture_tiny_vace import FRAMES as F0, H as H0, W as W0, frames_digest, synthetic_inputs, tiny_vace_pipe
 
+    from reference import baseline_sha256
+
     from inference.baseline_vace import BaselineSettings, generate
 
-    expected = json.loads((root / "benchmark/baseline/tiny_vace_cpu.json").read_text())["runs"][0]["output"]["sha256"]
+    expected = baseline_sha256()
     pipe = tiny_vace_pipe()
     stack = MovaConditioning.for_transformer(pipe.transformer, ConditioningConfig(cond_dim=32, adapter_dim=16, heads=4,
                                                                                   identity_patch=8))

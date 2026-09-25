@@ -66,6 +66,18 @@ def _hub_kwargs(s: BaselineSettings) -> dict[str, Any]:
     return {"revision": s.revision, "local_files_only": s.local_files_only}
 
 
+def load_tokenizer(s: BaselineSettings):
+    """UMT5 tokenizer from the local cache.
+
+    transformers 5's AutoTokenizer needs a model config to pick the class, and the Wan repo's `tokenizer/` folder
+    has none, so it would try the Hub (and fail offline). The text encoder's config is the right one (umt5).
+    """
+    from transformers import AutoConfig, AutoTokenizer
+
+    config = AutoConfig.from_pretrained(s.model_id, subfolder="text_encoder", **_hub_kwargs(s))
+    return AutoTokenizer.from_pretrained(s.model_id, subfolder="tokenizer", config=config, **_hub_kwargs(s))
+
+
 def encode_prompts_cached(s: BaselineSettings, cache_dir: Path) -> tuple[torch.Tensor, torch.Tensor]:
     """Encode prompt/negative on CPU once; reuse from disk afterwards."""
     path = prompt_cache_path(s, cache_dir)
@@ -74,11 +86,11 @@ def encode_prompts_cached(s: BaselineSettings, cache_dir: Path) -> tuple[torch.T
         log.info("Loaded cached prompt embeddings %s", path.name)
         return d["prompt_embeds"], d["negative_prompt_embeds"]
 
-    from transformers import AutoTokenizer, UMT5EncoderModel
+    from transformers import UMT5EncoderModel
 
     log.info("Encoding prompts on CPU with UMT5 (one-time, needs ~12 GB system RAM)...")
     t0 = time.perf_counter()
-    tok = AutoTokenizer.from_pretrained(s.model_id, subfolder="tokenizer", **_hub_kwargs(s))
+    tok = load_tokenizer(s)
     enc = UMT5EncoderModel.from_pretrained(s.model_id, subfolder="text_encoder", torch_dtype=torch.bfloat16,
                                            **_hub_kwargs(s))
     enc.eval()
@@ -125,7 +137,11 @@ def generate(pipe, s: BaselineSettings, reference: Image.Image, control: list[Im
         raise ValueError(f"control has {len(control)} frames, expected {s.num_frames}")
     mask = [Image.new("L", (s.width, s.height), 255)] * s.num_frames  # white = generate everywhere
     dtype = _dtype(s.dtype)
-    pe, ne = prompt_embeds, negative_prompt_embeds
+    # Cached embeddings live on CPU (ADR-004). The pipeline only casts their dtype, and Wan's condition
+    # embedder does `temb.type_as(encoder_hidden_states)`, which would pull timesteps back to CPU. So they must
+    # sit on the pipeline's execution device (the offload target when hooks are on). No-op on CPU.
+    device = pipe._execution_device
+    pe, ne = prompt_embeds.to(device), negative_prompt_embeds.to(device)
     t0 = time.perf_counter()
     out = pipe(
         video=control,

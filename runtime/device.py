@@ -75,7 +75,9 @@ class TorchDeviceProbe:
         backend = self.accelerator_backend() or "cuda"
         cc = f"{props.major}.{props.minor}"
         with torch.cuda.device(index):
-            bf16 = bool(torch.cuda.is_bf16_supported())
+            # Native only: the default also counts emulation, which says True on Turing (cc 7.5) where bf16 runs
+            # ~3x slower than fp16 (EXP-001, RTX 2060 SUPER: 130 s vs 44.7 s).
+            bf16 = bool(torch.cuda.is_bf16_supported(including_emulation=False))
         notes = ("ROCm device: UNVERIFIED in MOVA",) if backend == "rocm" else ()
         return DeviceInfo(
             id=f"cuda:{index}", type="cuda", backend=backend, name=props.name, index=index,

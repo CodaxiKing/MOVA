@@ -147,6 +147,17 @@ Números de VRAM são os publicados pelos autores; **nenhum foi medido por nós 
 - Windows: suportado (FACT); Training Code: não (FACT)
 - Relevance to MOVA: **candidato ao Face Motion Encoder** (keypoints implícitos + expressão) — licença dos pesos precisa ser auditada antes de uso (TODO)
 
+## One-to-All Animation (Shi et al.)
+
+- Paper: https://arxiv.org/abs/2511.22940 · Repo: https://github.com/ssj9596/One-to-All-Animation (Apache-2.0)
+- Pesos: https://huggingface.co/MochunniaN1/One-to-All-1.3b_1 (`license:apache-2.0`, 6.57 GB, rev 99dc3796f33b), `-1.3b_2`, `-14b`
+- Base: Wan2.1-T2V-1.3B-Diffusers; treino de 3 estágios liberado; DWPose (FACT). Análise: `one_to_all_analysis.md`
+- Relevance to MOVA: **alta** — encoder de referência + controle de pose já treinados na nossa família de backbone
+
+## StableAnimator++
+
+- Paper: https://arxiv.org/abs/2507.15064 — alinhamento de pose aprendido + Face Encoder/ID Adapter + otimização facial HJB (FACT, abstract)
+
 ## Kling-MotionControl (Kuaishou) — proprietário
 
 - Technical report: https://arxiv.org/abs/2603.03160 (HTML: https://arxiv.org/html/2603.03160v1) — **sem seção Method**, sem parâmetros/ablations/dataset (FACT, lido integralmente 2026-09-24)

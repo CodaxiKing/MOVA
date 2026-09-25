@@ -33,6 +33,15 @@ def test_profile_fp16_without_bf16():
     assert select_profile(_hw(True, 8.0, bf16=False)).dtype == "float16"
 
 
+def test_gpu_profiles_stay_near_480p():
+    """Wan2.1 produced colour noise at a 256x256 area and a coherent video at 480x832 (EXP-001)."""
+    for vram in (6.0, 8.0, 12.0, 24.0):
+        p = select_profile(_hw(True, vram))
+        assert p.height * p.width >= 480 * 480, (p.name, p.height, p.width)
+    p = select_profile(_hw(True, 8.0))
+    assert (p.height * p.width, p.num_frames) == (480 * 832, 17)
+
+
 def test_apply_override_nested_and_typed():
     cfg = {"a": {"b": 1}}
     apply_override(cfg, "a.b=2.5")

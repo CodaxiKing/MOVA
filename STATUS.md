@@ -1,5 +1,46 @@
 # Project Status
 
+## Painéis locais com API ativa (2026-09-24)
+
+O servidor estático que ocupava `127.0.0.1:8000` foi substituído por `web/server.py`; `/api/info` e `/api/runs` respondem nessa porta. Ambiente mostra RTX 2060 SUPER, `cuda-8gb`, `float16`, bf16 indisponível, VRAM/RAM livres e cache Wan completo (17/17). Experimentos lista 18 runs e abre por padrão o vídeo real `20260924-223727-baseline`; Resultados mostra referência, controle e saída com metadados de precisão/offload/VRAM. Verificado no navegador. Suíte completa fora do sandbox: **217 passed, 3 skipped**.
+
+## Tela Início neon (2026-09-24)
+
+O canvas `Home.dc.html` recebeu identidade visual própria com grade, brilho, halo, cartões flutuantes, interações de hover e respeito a `prefers-reduced-motion`. `scripts/build_web.py` regenerou `web/index.html`; a tela foi aberta no navegador local e os links das seis abas apareceram corretamente. O teste geral no sandbox terminou com 123 passed e 97 erros de setup por `PermissionError` no diretório temporário do pytest; não há evidência de falha funcional nesses testes.
+
+## Diagnóstico de fidelidade (2026-09-24)
+
+O run `20260924-223727-baseline` concluiu com 49 quadros em 464×832, 1628,9 s, saída válida. O prompt específico preservou blusa branca e saia bege visivelmente melhor que o prompt de estúdio do run `20260924-220453-baseline`; a semelhança facial ainda não foi medida por avaliação cega. Em `dance3`, 0/165 quadros têm os dois tornozelos detectados dentro da imagem. O core agora registra `motion_quality` e avisa sobre esse corte; o prompt padrão pede fidelidade à referência, e o Estúdio permite descrição específica. **A nova configuração ainda não foi validada em uma geração Wan.** `test_motion_quality.py` passou; a suíte completa nesta sessão ficou impedida por `PermissionError` no diretório temporário do pytest (123 testes passaram, 95 erros de setup).
+
+## Site local ligado ao core (2026-09-24)
+
+A prévia do vídeo de movimento no Estúdio fica pausada ao escolher um arquivo ou usar exemplos; as duas instâncias de vídeo da tela foram verificadas no navegador com `paused=true` e `autoplay=false`. Após a mudança, `pytest -q --tb=line`: **215 passed**.
+
+Correção visual posterior: as seis telas voltaram a usar a composição original do canvas. `web/canvas-live.js` injeta dados do backend nos componentes do canvas; `web/app.js`/`app.css` genéricos foram retirados. Início, Estúdio, Movimento, Resultados, Experimentos e Ambiente foram inspecionados no navegador local, sem erros de JavaScript no console. Em Resultados, referência, controle e vídeo da geração registrada aparecem nos três painéis; integridade usa `stats.output_validation`. Em Movimento, prévias e taxas de detecção vêm dos runs de extração. A revisão visual é salva em `web_review.json` no run. A API retornou 200 para exemplo local e mídia de entrada; revisão inválida retornou 400. Suíte: **215 passed** fora do sandbox.
+
+`web/server.py` serve as seis abas em `127.0.0.1:8000`. Ambiente consulta `core.info`, Experimentos lê `run.json`, Movimento chama `core.preprocess.run_extraction`, Estúdio chama `core.inference.run_inference`, e Resultados exibe MP4 registrado. Wan não baixa pesos pela interface. Rotas da home, `/api/info`, `/api/runs` e mídia responderam 200 em teste local; job inválido foi registrado como failed. Upload + extração via API passaram e criaram `20260924-213136-extract`. `pytest -q --tb=line`: **215 passed** fora do sandbox; a execução restrita teve PermissionError no diretório temporário do pytest. Inferência real pelo navegador ainda não foi executada. Ver `web/README.md`.
+
+## Primeira máquina com GPU — setup, correção do caminho CUDA, pesos do Wan (2026-09-24, Claude Code, `main`)
+
+Máquina: desktop i5-10400F (AVX2) + **RTX 2060 SUPER 8 GB** (cc 7.5), 16 GB RAM (~2–3 GB livres), Python 3.12.10,
+torch 2.14.0+cu130, demais pacotes = `requirements.lock.txt`. Testes: **214 passed** (204 + 10 CUDA novos), 0 skipped.
+Nenhum vídeo real gerado.
+
+| Item | Status | Evidência |
+|---|---|---|
+| Caminho GPU (runtime place/offload, precisões, VRAM stats) com tiny | **PASS** | `tests/test_cuda.py`: fp32/bf16/fp16 × offload none/model/sequential; fp32 GPU = CPU (< 1e-3) |
+| Bug: embeddings de prompt ficavam na CPU com offload → `mat1 is on cpu` no transformer | **FIXED** | `inference/baseline_vace.py` move para `pipe._execution_device`; no-op em CPU (bit-exato mantido) |
+| Bug: `PyTorchRuntime.place` chamava `enable_model_cpu_offload` em não-pipelines | **FIXED** | `hasattr` antes do hook, senão `.to()` (como o docstring já dizia) |
+| Testes que assumiam `device=auto` → cpu | **FIXED** | testes de CPU fixam `runtime.device=cpu`; GPU em `tests/test_cuda.py` |
+| Regressão bit-exata no i5-10400F | **PASS** com referência AVX2 | o script congelado no commit 8284436 gera `d220ac…` aqui: diferença é de kernel SIMD, não de código (`benchmark/baseline/reference.py`) |
+| Pesos Wan2.1-VACE-1.3B @ ec4d2cb | **PASS** — COMPLETE, 17/17 arquivos, SHA-256 conferidos | `fetch_weights(verify_hashes=True)` → `COMPLETE (17/17 files; hashes checked: True)` |
+| EXP-001 (baseline real) | **PARTIAL** — vídeos reais em 464×832 fp16 (~280 s, 5.48 GB); identidade de roupa ainda falha | `docs/experiments/EXP-001.md`, runs 20260924-214644 e -220453 |
+| Perfil 8 GB → área 480×832; bf16 só nativo (Turing → fp16) | **PASS** | 256² gerava lixo; `mova infer --model wan` sem flags gerou vídeo coerente; `tests/test_core.py`, `tests/test_cuda.py` |
+| Treino do adapter no Wan 1.3B real (EXP-007) | **PASS (viabilidade)** — 464×832×17: 5.68 GB, 8.5 s/passo; overfit −99 % | dados sintéticos; falta dataset licenciado |
+| One-to-All 1.3B (Apache-2.0) vs VACE (EXP-008) | **PARTIAL** — modo pose: corpo sup. 0.79 (VACE 0.81), rosto 100 % (73 %), roupa/cenário da foto; mãos < 0.1 em ambos | `scripts/one_to_all_infer.py`, venv isolado `.venv-o2a`, `third_party/` (ignorados) |
+| Dados: Pexels (HumanVid real) | **BLOCKED** pelos Termos do Pexels (download automatizado p/ ML); HumanVid sintético permitido, 400 clipes baixados | `datasets/registry.yaml`, `docs/research/licenses.md` |
+| bf16 em Turing | **MEASURED**: funciona, 3× mais lento que fp16 | 130 s vs 44.7 s (192×336) |
+
 ## Qualidade do motion control em CPU (2026-09-24, Claude Code, branch `feat/motion-quality`)
 
 Tudo abaixo roda e foi testado em CPU, sem os 19 GB e sem GPU. **Nada foi treinado e nenhum vídeo real foi gerado**:

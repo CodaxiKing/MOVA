@@ -118,12 +118,15 @@ def select_profile(hw: HardwareInfo) -> RuntimeProfile:
     dtype = "bfloat16" if hw.bf16_supported else "float16"
     vram = hw.vram_total_gb or 0.0
     offload = recommend_offload(vram)  # single source for the offload thresholds
+    # Resolution is an AREA (the reference aspect is kept, inference/conditioning.fit_resolution). Wan2.1 needs
+    # ~480p: at 256x256 area (192x336) it produced colour noise; at 480x832 area (464x832) a coherent video with
+    # 5.48 GB peak VRAM, 17 frames, fp16, model offload (EXP-001, RTX 2060 SUPER 8 GB).
     if vram < 6.5:
-        return RuntimeProfile("cuda-lt6gb", "cuda", dtype, 256, 256, 9, offload, True,
-                              ["Very low VRAM: sequential offload, expect slow inference."])
+        return RuntimeProfile("cuda-lt6gb", "cuda", dtype, 480, 480, 9, offload, True,
+                              ["Very low VRAM: sequential offload, expect slow inference. 480x480 area UNVERIFIED."])
     if vram < 10:
-        return RuntimeProfile("cuda-8gb", "cuda", dtype, 256, 256, 17, offload, True,
-                              ["8 GB class (e.g. RTX 3060 8GB): model offload + VAE tiling."])
+        return RuntimeProfile("cuda-8gb", "cuda", dtype, 480, 832, 17, offload, True,
+                              ["8 GB class: model offload + VAE tiling; 480x832 area, 17 frames (EXP-001)."])
     if vram < 20:
         return RuntimeProfile("cuda-12-16gb", "cuda", dtype, 480, 480, 33, offload, True)
     return RuntimeProfile("cuda-24gb+", "cuda", dtype, 480, 832, 81, offload, False)
