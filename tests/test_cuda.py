@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "benchmark/baseline"))
 from capture_tiny_vace import frames_digest, synthetic_inputs  # noqa: E402
 
 CUDA = [d.id for d in get_runtime("pytorch").devices() if d.id.startswith("cuda")]
+NATIVE_BF16 = bool(CUDA) and next(d for d in get_runtime("pytorch").devices() if d.id == CUDA[0]).bf16
 pytestmark = pytest.mark.skipif(not CUDA, reason="no CUDA device")
 
 
@@ -48,6 +49,8 @@ def media(tmp_path):
 @pytest.mark.parametrize("offload", ["none", "model", "sequential"])
 @pytest.mark.parametrize("precision", ["fp32", "bf16", "fp16"])
 def test_core_end_to_end_on_cuda(media, tmp_path, precision, offload):
+    if precision == "bf16" and not NATIVE_BF16:
+        pytest.skip("no native bf16 on this GPU (e.g. Turing); rejected by design, see test_bf16_rejected_without_native")
     ref, ctl = media
     req = InferenceRequest(model="tiny", reference=str(ref), motion=str(ctl),
                            output=str(tmp_path / f"out_{precision}_{offload}.mp4"),
@@ -81,3 +84,14 @@ def test_cuda_fp32_matches_cpu_numerically():
     assert outs["cpu"].shape == outs[CUDA[0]].shape
     assert np.abs(outs["cpu"] - outs[CUDA[0]]).max() < 1e-3
     assert torch.cuda.memory_allocated() < 64 * 1024**2  # unload released the GPU
+
+
+@pytest.mark.skipif(NATIVE_BF16, reason="GPU has native bf16")
+def test_bf16_rejected_without_native_and_auto_is_fp16():
+    """Turing reports bf16 via emulation; MOVA only counts native support (3x slower otherwise, EXP-001)."""
+    from common.errors import PrecisionNotSupportedError
+
+    rt = get_runtime("pytorch")
+    assert rt.context(device=CUDA[0]).precision.value == "fp16"
+    with pytest.raises(PrecisionNotSupportedError):
+        rt.context(device=CUDA[0], precision="bf16")
